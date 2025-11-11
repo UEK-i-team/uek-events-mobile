@@ -39,16 +39,16 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
   // Snap points: 70% jako początkowy, 95% jako pełny ekran
   const snapPoints = useMemo(() => ['70%', '95%'], []);
 
+  // Kontrolowany index - otwarty = 0, zamknięty = -1
+  const sheetIndex = useMemo(() => (isOpen ? 0 : -1), [isOpen]);
+
   useEffect(() => {
     if (isOpen) {
-      // Otwórz na pierwszym snap point (70%)
-      bottomSheetRef.current?.snapToIndex(0);
       // Resetuj scroll do góry po otwarciu
       setTimeout(() => {
         scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       }, 100);
     } else {
-      bottomSheetRef.current?.close();
       // Resetuj scroll przy zamykaniu
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
@@ -69,10 +69,12 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
   }, [isOpen, onClose]);
 
   const handleSheetChanges = useCallback((index: number) => {
-    if (index === -1) {
+    // Synchronizuj stan tylko gdy użytkownik zamknie bottom sheet ręcznie (przez swipe)
+    // Unikaj wywoływania onClose jeśli już jest zamknięty (zapobiega pętlom)
+    if (index === -1 && isOpen) {
       onClose();
     }
-  }, [onClose]);
+  }, [onClose, isOpen]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -89,7 +91,7 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
   return (
     <BottomSheet
       ref={bottomSheetRef}
-      index={-1}
+      index={sheetIndex}
       snapPoints={snapPoints}
       onChange={handleSheetChanges}
       enablePanDownToClose
