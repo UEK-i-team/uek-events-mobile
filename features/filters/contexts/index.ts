@@ -1,2 +1,2 @@
-export { FiltersProvider, useFilters } from './filters-context';
+export { FiltersProvider, useFilters, useAppliedFilters } from './filters-context';
 

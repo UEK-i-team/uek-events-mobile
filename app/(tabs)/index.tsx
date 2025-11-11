@@ -2,9 +2,11 @@ import { EventCard } from '@/features/home/components/event-card';
 import { FilterButton } from '@/features/home/components/filter-button';
 import { HomeHeader } from '@/features/home/components/home-header';
 import { EXAMPLE_EVENTS, FILTER_OPTIONS } from '@/features/home/constants/events';
+import { useFilteredEvents } from '@/features/home/hooks/use-filtered-events';
+import { useHomeScreen } from '@/features/home/hooks/use-home-screen';
+import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
-import { useHomeScreen } from '@/features/home/hooks/use-home-screen';
 import { Event } from '@/shared/types/event';
 import React from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
@@ -23,6 +25,9 @@ export default function HomeScreen() {
     handleFilterPress,
   } = useHomeScreen();
 
+  // Filtruj wydarzenia według wybranego filtru
+  const filteredEvents = useFilteredEvents(EXAMPLE_EVENTS, selectedFilter);
+
   const renderFilterButton = ({ item }: { item: typeof FILTER_OPTIONS[0] }) => (
     <FilterButton
       filter={item}
@@ -36,7 +41,13 @@ export default function HomeScreen() {
     <EventCard event={item} cardHeight={cardHeight} />
   );
 
-  
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <ThemedText style={[styles.emptyText, { color: isDark ? '#999999' : '#666666' }]}>
+        Brak wydarzeń spełniających wybrane kryteria
+      </ThemedText>
+    </View>
+  );
   
   return (
     <SafeAreaView
@@ -59,20 +70,23 @@ export default function HomeScreen() {
           contentContainerStyle={styles.filtersContent}
         />
       </View>
-
-      <FlatList
-        bounces={true}
-        data={EXAMPLE_EVENTS}
-        renderItem={renderEventCard}
-        keyExtractor={item => item.id}
-        pagingEnabled
-        showsVerticalScrollIndicator={false}
-        snapToInterval={cardHeight}
-        snapToAlignment="start"
-        decelerationRate="fast"
-        style={{flex: 1}}
-        disableIntervalMomentum={true}
-      />
+      {filteredEvents.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <FlatList
+          bounces={true}
+          data={filteredEvents}
+          renderItem={renderEventCard}
+          keyExtractor={item => item.id}
+          pagingEnabled
+          showsVerticalScrollIndicator={false}
+          snapToInterval={cardHeight}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          style={{flex: 1}}
+          disableIntervalMomentum={true}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -91,5 +105,16 @@ const styles = StyleSheet.create({
   },
   eventsContent: {
     paddingTop: 0,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });

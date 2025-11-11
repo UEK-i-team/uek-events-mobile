@@ -4,6 +4,7 @@ import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { FilterOption } from '@/shared/types/event';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 interface FilterButtonProps {
   filter: FilterOption;
@@ -14,30 +15,59 @@ interface FilterButtonProps {
 export function FilterButton({ filter, isSelected, onPress }: FilterButtonProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const tintColor = isDark ? Colors.dark.tint :'#3DE60F';
+  const tintColor = isDark ? Colors.dark.tint :'#0053F4';
+
+  // Animacja scale
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
+  const handlePressIn = () => {
+    scale.value = withTiming(0.95, {
+      duration: 100,
+    });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withTiming(1, {
+      duration: 100,
+    });
+  };
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        {
-          backgroundColor: isSelected
-            ? tintColor
-            : isDark
-            ? 'rgba(255, 255, 255, 0.08)'
-            : '#EDFFE8',
-        },
-        isSelected && styles.buttonSelected,
-      ]}
-      onPress={() => onPress(filter.id)}
-      activeOpacity={0.7}>
-      <ThemedText
+    <Animated.View style={[animatedStyle, { flexShrink: 0, alignSelf: 'flex-start' }]}>
+      <TouchableOpacity
         style={[
-          styles.text,
-        ]}>
-        {filter.label}
-      </ThemedText>
-    </TouchableOpacity>
+          styles.button,
+          {
+            backgroundColor: isSelected
+              ? tintColor
+              : isDark
+              ? 'rgba(255, 255, 255, 0.08)'
+              : '#FBFBFB',
+          },
+          isSelected && styles.buttonSelected,
+        ]}
+        onPress={() => onPress(filter.id)}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}>
+        <ThemedText
+          style={[
+            styles.text,
+            {
+              color: isSelected
+                ? '#fff' : '#111'
+            },
+          ]}>
+          {filter.label}
+        </ThemedText>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -52,7 +82,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     backgroundColor: '',
-    borderColor: '#3DE60F',
+    borderColor: '#ECECEC',
+    flexShrink: 0,
+    alignSelf: 'flex-start',
+    flexWrap: 'nowrap',
   },
   buttonSelected: {
     shadowColor: '#0a7ea4',
@@ -67,7 +100,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 15,
     letterSpacing: 0.2,
-    fontWeight: '600',
   },
 });
 

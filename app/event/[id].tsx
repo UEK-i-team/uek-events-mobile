@@ -1,22 +1,28 @@
-import { ThemedText } from '@/shared/components/themed-text';
 import { EXAMPLE_EVENTS } from '@/features/home/constants/events';
+import { useFavorites } from '@/features/saved/contexts';
+import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { Event } from '@/shared/types/event';
+import {
+  eventCategoryTranslations,
+  eventTagTranslations,
+  eventTypeTranslations
+} from '@/shared/types/event-enums';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Alert,
   Image,
+  Linking,
+  Platform,
   ScrollView,
+  Share,
   StyleSheet,
   TouchableOpacity,
   View,
   useWindowDimensions,
-  Share,
-  Platform,
-  Linking,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -45,6 +51,7 @@ export default function EventDetailsScreen() {
   const colorScheme = useColorScheme();
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const isDark = colorScheme === 'dark';
   const backgroundColor = isDark ? Colors.dark.background : Colors.light.background;
   const textColor = isDark ? Colors.dark.text : Colors.light.text;
@@ -54,8 +61,6 @@ export default function EventDetailsScreen() {
   const [event] = useState<Event | undefined>(() => 
     EXAMPLE_EVENTS.find((e) => e.id === params.id)
   );
-  
-  const [isFavorite, setIsFavorite] = useState(event?.isFavorite || false);
 
   if (!event) {
     return (
@@ -105,8 +110,10 @@ export default function EventDetailsScreen() {
     }
   };
 
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+  const handleToggleFavorite = () => {
+    if (event) {
+      toggleFavorite(event.id);
+    }
   };
 
   const handleRegister = async () => {
@@ -182,13 +189,13 @@ export default function EventDetailsScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={toggleFavorite}
+                onPress={handleToggleFavorite}
                 style={styles.headerButton}
                 activeOpacity={0.7}>
                 <MaterialIcons
-                  name={isFavorite ? 'favorite' : 'favorite-border'}
+                  name={event && isFavorite(event.id) ? 'favorite' : 'favorite-border'}
                   size={24}
-                  color={isFavorite ? '#FF3B30' : '#FFFFFF'}
+                  color={event && isFavorite(event.id) ? '#FF3B30' : '#FFFFFF'}
                 />
               </TouchableOpacity>
             </View>
@@ -207,11 +214,33 @@ export default function EventDetailsScreen() {
             {event.description}
           </ThemedText>
 
+          {/* Etykiety: Typ, Kategoria, Lokalizacja */}
+          <View style={styles.tagsContainer}>
+            {event.eventType && event.eventCategory && (
+              <View
+                style={[
+                  styles.tag,
+                  {
+                    backgroundColor: getTagColor(0).bg,
+                  },
+                ]}>
+                <ThemedText
+                  style={[
+                    styles.tagText,
+                    {
+                      color: getTagColor(0).text,
+                    },
+                  ]}>
+                  {eventCategoryTranslations[event.eventCategory]} - {eventTypeTranslations[event.eventType]}
+                </ThemedText>
+              </View>
+            )}
+          </View>
           {/* Tagi */}
           {event.tags && event.tags.length > 0 && (
             <View style={styles.tagsContainer}>
               {event.tags.map((tag, index) => {
-                const tagColor = getTagColor(index);
+                const tagColor = getTagColor(index + 3); // Offset, żeby nie kolidować z etykietami
                 return (
                   <View
                     key={index}
@@ -228,27 +257,11 @@ export default function EventDetailsScreen() {
                           color: tagColor.text,
                         },
                       ]}>
-                      {tag}
+                      {eventTagTranslations[tag]}
                     </ThemedText>
                   </View>
                 );
               })}
-            </View>
-          )}
-
-          {/* Typ wydarzenia */}
-          {event.eventType && event.eventType.length > 0 && (
-            <View style={styles.detailSection}>
-              <View style={styles.detailRow}>
-                <MaterialIcons
-                  name="event"
-                  size={20}
-                  color={isDark ? '#9BA1A6' : '#687076'}
-                />
-                <ThemedText style={[styles.detailText, { color: isDark ? '#CCCCCC' : '#666666' }]}>
-                  {event.eventType.join(' / ')}
-                </ThemedText>
-              </View>
             </View>
           )}
 

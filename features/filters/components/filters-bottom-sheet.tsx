@@ -1,11 +1,18 @@
+import { useFilters } from '@/features/filters/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
-import { ThemedView } from '@/shared/components/themed-view';
-import { IconSymbol } from '@/shared/components/ui/icon-symbol';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { useThemeColor } from '@/shared/hooks/use-theme-color';
+import {
+  EventCategory,
+  EventLocation,
+  EventTag,
+  eventCategoryTranslations,
+  eventTagTranslations,
+} from '@/shared/types/event-enums';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import React, { useCallback, useMemo, useRef } from 'react';
-import { StyleSheet } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { BackHandler, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface FiltersBottomSheetProps {
   isOpen: boolean;
@@ -14,19 +21,52 @@ interface FiltersBottomSheetProps {
 
 export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const scrollViewRef = useRef<any>(null);
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
   const colorScheme = useColorScheme();
+  const {
+    selectedCategories,
+    selectedLocations,
+    selectedTags,
+    toggleCategory,
+    toggleLocation,
+    toggleTag,
+    clearFilters,
+  } = useFilters();
+  const isDark = colorScheme === 'dark';
 
-  const snapPoints = useMemo(() => ['25%', '50%', '90%'], []);
+  // Snap points: 70% jako początkowy, 95% jako pełny ekran
+  const snapPoints = useMemo(() => ['70%', '95%'], []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
-      bottomSheetRef.current?.expand();
+      // Otwórz na pierwszym snap point (70%)
+      bottomSheetRef.current?.snapToIndex(0);
+      // Resetuj scroll do góry po otwarciu
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      }, 100);
     } else {
       bottomSheetRef.current?.close();
+      // Resetuj scroll przy zamykaniu
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   }, [isOpen]);
+
+  // Obsługa przycisku wstecz na Androidzie
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose();
+      return true; // Zapobiega domyślnej akcji (zamknięcie aplikacji)
+    });
+
+    return () => backHandler.remove();
+  }, [isOpen, onClose]);
 
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
@@ -58,73 +98,170 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: colorScheme === 'dark' ? '#9BA1A6' : '#687076' }]}
     >
       <BottomSheetScrollView
+        ref={scrollViewRef}
         style={styles.contentContainer}
         contentContainerStyle={styles.contentContainerStyle}
       >
-        <ThemedView style={styles.header}>
-          <ThemedText type="title">Filtry</ThemedText>
-        </ThemedView>
+        {/* Header */}
+        <View style={styles.header}>
+          <ThemedText type="title" style={[styles.headerTitle, { color: textColor }]}>
+            Filtry
+          </ThemedText>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <MaterialIcons
+              name="close"
+              size={24}
+              color={isDark ? '#FFFFFF' : '#000000'}
+            />
+          </TouchableOpacity>
+        </View>
 
-        <ThemedView style={styles.filterSection}>
-          <ThemedText type="subtitle">Kategoria</ThemedText>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Wszystkie kategorie</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-        </ThemedView>
+        {/* Typ wydarzenia (EventCategory) */}
+        <View style={styles.filterSection}>
+          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+            Typ wydarzenia
+          </ThemedText>
+          <View style={styles.checkboxList}>
+            {Object.values(EventCategory).map((category) => {
+              const isSelected = selectedCategories.includes(category);
+              return (
+                <TouchableOpacity
+                  key={category}
+                  style={styles.checkboxOption}
+                  onPress={() => toggleCategory(category)}
+                  activeOpacity={0.7}>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      {
+                        backgroundColor: isSelected
+                          ? '#0066FF'
+                          : 'transparent',
+                        borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                      },
+                    ]}>
+                    {isSelected && (
+                      <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                    )}
+                  </View>
+                  <ThemedText
+                    style={[
+                      styles.checkboxLabel,
+                      { color: textColor },
+                    ]}>
+                    {eventCategoryTranslations[category]}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
-        <ThemedView style={styles.filterSection}>
-          <ThemedText type="subtitle">Data</ThemedText>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Wszystkie daty</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-        </ThemedView>
+        {/* Format (EventLocation) */}
+        <View style={styles.filterSection}>
+          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+            Format
+          </ThemedText>
+          <View style={styles.checkboxList}>
+            {[
+              { location: EventLocation.OnUekCampus, label: 'Stacjonarne' },
+              { location: EventLocation.Online, label: 'Online' },
+              { location: EventLocation.Hybrid, label: 'Hybrydowe' },
+            ].map(({ location, label }) => {
+              const isSelected = selectedLocations.includes(location);
+              return (
+                <TouchableOpacity
+                  key={location}
+                  style={styles.checkboxOption}
+                  onPress={() => toggleLocation(location)}
+                  activeOpacity={0.7}>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      {
+                        backgroundColor: isSelected
+                          ? '#0066FF'
+                          : 'transparent',
+                        borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                      },
+                    ]}>
+                    {isSelected && (
+                      <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                    )}
+                  </View>
+                  <ThemedText
+                    style={[
+                      styles.checkboxLabel,
+                      { color: textColor },
+                    ]}>
+                    {label}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
-        <ThemedView style={styles.filterSection}>
-          <ThemedText type="subtitle">Lokalizacja</ThemedText>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Wszystkie lokalizacje</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-        </ThemedView>
+        {/* Tematy (EventTag) */}
+        <View style={styles.filterSection}>
+          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+            Tematy
+          </ThemedText>
+          <View style={styles.tagsContainer}>
+            {Object.values(EventTag).map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => toggleTag(tag)}
+                  activeOpacity={0.7}
+                  style={[
+                    styles.tag,
+                    {
+                      backgroundColor: isSelected
+                        ? '#0066FF'
+                        : (isDark ? '#2A2A2A' : '#F5F5F5'),
+                      borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                    },
+                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.tagText,
+                      {
+                        color: isSelected
+                          ? '#FFFFFF'
+                          : (isDark ? '#FFFFFF' : '#000000'),
+                      },
+                    ]}>
+                    {eventTagTranslations[tag]}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
-        <ThemedView style={styles.filterSection}>
-          <ThemedText type="subtitle">Typ wydarzenia</ThemedText>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Wszystkie typy</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-        </ThemedView>
-
-        {/* Dodatkowa zawartość do testowania scrollowania */}
-        <ThemedView style={styles.filterSection}>
-          <ThemedText type="subtitle">Dodatkowe opcje</ThemedText>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Opcja 1</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Opcja 2</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Opcja 3</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-        </ThemedView>
-
-        <ThemedView style={styles.filterSection}>
-          <ThemedText type="subtitle">Więcej opcji</ThemedText>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Opcja 4</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-          <ThemedView style={styles.filterOption}>
-            <ThemedText>Opcja 5</ThemedText>
-            <IconSymbol name="chevron.right" size={20} color="#808080" />
-          </ThemedView>
-        </ThemedView>
+        {/* Przycisk wyczyść */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.clearButton,
+              {
+                backgroundColor: isDark ? '#2A2A2A' : '#FFFFFF',
+                borderColor: isDark ? '#666666' : '#CCCCCC',
+              },
+            ]}
+            onPress={clearFilters}
+            activeOpacity={0.7}>
+            <ThemedText
+              style={[
+                styles.clearButtonText,
+                { color: textColor },
+              ]}>
+              Wyczyść
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
       </BottomSheetScrollView>
     </BottomSheet>
   );
@@ -136,6 +273,7 @@ const styles = StyleSheet.create({
   },
   contentContainerStyle: {
     padding: 20,
+    paddingBottom: 40,
   },
   bottomSheetBackground: {
     // backgroundColor will be set dynamically
@@ -146,20 +284,82 @@ const styles = StyleSheet.create({
     height: 4,
   },
   header: {
-    marginBottom: 20,
-  },
-  filterSection: {
-    marginBottom: 24,
-    gap: 12,
-  },
-  filterOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    marginBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterSection: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  checkboxList: {
+    gap: 12,
+  },
+  checkboxOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 4,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxLabel: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  tag: {
     paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: 'transparent',
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  tagText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  clearButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clearButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

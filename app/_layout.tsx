@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { FiltersBottomSheet } from '@/features/filters/components/filters-bottom-sheet';
 import { FiltersProvider, useFilters } from '@/features/filters/contexts/filters-context';
+import { FavoritesProvider } from '@/features/saved/contexts';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 
 export const unstable_settings = {
@@ -41,10 +42,12 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <FiltersProvider>
-          <AppContent />
-          <StatusBar style="auto" />
-        </FiltersProvider>
+        <FavoritesProvider>
+          <FiltersProvider>
+            <AppContent />
+            <StatusBar style="auto" />
+          </FiltersProvider>
+        </FavoritesProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

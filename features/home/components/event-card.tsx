@@ -1,7 +1,14 @@
+import { useFavorites } from '@/features/saved/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { Event } from '@/shared/types/event';
+import {
+  eventCategoryTranslations,
+  eventLocationTranslations,
+  eventTagTranslations,
+  eventTypeTranslations,
+} from '@/shared/types/event-enums';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -35,12 +42,20 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
   const colorScheme = useColorScheme();
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const router = useRouter();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const isDark = colorScheme === 'dark';
-  const textColor = isDark ? Colors.dark.text : Colors.light.text;
-  const cardBackgroundColor = isDark ? '#1E1E1E' : '#FFFFFF';
+  
+  // Użyj koloru z eventu lub domyślnego
+  const cardBackgroundColor = event.cardColor || (isDark ? '#1E1E1E' : '#FFFFFF');
+  
+  // Jeśli mamy cardColor (jasne kolory), użyj ciemnego tekstu, inaczej użyj domyślnego
+  const textColor = event.cardColor ? '#1a1a1a' : (isDark ? Colors.dark.text : Colors.light.text);
+  const secondaryTextColor = event.cardColor ? '#4a4a4a' : (isDark ? '#CCCCCC' : '#666666');
+  const iconColor = event.cardColor ? '#666666' : (isDark ? '#9BA1A6' : '#687076');
 
   const getTagColor = (index: number) => {
-    const colors = isDark ? TAG_COLORS_DARK : TAG_COLORS;
+    // Jeśli mamy cardColor, używamy normalnych kolorów (nie dark), bo karta jest jasna
+    const colors = event.cardColor ? TAG_COLORS : (isDark ? TAG_COLORS_DARK : TAG_COLORS);
     return colors[index % colors.length];
   };
 
@@ -50,8 +65,7 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
 
   const handleFavoritePress = (e: any) => {
     e.stopPropagation();
-    // TODO: Implementacja dodawania do ulubionych
-    console.log('Toggle favorite:', event.id);
+    toggleFavorite(event.id);
   };
 
   return (
@@ -70,7 +84,7 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
           styles.card,
           {
             backgroundColor: cardBackgroundColor,
-            width: SCREEN_WIDTH - 32,
+            width: SCREEN_WIDTH - 32, // Przywrócona oryginalna szerokość
             height: cardHeight - 32,
           },
         ]}>
@@ -86,8 +100,8 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
             <View style={[styles.imagePlaceholder, { backgroundColor: isDark ? '#2A2A2A' : '#F0F0F0' }]} />
           )}
           
-          {/* Etykieta HOT lub Popularne */}
-          {(event.isHot || event.isPopular) && (
+          {/* Etykieta HOT lub Popularne - ZAKOMENTOWANE */}
+          {/* {(event.isHot || event.isPopular) && (
             <View
               style={[
                 styles.badge,
@@ -104,7 +118,7 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                 {event.isHot ? 'HOT' : 'Popularne'}
               </ThemedText>
             </View>
-          )}
+          )} */}
         </View>
 
         {/* Zawartość karty */}
@@ -127,9 +141,9 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                 activeOpacity={0.7}
                 onPress={handleFavoritePress}>
                 <MaterialIcons
-                  name={event.isFavorite ? 'favorite' : 'favorite-border'}
+                  name={isFavorite(event.id) ? 'favorite' : 'favorite-border'}
                   size={24}
-                  color={event.isFavorite ? '#FF3B30' : (isDark ? '#9BA1A6' : '#687076')}
+                  color={isFavorite(event.id) ? '#FF3B30' : iconColor}
                 />
               </TouchableOpacity>
             </View>
@@ -139,7 +153,7 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
               style={[
                 styles.description,
                 {
-                  color: isDark ? '#CCCCCC' : '#666666',
+                  color: secondaryTextColor,
                 },
               ]}>
               {event.description}
@@ -150,13 +164,13 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                 <MaterialIcons
                   name="calendar-today"
                   size={18}
-                  color={isDark ? '#9BA1A6' : '#687076'}
+                  color={iconColor}
                 />
                 <ThemedText
                   style={[
                     styles.detailText,
                     {
-                      color: isDark ? '#CCCCCC' : '#666666',
+                      color: secondaryTextColor,
                     },
                   ]}>
                   {event.date}
@@ -164,13 +178,13 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                 <MaterialIcons
                   name="access-time"
                   size={18}
-                  color={isDark ? '#9BA1A6' : '#687076'}
+                  color={iconColor}
                 />
                 <ThemedText
                   style={[
                     styles.detailText,
                     {
-                      color: isDark ? '#CCCCCC' : '#666666',
+                      color: secondaryTextColor,
                     },
                   ]}>
                   {event.time}
@@ -181,24 +195,65 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                 <MaterialIcons
                   name="location-on"
                   size={18}
-                  color={isDark ? '#9BA1A6' : '#687076'}
+                  color={iconColor}
                 />
                 <ThemedText
                   style={[
                     styles.detailText,
                     {
-                      color: isDark ? '#CCCCCC' : '#666666',
+                      color: secondaryTextColor,
                     },
                   ]}>
                   {event.location}
                 </ThemedText>
               </View>
             </View>
+            {/* Etykiety: Typ, Kategoria, Lokalizacja */}
+            <View style={styles.tagsContainer}>
+              {event.eventType &&event.eventCategory && (
+                <View
+                  style={[
+                    styles.tag,
+                    {
+                      backgroundColor: getTagColor(0).bg,
+                    },
+                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.tagText,
+                      {
+                        color: getTagColor(0).text,
+                      },
+                    ]}>
+                    {eventCategoryTranslations[event.eventCategory]} - {eventTypeTranslations[event.eventType]}
+                  </ThemedText>
+                </View>
+              )}
+              {event.eventLocation && (
+                <View
+                  style={[
+                    styles.tag,
+                    {
+                      backgroundColor: getTagColor(2).bg,
+                    },
+                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.tagText,
+                      {
+                        color: getTagColor(2).text,
+                      },
+                    ]}>
+                    {eventLocationTranslations[event.eventLocation]}
+                  </ThemedText>
+                </View>
+              )}
+            </View>
             {/* Tagi */}
             {event.tags && event.tags.length > 0 && (
               <View style={styles.tagsContainer}>
                 {event.tags.map((tag, index) => {
-                  const tagColor = getTagColor(index);
+                  const tagColor = getTagColor(index + 3); // Offset, żeby nie kolidować z etykietami
                   return (
                     <View
                       key={index}
@@ -215,7 +270,7 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                             color: tagColor.text,
                           },
                         ]}>
-                        {tag}
+                        {eventTagTranslations[tag]}
                       </ThemedText>
                     </View>
                   );
@@ -229,7 +284,7 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                 style={[
                   styles.organizer,
                   {
-                    color: isDark ? '#9BA1A6' : '#687076',
+                    color: iconColor,
                   },
                 ]}>
                 {event.organizer}
@@ -248,14 +303,15 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    // Cień usunięty
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 8,
+    // elevation: 3,
     overflow: 'hidden',
     flexDirection: 'column',
   },
@@ -264,14 +320,18 @@ const styles = StyleSheet.create({
     position: 'relative',
     flexShrink: 1,
     minHeight: 120,
+    paddingHorizontal: 12, // Odstęp aby widać boki karty
+    paddingTop: 12,
   },
   image: {
     width: '100%',
     height: '100%',
+    borderRadius: 12, // Zaokrąglenie obrazu
   },
   imagePlaceholder: {
     width: '100%',
     height: '100%',
+    borderRadius: 12, // Zaokrąglenie placeholder (tak jak obraz)
   },
   badge: {
     position: 'absolute',
@@ -308,7 +368,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   favoriteButton: {
-    padding: 4,
+    padding: 8,
   },
   description: {
     fontSize: 15,
@@ -345,16 +405,16 @@ const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
     marginBottom: 12,
   },
   tag: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 16,
   },
   tagText: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '500',
   },
   organizer: {
