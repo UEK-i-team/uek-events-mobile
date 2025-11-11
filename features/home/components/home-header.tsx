@@ -49,6 +49,7 @@ export function HomeHeader({ headerHeight }: HomeHeaderProps) {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
+    height: 60
   },
   content: {
     flexDirection: 'row',

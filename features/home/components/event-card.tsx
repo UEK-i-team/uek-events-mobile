@@ -300,6 +300,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
+    flex: 1
   },
   card: {
     borderRadius: 16,

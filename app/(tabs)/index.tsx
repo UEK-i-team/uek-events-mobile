@@ -8,7 +8,7 @@ import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { Event } from '@/shared/types/event';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,8 +25,15 @@ export default function HomeScreen() {
     handleFilterPress,
   } = useHomeScreen();
 
+  
+  const containerRef = useRef<View>(null);
+
   // Filtruj wydarzenia według wybranego filtru
   const filteredEvents = useFilteredEvents(EXAMPLE_EVENTS, selectedFilter);
+
+
+const [height, setHeight] = useState(0);
+
 
   const renderFilterButton = ({ item }: { item: typeof FILTER_OPTIONS[0] }) => (
     <FilterButton
@@ -38,7 +45,7 @@ export default function HomeScreen() {
 
 
   const renderEventCard = ({ item }: { item: Event }) => (
-    <EventCard event={item} cardHeight={cardHeight} />
+    <EventCard event={item} cardHeight={height} />
   );
 
   const renderEmptyState = () => (
@@ -70,26 +77,37 @@ export default function HomeScreen() {
           contentContainerStyle={styles.filtersContent}
         />
       </View>
-      {filteredEvents.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <FlatList
-          bounces={true}
-          data={filteredEvents}
-          renderItem={renderEventCard}
-          keyExtractor={item => item.id}
-          pagingEnabled
-          showsVerticalScrollIndicator={false}
-          snapToInterval={cardHeight}
-          snapToAlignment="start"
-          decelerationRate="fast"
-          style={{flex: 1}}
-          disableIntervalMomentum={true}
-        />
+      <View 
+        ref={containerRef}
+        style={{flex: 1}}
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setHeight(height)
+        }}
+      >
+        {filteredEvents.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            bounces={true}
+            data={filteredEvents}
+            renderItem={renderEventCard}
+            keyExtractor={item => item.id}
+            pagingEnabled
+            showsVerticalScrollIndicator={false}
+            snapToInterval={height}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            disableIntervalMomentum={true}
+          />
       )}
+      </View>
+      
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
@@ -102,6 +120,7 @@ const styles = StyleSheet.create({
   filtersContent: {
     paddingHorizontal: 16,
     gap: 12,
+    height: 60
   },
   eventsContent: {
     paddingTop: 0,

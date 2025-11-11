@@ -1,6 +1,6 @@
 import { FilterId } from '@/shared/types/event';
 import { useRef, useState } from 'react';
-import { FlatList, useWindowDimensions } from 'react-native';
+import { FlatList, Platform, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface UseHomeScreenReturn {
@@ -24,8 +24,10 @@ export function useHomeScreen(): UseHomeScreenReturn {
   
   const { height: SCREEN_HEIGHT } = useWindowDimensions();
 
-  const headerHeight = HEADER_BASE_HEIGHT + insets.top;
-  const cardHeight = SCREEN_HEIGHT - headerHeight - FILTERS_HEIGHT - 10;
+  const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 49 : 5;
+  const headerHeight = HEADER_BASE_HEIGHT + insets.top + insets.bottom + FILTERS_HEIGHT + TAB_BAR_HEIGHT;
+  // const cardHeight = SCREEN_HEIGHT - headerHeight - FILTERS_HEIGHT - 10;
+  const cardHeight = SCREEN_HEIGHT - headerHeight;
 
   const handleFilterPress = (filterId: string) => {
     if (selectedFilter === filterId) {
