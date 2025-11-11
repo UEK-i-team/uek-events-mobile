@@ -4,9 +4,9 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
-import { FiltersBottomSheet } from '@/components/filters-bottom-sheet';
-import { FiltersProvider, useFilters } from '@/contexts/filters-context';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { FiltersBottomSheet } from '@/features/filters/components/filters-bottom-sheet';
+import { FiltersProvider, useFilters } from '@/features/filters/contexts/filters-context';
+import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 
 export const unstable_settings = {
   anchor: '(tabs)',

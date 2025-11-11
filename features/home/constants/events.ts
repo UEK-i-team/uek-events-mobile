@@ -1,4 +1,4 @@
-import { Event, FilterOption } from '@/types/event';
+import { Event, FilterOption } from '@/shared/types/event';
 
 /**
  * Przykładowe dane eventów

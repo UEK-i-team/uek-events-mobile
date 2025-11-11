@@ -5,11 +5,11 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 
 import { BookmarkIcon, FilterIcon, HomeIcon, ProfileIcon } from '@/assets/icons';
-import { HapticTab } from '@/components/haptic-tab';
-import { SvgIcon } from '@/components/ui/svg-icon';
-import { Colors } from '@/constants/theme';
-import { useFilters } from '@/contexts/filters-context';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { HapticTab } from '@/shared/components/haptic-tab';
+import { SvgIcon } from '@/shared/components/ui/svg-icon';
+import { Colors } from '@/shared/constants/theme';
+import { useFilters } from '@/features/filters/contexts/filters-context';
+import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 
 function FiltersTabButton(props: BottomTabBarButtonProps) {
   const { openFilters } = useFilters();

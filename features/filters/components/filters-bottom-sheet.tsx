@@ -1,8 +1,8 @@
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { ThemedText } from '@/shared/components/themed-text';
+import { ThemedView } from '@/shared/components/themed-view';
+import { IconSymbol } from '@/shared/components/ui/icon-symbol';
+import { useColorScheme } from '@/shared/hooks/use-color-scheme';
+import { useThemeColor } from '@/shared/hooks/use-theme-color';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';

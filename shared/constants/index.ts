@@ -1,0 +1,2 @@
+export { Colors } from './theme';
+

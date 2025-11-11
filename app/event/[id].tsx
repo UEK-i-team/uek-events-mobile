@@ -1,8 +1,8 @@
-import { ThemedText } from '@/components/themed-text';
-import { EXAMPLE_EVENTS } from '@/constants/events';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Event } from '@/types/event';
+import { ThemedText } from '@/shared/components/themed-text';
+import { EXAMPLE_EVENTS } from '@/features/home/constants/events';
+import { Colors } from '@/shared/constants/theme';
+import { useColorScheme } from '@/shared/hooks/use-color-scheme';
+import { Event } from '@/shared/types/event';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';

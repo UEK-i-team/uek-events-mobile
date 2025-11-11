@@ -1,7 +1,7 @@
-import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { FilterOption } from '@/types/event';
+import { ThemedText } from '@/shared/components/themed-text';
+import { Colors } from '@/shared/constants/theme';
+import { useColorScheme } from '@/shared/hooks/use-color-scheme';
+import { FilterOption } from '@/shared/types/event';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 

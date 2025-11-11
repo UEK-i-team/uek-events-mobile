@@ -1,4 +1,4 @@
-import { FilterId } from '@/types/event';
+import { FilterId } from '@/shared/types/event';
 import { useRef, useState } from 'react';
 import { FlatList, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

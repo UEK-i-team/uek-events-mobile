@@ -1,7 +1,7 @@
-import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Event } from '@/types/event';
+import { ThemedText } from '@/shared/components/themed-text';
+import { Colors } from '@/shared/constants/theme';
+import { useColorScheme } from '@/shared/hooks/use-color-scheme';
+import { Event } from '@/shared/types/event';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import React from 'react';

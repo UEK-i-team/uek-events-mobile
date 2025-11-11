@@ -1,6 +1,6 @@
-import { ThemedText } from '@/components/themed-text';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ThemedText } from '@/shared/components/themed-text';
+import { Colors } from '@/shared/constants/theme';
+import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
