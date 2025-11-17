@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { FiltersBottomSheet } from '@/features/filters/components/filters-bottom-sheet';
 import { FiltersProvider, useFilters } from '@/features/filters/contexts/filters-context';
+import { NotificationProvider, NotificationToastContainer } from '@/features/notifications';
 import { FavoritesProvider } from '@/features/saved/contexts';
 import { RepositoriesProvider } from '@/shared/connectors';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
@@ -33,6 +34,7 @@ function AppContent() {
         />
       </Stack>
       <FiltersBottomSheet isOpen={isOpen} onClose={closeFilters} />
+      <NotificationToastContainer />
     </>
   );
 }
@@ -45,10 +47,12 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <RepositoriesProvider>
           <FavoritesProvider>
-            <FiltersProvider>
-              <AppContent />
-              <StatusBar style="auto" />
-            </FiltersProvider>
+            <NotificationProvider>
+              <FiltersProvider>
+                <AppContent />
+                <StatusBar style="auto" />
+              </FiltersProvider>
+            </NotificationProvider>
           </FavoritesProvider>
         </RepositoriesProvider>
       </ThemeProvider>

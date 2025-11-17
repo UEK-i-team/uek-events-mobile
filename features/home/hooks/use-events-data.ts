@@ -1,6 +1,7 @@
+import { NotificationContext } from '@/features/notifications/contexts';
 import { useEventsRepository } from '@/shared/connectors';
 import { Event } from '@/shared/types/event';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 interface UseEventsDataReturn {
   events: Event[];
@@ -14,6 +15,8 @@ interface UseEventsDataReturn {
  */
 export function useEventsData(): UseEventsDataReturn {
   const eventsRepository = useEventsRepository();
+  const { showNotification } = useContext(NotificationContext)
+
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -24,6 +27,7 @@ export function useEventsData(): UseEventsDataReturn {
       setError(null);
       const data = await eventsRepository.getEvents();
       setEvents(data);
+      showNotification('info', 'Zaladowano nowe wydarzenia');
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Unknown error'));
       console.error('Error fetching events:', err);
