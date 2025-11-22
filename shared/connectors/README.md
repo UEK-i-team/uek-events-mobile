@@ -13,6 +13,9 @@ shared/connectors/
 │   └── eventsRepository.ts
 ├── repositoriesMocks/          # Mockowane repozytoria
 │   └── eventsRepository.ts
+├── services/                   # Serwisy (cache, etc.)
+│   ├── cache-service.ts
+│   └── index.ts
 ├── types/                      # TypeScript typy i interfejsy
 │   └── index.ts
 ├── http-connector.ts          # Bazowa klasa HTTP z Axios
@@ -122,24 +125,152 @@ if (isMockEnabled) {
 
 ### Metody EventsRepository
 
-#### `getEvents(lastEventDate?: number | null): Promise<Event[]>`
+#### `getEvents(since?: string | null, useCache?: boolean): Promise<Event[]>`
 
-Pobiera eventy z opcjonalnym filtrem.
+Pobiera eventy z opcjonalnym filtrem `since` w formacie ISO 8601. **Automatycznie zapisuje pobrane dane w pamięci urządzenia** i używa cache przy braku połączenia.
 
 **Parametry:**
-- `lastEventDate` (opcjonalny) - Timestamp ostatniego eventu lub null
+- `since` (opcjonalny) - ISO 8601 timestamp (np. `'2024-11-22T10:30:00Z'`) - pobierz tylko nowsze eventy
+- `useCache` (opcjonalny, domyślnie `true`) - Czy użyć cache przy braku połączenia
 
 **Przykłady:**
 ```tsx
-// Wszystkie eventy
+// Wszystkie eventy (zapisywane w cache)
 const events = await eventsRepo.getEvents();
 
-// Eventy po określonej dacie
-const newEvents = await eventsRepo.getEvents(1699999999000);
+// Tylko eventy nowsze niż określona data (dodawane do cache)
+const newEvents = await eventsRepo.getEvents('2024-11-22T10:30:00Z');
 
-// Explicite bez filtra
-const allEvents = await eventsRepo.getEvents(null);
+// Pobierz bez używania cache (wymusza błąd przy braku połączenia)
+const freshEvents = await eventsRepo.getEvents(null, false);
+
+// Automatyczne odświeżanie - pobierz od najnowszego w cache
+import { cacheService } from '@/shared/connectors';
+const newestDate = await cacheService.getNewestEventDate();
+if (newestDate) {
+  const freshEvents = await eventsRepo.getEvents(newestDate);
+}
 ```
+
+#### `clearCache(): Promise<void>`
+
+Czyści cache eventów z pamięci urządzenia.
+
+```tsx
+await eventsRepo.clearCache();
+```
+
+#### `getCacheInfo(): Promise<CacheInfo>`
+
+Pobiera informacje o cache (rozmiar, liczba eventów, data ostatniego cache'owania).
+
+```tsx
+const info = await eventsRepo.getCacheInfo();
+console.log(`Cache size: ${info.size} bytes, Events: ${info.eventsCount}`);
+```
+
+## Cache Service (Automatyczne zapisywanie w pamięci)
+
+System automatycznie zapisuje pobrane eventy w pamięci urządzenia używając **Expo FileSystem**. Cache działa transparentnie - nie musisz się o niego martwić.
+
+### Jak działa?
+
+1. **Automatyczne zapisywanie**: Każde pobrane eventy są automatycznie zapisywane w pamięci urządzenia
+2. **Brak połączenia**: Gdy nie ma internetu, automatycznie ładowane są dane z cache
+3. **Paginacja**: Nowe eventy są dodawane do cache (bez duplikatów)
+4. **Przechowywanie**: Dane zapisywane są w `FileSystem.documentDirectory/cache/`
+
+### Przykłady użycia Cache Service
+
+```tsx
+import { cacheService } from '@/shared/connectors';
+
+// Ręczne zapisanie eventów
+await cacheService.saveEvents(events);
+
+// Odczytanie eventów z cache
+const cachedEvents = await cacheService.getEvents();
+
+// Dodanie nowych eventów bez duplikatów
+await cacheService.appendEvents(newEvents);
+
+// Sprawdzenie czy cache jest świeży (młodszy niż 1 godzina)
+const isFresh = await cacheService.isCacheFresh(60 * 60 * 1000);
+
+// Informacje o cache
+const info = await cacheService.getCacheInfo();
+console.log('Cache info:', {
+  exists: info.exists,
+  size: info.size,
+  eventsCount: info.eventsCount,
+  lastCached: new Date(info.lastCached!)
+});
+
+// Wyczyszczenie cache
+await cacheService.clearEventsCache();
+```
+
+### Struktura plików cache
+
+```
+FileSystem.documentDirectory/
+└── cache/
+    ├── events-cache.json      # Zapisane eventy
+    └── cache-metadata.json    # Metadata (data, liczba eventów)
+```
+
+### Zalety FileSystem vs AsyncStorage
+
+- ✅ **Większa pojemność**: Brak limitu 6MB jak w AsyncStorage
+- ✅ **Lepsze dla dużych danych**: Optymalizowane dla plików
+- ✅ **Czytelne pliki JSON**: Łatwe do debugowania
+- ✅ **Metadata**: Śledzenie kiedy cache był aktualizowany
+
+## Automatyczne odświeżanie przy wejściu do aplikacji
+
+System automatycznie pobiera nowe eventy przy każdym wejściu (focus) do aplikacji:
+
+### Hook: `useAutoRefreshEvents`
+
+```tsx
+import { useAutoRefreshEvents } from '@/shared/connectors';
+
+function MyScreen() {
+  const { 
+    events,       // Wszystkie eventy (z cache + nowe)
+    loading,      // Pierwsze ładowanie
+    isRefreshing, // Odświeżanie w tle
+    refresh,      // Ręczne odświeżenie
+    error 
+  } = useAutoRefreshEvents();
+
+  return (
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
+      }
+    >
+      {events.map(event => <EventCard key={event.id} event={event} />)}
+    </ScrollView>
+  );
+}
+```
+
+### Jak to działa?
+
+1. **Pierwszy launch**: Pobiera wszystkie eventy (bez `since`)
+2. **Kolejne wejścia**: Pobiera tylko nowe eventy używając `since=<najnowszy event z cache>`
+3. **Bez internetu**: Automatycznie ładuje z cache
+4. **App focus**: Wykrywa powrót do aplikacji i odświeża w tle
+
+### API format
+
+```
+GET /api/events/                           → Wszystkie eventy
+GET /api/events/?since=2024-11-22T10:30:00Z → Tylko nowsze niż ta data
+```
+
+Więcej informacji w [AUTO_REFRESH_IMPLEMENTATION.md](../../AUTO_REFRESH_IMPLEMENTATION.md).
 
 ## Tworzenie własnych repozytoriów
 

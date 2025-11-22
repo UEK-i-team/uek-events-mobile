@@ -29,6 +29,8 @@ export interface Event {
   organizerDetails?: string;
   originalLink?: string; // link do oryginalnego wydarzenia
   cardColor?: string; // kolor tła karty
+  createdAt?: string; // ISO 8601 timestamp utworzenia eventu (np. '2024-11-22T10:30:00Z')
+  eventDateStart?: string; // ISO 8601 timestamp rozpoczęcia eventu (do sortowania)
 }
 
 export interface FilterOption {

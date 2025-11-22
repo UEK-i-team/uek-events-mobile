@@ -1,7 +1,7 @@
 import { NotificationContext } from '@/features/notifications/contexts';
-import { useEventsRepository } from '@/shared/connectors';
+import { useAutoRefreshEvents } from '@/shared/connectors';
 import { Event } from '@/shared/types/event';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 
 interface UseEventsDataReturn {
   events: Event[];
@@ -12,39 +12,41 @@ interface UseEventsDataReturn {
 
 /**
  * Hook do pobierania eventów z repozytorium
+ * Z automatycznym odświeżaniem przy wejściu do aplikacji
  */
 export function useEventsData(): UseEventsDataReturn {
-  const eventsRepository = useEventsRepository();
-  const { showNotification } = useContext(NotificationContext)
+  const { showNotification } = useContext(NotificationContext);
+  const hasShownInitialNotification = useRef(false);
+  const previousEventsLength = useRef(0);
 
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  // Użyj hooka z automatycznym odświeżaniem
+  const { events, loading, error, refresh, refetch } = useAutoRefreshEvents();
 
-  const fetchEvents = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await eventsRepository.getEvents();
-      setEvents(data);
-      showNotification('info', 'Zaladowano nowe wydarzenia');
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      console.error('Error fetching events:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Pokaż notyfikację tylko przy nowych eventach
   useEffect(() => {
-    fetchEvents();
-  }, []);
+    if (!loading && events.length > 0) {
+      // Pierwsza notyfikacja
+      if (!hasShownInitialNotification.current) {
+        showNotification('info', 'Załadowano wydarzenia');
+        hasShownInitialNotification.current = true;
+        previousEventsLength.current = events.length;
+      }
+      // Nowe eventy dodane (refresh)
+      else if (events.length > previousEventsLength.current) {
+        const newCount = events.length - previousEventsLength.current;
+        showNotification('info', `Dodano ${newCount} nowych wydarzeń`);
+        previousEventsLength.current = events.length;
+      }
+    }
+  }, [events.length, loading, showNotification]);
 
   return {
     events,
     loading,
     error,
-    refetch: fetchEvents,
+    refetch: async () => {
+      await refetch();
+    },
   };
 }
 

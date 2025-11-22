@@ -1,4 +1,3 @@
-import { EXAMPLE_EVENTS } from '@/features/home/constants/events';
 import { useFavorites } from '@/features/saved/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
@@ -9,9 +8,10 @@ import {
   eventTagTranslations,
   eventTypeTranslations
 } from '@/shared/types/event-enums';
+import { cacheService } from '@/shared/connectors';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Image,
@@ -23,6 +23,7 @@ import {
   TouchableOpacity,
   View,
   useWindowDimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -57,15 +58,67 @@ export default function EventDetailsScreen() {
   const textColor = isDark ? Colors.dark.text : Colors.light.text;
   const cardBackgroundColor = isDark ? '#1E1E1E' : '#FFFFFF';
 
-  // Użyj lazy initialization dla state - wydarzenie zostanie znalezione tylko raz przy mount
-  const [event] = useState<Event | undefined>(() => 
-    EXAMPLE_EVENTS.find((e) => e.id === params.id)
-  );
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Załaduj event z cache
+  useEffect(() => {
+    async function loadEvent() {
+      try {
+        setLoading(true);
+        const cachedEvents = await cacheService.getEvents();
+        
+        if (cachedEvents) {
+          const foundEvent = cachedEvents.find((e) => e.id === params.id);
+          setEvent(foundEvent || null);
+        } else {
+          setEvent(null);
+        }
+      } catch (error) {
+        console.error('Error loading event:', error);
+        setEvent(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadEvent();
+  }, [params.id]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent, { backgroundColor }]}>
+        <ActivityIndicator size="large" color={isDark ? '#64B5F6' : '#1976D2'} />
+        <ThemedText style={{ marginTop: 16, color: textColor }}>
+          Ładowanie wydarzenia...
+        </ThemedText>
+      </View>
+    );
+  }
+
+  // Event not found
   if (!event) {
     return (
-      <View style={[styles.container, { backgroundColor }]}>
-        <ThemedText>Nie znaleziono wydarzenia</ThemedText>
+      <View style={[styles.container, styles.centerContent, { backgroundColor }]}>
+        <MaterialIcons 
+          name="event-busy" 
+          size={64} 
+          color={isDark ? '#666666' : '#CCCCCC'} 
+          style={{ marginBottom: 16 }}
+        />
+        <ThemedText style={[styles.notFoundTitle, { color: textColor }]}>
+          Nie znaleziono wydarzenia
+        </ThemedText>
+        <ThemedText style={[styles.notFoundText, { color: isDark ? '#CCCCCC' : '#666666' }]}>
+          To wydarzenie mogło zostać usunięte lub nie istnieje.
+        </ThemedText>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          activeOpacity={0.8}>
+          <ThemedText style={styles.backButtonText}>Wróć do listy</ThemedText>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -385,6 +438,34 @@ export default function EventDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  notFoundTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  notFoundText: {
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  backButton: {
+    backgroundColor: '#0066FF',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  backButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,

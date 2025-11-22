@@ -1,13 +1,15 @@
-import type { Event, IEventsRepository } from '../types';
 import {
   EventCategory,
   EventLocation,
   EventTag,
   EventType,
 } from '@/shared/types/event-enums';
+import { cacheService } from '../services/cache-service';
+import type { Event, IEventsRepository } from '../types';
 
 /**
  * Mock Events Repository - zwraca zmockowane dane bez połączenia z API
+ * Z automatycznym cache'owaniem w pamięci urządzenia
  */
 export class MockEventsRepository implements IEventsRepository {
   private static instance: MockEventsRepository;
@@ -28,10 +30,15 @@ export class MockEventsRepository implements IEventsRepository {
 
   /**
    * Mock getEvents - zwraca przykładowe eventy
-   * @param lastEventDate - Timestamp ostatniego eventu lub null (nie używany w mocku)
+   * Z automatycznym cache'owaniem w pamięci urządzenia
+   * @param since - ISO 8601 timestamp (np. '2024-11-22T10:30:00Z') - pobierz tylko nowsze eventy
+   * @param useCache - Czy użyć cache (domyślnie true, ale ignorowany w mocku)
    */
-  public async getEvents(lastEventDate?: number | null): Promise<Event[]> {
-    console.log('🎭 Mock: Getting events with lastEventDate:', lastEventDate);
+  public async getEvents(
+    since?: string | null,
+    useCache: boolean = true
+  ): Promise<Event[]> {
+    console.log('🎭 Mock: Getting events with since:', since);
     
     // Symuluj opóźnienie sieciowe
     await this.delay(500);
@@ -67,6 +74,8 @@ export class MockEventsRepository implements IEventsRepository {
         organizerDetails: 'Koło Naukowe Informatyki',
         originalLink: 'https://uek.krakow.pl/wydarzenia/ai-machine-learning-workshop',
         cardColor: '#E8F5E9',
+        createdAt: '2024-11-20T10:00:00Z',
+        eventDateStart: '2024-11-25T18:00:00Z',
       },
       {
         id: '2',
@@ -96,6 +105,8 @@ export class MockEventsRepository implements IEventsRepository {
         organizerDetails: 'Koło Naukowe Analiz Strategicznych',
         originalLink: 'https://uek.krakow.pl/wydarzenia/spotkania-w-swiecie-biznesu',
         cardColor: '#E3F2FD',
+        createdAt: '2024-11-21T09:15:00Z',
+        eventDateStart: '2024-11-23T10:00:00Z',
       },
       {
         id: '3',
@@ -125,6 +136,8 @@ export class MockEventsRepository implements IEventsRepository {
         organizerDetails: 'Koło Naukowe Informatyki we współpracy z partnerami biznesowymi',
         originalLink: 'https://uek.krakow.pl/wydarzenia/hackathon-uek-2024',
         cardColor: '#FFF3E0',
+        createdAt: '2024-11-21T14:30:00Z',
+        eventDateStart: '2024-11-24T09:00:00Z',
       },
       {
         id: '4',
@@ -140,6 +153,8 @@ export class MockEventsRepository implements IEventsRepository {
         availableSpots: 8,
         originalLink: 'https://uek.krakow.pl/wydarzenia/warsztaty-programowania',
         cardColor: '#F3E5F5',
+        createdAt: '2024-11-22T08:00:00Z',
+        eventDateStart: '2024-12-05T14:00:00Z',
       },
       {
         id: '5',
@@ -155,16 +170,36 @@ export class MockEventsRepository implements IEventsRepository {
         isHot: true,
         originalLink: 'https://uek.krakow.pl/wydarzenia/wyklad-przyszlosc-ai',
         cardColor: '#FCE4EC',
+        createdAt: '2024-11-22T11:45:00Z',
+        eventDateStart: '2024-12-12T16:00:00Z',
       },
     ];
 
-    // Jeśli lastEventDate jest podane, filtruj eventy
-    if (lastEventDate) {
-      // Symuluj filtrowanie - zwróć tylko ostatnie 2 eventy
-      return mockEvents.slice(-2);
+    // Filtruj eventy jeśli since jest podane
+    let eventsToReturn: Event[];
+    if (since) {
+      // Symuluj filtrowanie - zwróć tylko eventy nowsze niż since
+      const sinceDate = new Date(since);
+      eventsToReturn = mockEvents.filter(event => {
+        if (!event.createdAt) return false;
+        return new Date(event.createdAt) > sinceDate;
+      });
+      
+      // Dodaj do cache (odświeżanie)
+      if (eventsToReturn.length > 0) {
+        await cacheService.appendEvents(eventsToReturn);
+        console.log(`🎭 Mock: Added ${eventsToReturn.length} new events to cache`);
+      } else {
+        console.log('🎭 Mock: No new events since', since);
+      }
+    } else {
+      eventsToReturn = mockEvents;
+      // Zapisz wszystkie eventy w cache (pierwsze pobranie)
+      await cacheService.saveEvents(eventsToReturn);
+      console.log(`🎭 Mock: Saved ${eventsToReturn.length} events to cache`);
     }
 
-    return mockEvents;
+    return eventsToReturn;
   }
 
   /**
@@ -172,6 +207,20 @@ export class MockEventsRepository implements IEventsRepository {
    */
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Wyczyść cache eventów
+   */
+  public async clearCache(): Promise<void> {
+    await cacheService.clearEventsCache();
+  }
+
+  /**
+   * Pobierz informacje o cache
+   */
+  public async getCacheInfo() {
+    return await cacheService.getCacheInfo();
   }
 }
 
