@@ -1,4 +1,5 @@
 import { useFavorites } from '@/features/saved/contexts';
+import { useViewedEvents } from '@/features/viewed';
 import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
@@ -43,7 +44,10 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { isViewed } = useViewedEvents();
   const isDark = colorScheme === 'dark';
+  
+  const viewed = isViewed(event.id);
   
   // Użyj koloru z eventu lub domyślnego
   const cardBackgroundColor = event.cardColor || (isDark ? '#1E1E1E' : '#FFFFFF');
@@ -98,6 +102,17 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
             />
           ) : (
             <View style={[styles.imagePlaceholder, { backgroundColor: isDark ? '#2A2A2A' : '#F0F0F0' }]} />
+          )}
+          
+          {/* Badge zobaczonego wydarzenia */}
+          {viewed && (
+            <View style={styles.viewedBadge}>
+              <MaterialIcons
+                name="check-circle"
+                size={16}
+                color="#4CAF50"
+              />
+            </View>
           )}
           
           {/* Etykieta HOT lub Popularne - ZAKOMENTOWANE */}
@@ -333,6 +348,22 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 12, // Zaokrąglenie placeholder (tak jak obraz)
+  },
+  viewedBadge: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 6,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   badge: {
     position: 'absolute',

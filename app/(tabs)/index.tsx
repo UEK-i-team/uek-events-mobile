@@ -1,15 +1,17 @@
+import { CaughtUpCard } from '@/features/home/components/caught-up-card';
 import { EventCard } from '@/features/home/components/event-card';
 import { FilterButton } from '@/features/home/components/filter-button';
 import { HomeHeader } from '@/features/home/components/home-header';
 import { FILTER_OPTIONS } from '@/features/home/constants/events';
-import { useEventsData, useFilteredEvents } from '@/features/home/hooks';
+import { useEventsData, useFilteredEvents, useSortedEvents } from '@/features/home/hooks';
 import { useHomeScreen } from '@/features/home/hooks/use-home-screen';
+import { useViewedEvents } from '@/features/viewed';
 import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { Event } from '@/shared/types/event';
 import React, { useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, View, ViewabilityConfig, ViewToken } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
@@ -28,12 +30,41 @@ export default function HomeScreen() {
   // Pobierz wydarzenia z repozytorium
   const { events, loading, error } = useEventsData();
   
+  // Hook do śledzenia zobaczonych eventów
+  const { markAsViewed } = useViewedEvents();
+  
   const containerRef = useRef<View>(null);
 
   // Filtruj wydarzenia według wybranego filtru
   const filteredEvents = useFilteredEvents(events, selectedFilter);
+  
+  // Sortuj wydarzenia (niezobaczone na górze)
+  const sortedEvents = useSortedEvents(filteredEvents);
 
   const [height, setHeight] = useState(0);
+  const [isSeparatorVisible, setIsSeparatorVisible] = useState(false);
+
+  // Konfiguracja śledzenia widocznych elementów
+  const viewabilityConfig = useRef<ViewabilityConfig>({
+    viewAreaCoveragePercentThreshold: 50, // 50% karty musi być widoczne
+    minimumViewTime: 500, // 500ms na ekranie = zobaczone
+  }).current;
+
+  // Callback gdy elementy stają się widoczne
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    viewableItems.forEach((item) => {
+      if (item.isViewable && item.item?.id) {
+        // Sprawdź czy to separator "Jesteś na bieżąco"
+        if (item.item.isSeparator) {
+          console.log('👀 Separator "Jesteś na bieżąco" jest widoczny!');
+          setIsSeparatorVisible(true);
+        } else {
+          // Oznacz normalne eventy jako zobaczone
+          markAsViewed(item.item.id);
+        }
+      }
+    });
+  }).current;
 
 
   const renderFilterButton = ({ item }: { item: typeof FILTER_OPTIONS[0] }) => (
@@ -45,9 +76,14 @@ export default function HomeScreen() {
   );
 
 
-  const renderEventCard = ({ item }: { item: Event }) => (
-    <EventCard event={item} cardHeight={height} />
-  );
+  const renderEventCard = ({ item }: { item: Event }) => {
+    // Sprawdź czy to separator "Jesteś na bieżąco"
+    if (item.isSeparator) {
+      return <CaughtUpCard cardHeight={height} isVisible={isSeparatorVisible} />;
+    }
+    
+    return <EventCard event={item} cardHeight={height} />;
+  };
 
   const renderLoadingState = () => (
     <View style={styles.emptyContainer}>
@@ -110,13 +146,13 @@ export default function HomeScreen() {
           renderLoadingState()
         ) : error ? (
           renderErrorState()
-        ) : filteredEvents.length === 0 ? (
+        ) : sortedEvents.length === 0 ? (
           renderEmptyState()
         ) : (
           <FlatList
             ref={flatListRef}
             bounces={true}
-            data={filteredEvents}
+            data={sortedEvents}
             renderItem={renderEventCard}
             keyExtractor={item => item.id}
             pagingEnabled
@@ -125,6 +161,8 @@ export default function HomeScreen() {
             snapToAlignment="start"
             decelerationRate="fast"
             disableIntervalMomentum={true}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
           />
         )}
       </View>

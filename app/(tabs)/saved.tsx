@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FilterButton } from '@/features/home/components/filter-button';
-import { EXAMPLE_EVENTS } from '@/features/home/constants/events';
+import { useEventsData } from '@/features/home/hooks';
 import { SavedEventCard } from '@/features/saved/components';
 import { useFavorites } from '@/features/saved/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
@@ -24,12 +24,15 @@ export default function SavedScreen() {
   const isDark = colorScheme === 'dark';
   const backgroundColor = isDark ? Colors.dark.background : Colors.light.background;
   const textColor = isDark ? Colors.dark.text : Colors.light.text;
-  const { favoriteIds, isLoading } = useFavorites();
+  const { favoriteIds, isLoading: favoritesLoading } = useFavorites();
+  const { events, loading: eventsLoading } = useEventsData();
   const [sortType, setSortType] = useState<SortType>('date-added');
+
+  const isLoading = favoritesLoading || eventsLoading;
 
   // Pobierz eventy które są w ulubionych i posortuj je
   const savedEvents = useMemo(() => {
-    const filtered = EXAMPLE_EVENTS.filter((event) => favoriteIds.includes(event.id));
+    const filtered = events.filter((event) => favoriteIds.includes(event.id));
     
     if (sortType === 'date-added') {
       // Sortuj według kolejności w favoriteIds (ostatnio dodane na górze)
@@ -42,7 +45,7 @@ export default function SavedScreen() {
       // Sortuj według daty wydarzenia (alfabetycznie na razie, można dodać parsing dat)
       return filtered.sort((a, b) => a.date.localeCompare(b.date));
     }
-  }, [favoriteIds, sortType]);
+  }, [events, favoriteIds, sortType]);
 
   // const renderSortButton = ({ item }: { item: typeof SORT_OPTIONS[0] }) => (
   //   <FilterButton
@@ -90,7 +93,8 @@ export default function SavedScreen() {
           </ThemedText>
         </View>
         <View style={styles.loadingContainer}>
-          <ThemedText style={{ color: isDark ? '#999999' : '#666666' }}>
+          <ActivityIndicator size="large" color={isDark ? '#64B5F6' : '#1976D2'} />
+          <ThemedText style={{ color: isDark ? '#999999' : '#666666', marginTop: 16 }}>
             Ładowanie...
           </ThemedText>
         </View>

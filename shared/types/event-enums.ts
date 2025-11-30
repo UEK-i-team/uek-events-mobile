@@ -11,6 +11,7 @@ export enum EventCategory {
   Social = 'SOCIAL',
   Official = 'OFFICIAL',
   Informational = 'INFORMATIONAL',
+  Business = 'BUSINESS',
 }
 
 export const eventCategoryTranslations: Record<EventCategory, string> = {
@@ -22,6 +23,7 @@ export const eventCategoryTranslations: Record<EventCategory, string> = {
   [EventCategory.Social]: 'Społeczne',
   [EventCategory.Official]: 'Oficjalne',
   [EventCategory.Informational]: 'Informacyjne',
+  [EventCategory.Business]: 'Biznesowe',
 };
 
 export enum EventLocation {
@@ -32,10 +34,10 @@ export enum EventLocation {
 }
 
 export const eventLocationTranslations: Record<EventLocation, string> = {
-  [EventLocation.OnUekCampus]: 'Na terenie UEK',
+  [EventLocation.OnUekCampus]: 'Na kampusie UEK',
   [EventLocation.Online]: 'Online',
   [EventLocation.Hybrid]: 'Hybrydowo',
-  [EventLocation.OffUekCampus]: 'Stacjonarnie poza UEK',
+  [EventLocation.OffUekCampus]: 'Poza kampusem UEK',
 };
 
 export enum EventTag {
@@ -106,6 +108,11 @@ export enum EventType {
   Volunteering = 'VOLUNTEERING',
   Ceremony = 'CEREMONY',
   AuthorMeeting = 'AUTHOR_MEETING',
+  OpenDays = 'OPEN_DAY',
+  Contest = 'CONTEST',
+  Internship = 'INTERNSHIP',
+  Consultation = 'CONSULTATION',
+  Job = 'JOB',
 }
 
 export const eventTypeTranslations: Record<EventType, string> = {
@@ -134,5 +141,42 @@ export const eventTypeTranslations: Record<EventType, string> = {
   [EventType.Volunteering]: 'Wolontariat',
   [EventType.Ceremony]: 'Uroczystość',
   [EventType.AuthorMeeting]: 'Spotkanie autorskie',
+  [EventType.OpenDays]: 'Dzień otwarty',
+  [EventType.Contest]: 'Konkurs',
+  [EventType.Internship]: 'Staż/Praktyka',
+  [EventType.Consultation]: 'Konsultacja',
+  [EventType.Job]: 'Praca',
+};
+
+export enum OrganizerType {
+  UekAuthorities = 'UEK_AUTHORITIES',
+  UekUnit = 'UEK_UNIT',
+  ScientificCircle = 'SCIENTIFIC_CIRCLE',
+  StudentOrganization = 'STUDENT_ORGANIZATION',
+  Company = 'COMPANY',
+  SocialOrganization = 'SOCIAL_ORGANIZATION',
+  PublicInstitution = 'PUBLIC_INSTITUTION',
+}
+
+export const organizerTypeTranslations: Record<OrganizerType, string> = {
+  [OrganizerType.UekAuthorities]: 'Władze UEK',
+  [OrganizerType.UekUnit]: 'Jednostka UEK',
+  [OrganizerType.ScientificCircle]: 'Koło Naukowe',
+  [OrganizerType.StudentOrganization]: 'Organizacja studencka',
+  [OrganizerType.Company]: 'Firma',
+  [OrganizerType.SocialOrganization]: 'Organizacja społeczna',
+  [OrganizerType.PublicInstitution]: 'Instytucja publiczna',
+};
+
+export enum RegistrationType {
+  RegistrationRequired = 'REGISTRATION_REQUIRED',
+  FreeEntry = 'FREE_ENTRY',
+  PaidEntry = 'PAID_ENTRY',
+}
+
+export const registrationTypeTranslations: Record<RegistrationType, string> = {
+  [RegistrationType.RegistrationRequired]: 'Wymagana rejestracja',
+  [RegistrationType.FreeEntry]: 'Wstęp wolny',
+  [RegistrationType.PaidEntry]: 'Wstęp płatny',
 };
 

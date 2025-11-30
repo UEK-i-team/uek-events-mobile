@@ -1,5 +1,6 @@
 import { useFavorites } from '@/features/saved/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
+import { cacheService } from '@/shared/connectors';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { Event } from '@/shared/types/event';
@@ -8,11 +9,11 @@ import {
   eventTagTranslations,
   eventTypeTranslations
 } from '@/shared/types/event-enums';
-import { cacheService } from '@/shared/connectors';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Linking,
@@ -23,7 +24,6 @@ import {
   TouchableOpacity,
   View,
   useWindowDimensions,
-  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -475,8 +475,9 @@ const styles = StyleSheet.create({
   },
   imageWrapper: {
     width: '100%',
-    height: 300,
     position: 'relative',
+    backgroundColor: '#fff',
+    height: 300
   },
   image: {
     width: '100%',

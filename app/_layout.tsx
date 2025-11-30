@@ -8,6 +8,7 @@ import { FiltersBottomSheet } from '@/features/filters/components/filters-bottom
 import { FiltersProvider, useFilters } from '@/features/filters/contexts/filters-context';
 import { NotificationProvider, NotificationToastContainer } from '@/features/notifications';
 import { FavoritesProvider } from '@/features/saved/contexts';
+import { ViewedEventsProvider } from '@/features/viewed';
 import { RepositoriesProvider } from '@/shared/connectors';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 
@@ -47,12 +48,14 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <RepositoriesProvider>
           <FavoritesProvider>
-            <NotificationProvider>
-              <FiltersProvider>
-                <AppContent />
-                <StatusBar style="auto" />
-              </FiltersProvider>
-            </NotificationProvider>
+            <ViewedEventsProvider>
+              <NotificationProvider>
+                <FiltersProvider>
+                  <AppContent />
+                  <StatusBar style="auto" />
+                </FiltersProvider>
+              </NotificationProvider>
+            </ViewedEventsProvider>
           </FavoritesProvider>
         </RepositoriesProvider>
       </ThemeProvider>
