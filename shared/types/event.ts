@@ -33,6 +33,8 @@ export interface Event {
   cardColor?: string; // kolor tła karty
   createdAt?: string; // ISO 8601 timestamp utworzenia eventu (np. '2024-11-22T10:30:00Z')
   eventDateStart?: string; // ISO 8601 timestamp rozpoczęcia eventu (do sortowania)
+  eventDateEnd?: string; // ISO 8601 timestamp zakończenia eventu
+  topics?: string; // Tematy/agenda wydarzenia w formacie markdown (newline-separated)
   isSeparator?: boolean; // Specjalny marker dla separatora "Jesteś na bieżąco"
 }
 

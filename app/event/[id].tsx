@@ -399,6 +399,40 @@ export default function EventDetailsScreen() {
             </View>
           )}
 
+          {/* Tematy */}
+          {event.topics && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <MaterialIcons
+                  name="subject"
+                  size={24}
+                  color={isDark ? '#64B5F6' : '#1976D2'}
+                />
+                <ThemedText style={[styles.sectionTitle, { color: textColor }]}>
+                  Tematy:
+                </ThemedText>
+              </View>
+              <View style={styles.summaryList}>
+                {event.topics
+                  .split('\n')
+                  .filter((line) => line.trim().startsWith('-'))
+                  .map((item, index) => {
+                    // Usuń "-" z początku i trim
+                    const cleanedItem = item.trim().replace(/^-\s*/, '');
+                    return (
+                      <View key={index} style={styles.summaryItem}>
+                        <View style={[styles.bullet, { backgroundColor: isDark ? '#64B5F6' : '#1976D2' }]} />
+                        <ThemedText
+                          style={[styles.summaryText, { color: isDark ? '#CCCCCC' : '#666666', flex: 1 }]}>
+                          {cleanedItem}
+                        </ThemedText>
+                      </View>
+                    );
+                  })}
+              </View>
+            </View>
+          )}
+
           {/* Organizator */}
           {event.organizer && (
             <View style={styles.section}>

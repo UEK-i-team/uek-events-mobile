@@ -29,7 +29,7 @@ export interface ApiEvent {
   organisators: string;
   organisators_category: string; // np. "EXTERNAL", "UEK"
   tags: string; // comma-separated
-  topics: string; // comma-separated
+  topics: string; // newline-separated markdown list (np. "- Punkt 1\n- Punkt 2")
   image_url: string | null;
   origin_url: string;
   availability: number | null; // liczba wolnych miejsc

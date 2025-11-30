@@ -130,7 +130,10 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
                 <TouchableOpacity
                   key={category}
                   style={styles.checkboxOption}
-                  onPress={() => toggleCategory(category)}
+                  onPress={() => {
+                    console.log('🖱️ Kliknięto na kategorię:', category, 'isSelected:', isSelected);
+                    toggleCategory(category);
+                  }}
                   activeOpacity={0.7}>
                   <View
                     style={[

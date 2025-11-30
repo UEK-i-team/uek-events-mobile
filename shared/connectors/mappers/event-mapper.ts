@@ -37,6 +37,8 @@ export class EventMapper {
       originalLink: apiEvent.origin_url,
       createdAt: apiEvent.create_date,
       eventDateStart: apiEvent.event_date_start, // ISO 8601 - do sortowania
+      eventDateEnd: apiEvent.event_date_end || undefined,
+      topics: apiEvent.topics || undefined,
       // Opcjonalne pola można dodać później
       entranceFee: undefined,
       organizerDetails: apiEvent.organisators,

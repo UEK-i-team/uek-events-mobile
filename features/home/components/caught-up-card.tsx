@@ -178,34 +178,31 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
     hasAnimated.current = true;
     console.log('🎉 Startuje animacja "Jesteś na bieżąco"!');
 
-    // Delay przed startem animacji dla lepszego efektu
-    const timer = setTimeout(() => {
-      // Animacja wejścia - energiczne pojawienie się
-      Animated.sequence([
-        // Fade in karty
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        // Wielki pop ikony
-        Animated.spring(scaleAnim, {
-          toValue: 1.2,
-          friction: 3,
-          tension: 50,
-          useNativeDriver: true,
-        }),
-        // Lekki bounce back
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 4,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }, 200); // Krótki delay - animacja wystartuje gdy card się pojawi
+    // Animacja wejścia - energiczne pojawienie się (natychmiastowy start!)
+    Animated.sequence([
+      // Fade in karty
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      // Wielki pop ikony
+      Animated.spring(scaleAnim, {
+        toValue: 1.2,
+        friction: 3,
+        tension: 50,
+        useNativeDriver: true,
+      }),
+      // Lekki bounce back
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 4,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
-    // Pulse animation - subtelny efekt "życia" dla ikony (startuje później)
+    // Pulse animation - subtelny efekt "życia" dla ikony (startuje po głównej animacji)
     const pulseTimer = setTimeout(() => {
       Animated.loop(
         Animated.sequence([
@@ -225,7 +222,7 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
       ).start();
     }, 800); // Startuje po głównej animacji
 
-    // Glow animation - pulsujący blask (startuje później)
+    // Glow animation - pulsujący blask (startuje po głównej animacji)
     const glowTimer = setTimeout(() => {
       Animated.loop(
         Animated.sequence([
@@ -263,7 +260,6 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
 
     // Cleanup timers
     return () => {
-      clearTimeout(timer);
       clearTimeout(pulseTimer);
       clearTimeout(glowTimer);
     };

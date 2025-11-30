@@ -13,20 +13,30 @@ import { useEffect, useState } from 'react';
  * więc sortowanie nie zmienia się gdy użytkownik przegląda eventy.
  * 
  * Logika sortowania:
- * 1. Niezobaczone wydarzenia na górze (sortowane po dacie wydarzenia - najbliższe najpierw)
- * 2. Zobaczone wydarzenia na dole (sortowane po dacie wydarzenia - najbliższe najpierw)
+ * 1. Niezobaczone wydarzenia na górze:
+ *    - Najpierw przyszłe/dzisiejsze (sortowane od najbliższych)
+ *    - Potem przeszłe (sortowane od najnowszych)
+ * 2. Zobaczone wydarzenia na dole (z takim samym sortowaniem jak wyżej)
  */
 export function useSortedEvents(events: Event[]): Event[] {
   const { viewedEventIds } = useViewedEvents(); // To jest "zamrożone" w kontekście
   const [sortedEvents, setSortedEvents] = useState<Event[]>([]);
 
+  // Debug: Log każdej zmiany events
+  console.log('🔄 useSortedEvents wywołany z events.length:', events.length);
+
   useEffect(() => {
-    if (events.length === 0) return;
-    
-    // Sortuj TYLKO gdy zmieniają się events (np. po załadowaniu z API)
+    // Sortuj TYLKO gdy zmieniają się events (np. po załadowaniu z API lub po filtrowaniu)
     // viewedEventIds jest stały przez całą sesję
     
     console.log('🔄 Sortowanie eventów. Total:', events.length, 'Viewed IDs:', viewedEventIds.length);
+    
+    // Jeśli events są puste (np. po filtrowaniu), zwróć pustą tablicę
+    if (events.length === 0) {
+      console.log('📭 Brak wydarzeń do sortowania - zwracam pustą tablicę');
+      setSortedEvents([]);
+      return;
+    }
     
     // 1. Rozdziel na zobaczone i niezobaczone
     const unseen = events.filter((e) => !viewedEventIds.includes(e.id));
@@ -34,18 +44,49 @@ export function useSortedEvents(events: Event[]): Event[] {
 
     console.log('📊 Niezobaczone:', unseen.length, 'Zobaczone:', seen.length);
 
-    // Helper do sortowania po dacie wydarzenia
-    const sortByEventDate = (a: Event, b: Event) => {
-      const dateA = new Date(a.eventDateStart || a.date).getTime();
-      const dateB = new Date(b.eventDateStart || b.date).getTime();
-      return dateA - dateB;
+    // Helper do sortowania wydarzeń z priorytetem dla przyszłych/dzisiejszych
+    const sortWithFuturePriority = (events: Event[]) => {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0); // Ustawienie na początek dzisiejszego dnia
+      
+      // Rozdziel na przyszłe/dzisiejsze i przeszłe
+      const futureEvents: Event[] = [];
+      const pastEvents: Event[] = [];
+      
+      events.forEach((event) => {
+        const eventDate = new Date(event.eventDateStart || event.date);
+        eventDate.setHours(0, 0, 0, 0); // Porównujemy tylko daty, bez godzin
+        
+        if (eventDate >= now) {
+          futureEvents.push(event);
+        } else {
+          pastEvents.push(event);
+        }
+      });
+      
+      // Sortuj przyszłe/dzisiejsze rosnąco (najbliższe najpierw)
+      futureEvents.sort((a, b) => {
+        const dateA = new Date(a.eventDateStart || a.date).getTime();
+        const dateB = new Date(b.eventDateStart || b.date).getTime();
+        return dateA - dateB;
+      });
+      
+      // Sortuj przeszłe malejąco (najnowsze z przeszłości najpierw)
+      pastEvents.sort((a, b) => {
+        const dateA = new Date(a.eventDateStart || a.date).getTime();
+        const dateB = new Date(b.eventDateStart || b.date).getTime();
+        return dateB - dateA;
+      });
+      
+      // Zwróć: najpierw przyszłe/dzisiejsze, potem przeszłe
+      return [...futureEvents, ...pastEvents];
     };
 
-    // 2. Sortuj niezobaczone po dacie eventu (najbliższe najpierw)
-    const sortedUnseen = unseen.sort(sortByEventDate);
+    // 2. Sortuj niezobaczone z priorytetem dla przyszłych
+    const sortedUnseen = sortWithFuturePriority(unseen);
 
-    // 3. Sortuj zobaczone po dacie eventu (najbliższe najpierw)
-    const sortedSeen = seen.sort(sortByEventDate);
+    // 3. Sortuj zobaczone z priorytetem dla przyszłych
+    const sortedSeen = sortWithFuturePriority(seen);
 
     // 4. Jeśli są jakieś zobaczone eventy, dodaj separator "Jesteś na bieżąco"
     let result: Event[];

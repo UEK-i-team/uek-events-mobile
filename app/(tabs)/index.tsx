@@ -6,6 +6,7 @@ import { FILTER_OPTIONS } from '@/features/home/constants/events';
 import { useEventsData, useFilteredEvents, useSortedEvents } from '@/features/home/hooks';
 import { useHomeScreen } from '@/features/home/hooks/use-home-screen';
 import { useViewedEvents } from '@/features/viewed';
+import { useAppliedFilters } from '@/features/filters/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
@@ -33,13 +34,26 @@ export default function HomeScreen() {
   // Hook do śledzenia zobaczonych eventów
   const { markAsViewed } = useViewedEvents();
   
+  // Hook do sprawdzenia aktywnych filtrów
+  const appliedFilters = useAppliedFilters();
+  
   const containerRef = useRef<View>(null);
 
   // Filtruj wydarzenia według wybranego filtru
   const filteredEvents = useFilteredEvents(events, selectedFilter);
+  console.log('🏠 HomeScreen - filteredEvents.length:', filteredEvents.length);
   
   // Sortuj wydarzenia (niezobaczone na górze)
   const sortedEvents = useSortedEvents(filteredEvents);
+  console.log('🏠 HomeScreen - sortedEvents.length:', sortedEvents.length);
+  
+  // Sprawdź czy są aktywne jakieś filtry
+  const hasActiveFilters = 
+    selectedFilter !== null ||
+    appliedFilters.appliedCategories.length > 0 ||
+    appliedFilters.appliedLocations.length > 0 ||
+    appliedFilters.appliedTags.length > 0;
+  console.log('🏠 HomeScreen - hasActiveFilters:', hasActiveFilters, 'categories:', appliedFilters.appliedCategories.length);
 
   const [height, setHeight] = useState(0);
   const [isSeparatorVisible, setIsSeparatorVisible] = useState(false);
@@ -105,13 +119,25 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <ThemedText style={[styles.emptyText, { color: isDark ? '#999999' : '#666666' }]}>
-        Brak wydarzeń spełniających wybrane kryteria
-      </ThemedText>
-    </View>
-  );
+  const renderEmptyState = () => {
+    // Rozróżnij między brakiem wydarzeń a brakiem wyników filtrowania
+    const message = hasActiveFilters && events.length > 0
+      ? 'Brak wydarzeń spełniających wybrane kryteria'
+      : 'Brak dostępnych wydarzeń';
+    
+    return (
+      <View style={styles.emptyContainer}>
+        <ThemedText style={[styles.emptyText, { color: isDark ? '#999999' : '#666666' }]}>
+          {message}
+        </ThemedText>
+        {hasActiveFilters && events.length > 0 && (
+          <ThemedText style={[styles.emptySubtext, { color: isDark ? '#666666' : '#999999', marginTop: 8 }]}>
+            Spróbuj zmienić filtry lub zakres czasowy
+          </ThemedText>
+        )}
+      </View>
+    );
+  };
   
   return (
     <SafeAreaView
@@ -198,5 +224,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

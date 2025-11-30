@@ -213,10 +213,14 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
                   color={iconColor}
                 />
                 <ThemedText
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                   style={[
                     styles.detailText,
                     {
                       color: secondaryTextColor,
+                      flex: 1,
+                      maxWidth: '90%'
                     },
                   ]}>
                   {event.location}
@@ -296,6 +300,8 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
             {/* Organizator */}
             {event.organizer && (
               <ThemedText
+                numberOfLines={1}
+                ellipsizeMode="tail"
                 style={[
                   styles.organizer,
                   {
@@ -416,6 +422,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flexShrink: 1,
+    width: '100%',
   },
   detailText: {
     fontSize: 15,
@@ -452,5 +460,6 @@ const styles = StyleSheet.create({
   organizer: {
     fontSize: 14,
     marginTop: 4,
+    width: '100%',
   },
 });

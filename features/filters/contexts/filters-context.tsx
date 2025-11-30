@@ -41,12 +41,16 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleCategory = (category: EventCategory) => {
+    console.log('🎚️ toggleCategory wywołane:', category);
     setSelectedCategories(prev => {
       const newCategories = prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category];
+      console.log('📝 selectedCategories przed:', prev);
+      console.log('📝 selectedCategories po:', newCategories);
       // Automatycznie zapisz filtry
       setAppliedCategories(newCategories);
+      console.log('✅ appliedCategories ustawione na:', newCategories);
       return newCategories;
     });
   };
@@ -89,6 +93,11 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     setAppliedTags([...selectedTags]);
     closeFilters();
   };
+
+  // Debug: log zmian w appliedCategories
+  React.useEffect(() => {
+    console.log('🔄 appliedCategories zmieniło się:', appliedCategories);
+  }, [appliedCategories]);
 
   return (
     <FiltersContext.Provider

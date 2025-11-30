@@ -7,6 +7,7 @@ interface FavoritesContextType {
   favoriteIds: string[];
   isFavorite: (eventId: string) => boolean;
   toggleFavorite: (eventId: string) => Promise<void>;
+  clearFavorites: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -59,12 +60,18 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const clearFavorites = useCallback(async () => {
+    setFavoriteIds([]);
+    await saveFavorites([]);
+  }, []);
+
   return (
     <FavoritesContext.Provider
       value={{
         favoriteIds,
         isFavorite,
         toggleFavorite,
+        clearFavorites,
         isLoading,
       }}>
       {children}

@@ -1,11 +1,13 @@
 import { Alert, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useFavorites } from '@/features/saved/contexts';
 import { useViewedEvents } from '@/features/viewed';
 import { ExternalLink } from '@/shared/components/external-link';
 import { ThemedText } from '@/shared/components/themed-text';
 import { ThemedView } from '@/shared/components/themed-view';
 import { IconSymbol } from '@/shared/components/ui/icon-symbol';
+import { cacheService } from '@/shared/connectors/services';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -17,22 +19,33 @@ export default function InfoScreen() {
   const textColor = isDark ? Colors.dark.text : Colors.light.text;
   
   const { clearViewed } = useViewedEvents();
+  const { clearFavorites } = useFavorites();
 
   const handleClearMemory = () => {
     Alert.alert(
-      'Wyczyść pamięć aplikacji',
-      'Czy na pewno chcesz usunąć historię zobaczonych wydarzeń? Ta operacja nie może być cofnięta.',
+      'Wyczyść wszystkie dane aplikacji',
+      'Czy na pewno chcesz usunąć wszystkie lokalne dane aplikacji?\n\nZostaną usunięte:\n• Historia zobaczonych wydarzeń\n• Zapisane ulubione wydarzenia\n• Cache wydarzeń\n\nTa operacja nie może być cofnięta.',
       [
         {
           text: 'Anuluj',
           style: 'cancel',
         },
         {
-          text: 'Wyczyść',
+          text: 'Wyczyść wszystko',
           style: 'destructive',
           onPress: async () => {
-            await clearViewed();
-            Alert.alert('Sukces', 'Historia zobaczonych wydarzeń została wyczyszczona.');
+            try {
+              // Wyczyść wszystko równolegle
+              await Promise.all([
+                clearViewed(),
+                clearFavorites(),
+                cacheService.clearEventsCache(),
+              ]);
+              Alert.alert('Sukces', 'Wszystkie lokalne dane aplikacji zostały wyczyszczone.');
+            } catch (error) {
+              console.error('Błąd podczas czyszczenia danych:', error);
+              Alert.alert('Błąd', 'Wystąpił problem podczas czyszczenia danych.');
+            }
           },
         },
       ]
@@ -104,8 +117,7 @@ export default function InfoScreen() {
             style={[
               styles.clearButton,
               {
-                backgroundColor: isDark ? 'rgba(244, 67, 54, 0.15)' : '#FFEBEE',
-                borderColor: isDark ? 'rgba(244, 67, 54, 0.3)' : '#FFCDD2',
+                borderColor: isDark ? 'rgba(43, 37, 37, 0.3)' : '#FFCDD2',
               }
             ]}
             activeOpacity={0.7}>
@@ -117,10 +129,10 @@ export default function InfoScreen() {
               />
               <ThemedView style={styles.clearButtonTextContainer}>
                 <ThemedText style={[styles.clearButtonTitle, { color: isDark ? '#EF5350' : '#D32F2F' }]}>
-                  Wyczyść historię zobaczonych
+                  Wyczyść wszystkie dane
                 </ThemedText>
                 <ThemedText style={[styles.clearButtonDescription, { color: isDark ? '#999999' : '#666666' }]}>
-                  Usuń pamięć o zobaczonych wydarzeniach
+                  Usuń historię, ulubione i cache
                 </ThemedText>
               </ThemedView>
             </ThemedView>

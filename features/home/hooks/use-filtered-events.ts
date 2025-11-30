@@ -7,18 +7,38 @@ import { useMemo } from 'react';
  */
 export function useFilteredEvents(events: Event[], selectedFilter: FilterId): Event[] {
   const appliedFilters = useAppliedFilters();
-  const categories = appliedFilters?.appliedCategories || [];
-  const locations = appliedFilters?.appliedLocations || [];
-  const tags = appliedFilters?.appliedTags || [];
+  
+  // Użyj bezpośrednio wartości z appliedFilters
+  const categories = appliedFilters.appliedCategories;
+  const locations = appliedFilters.appliedLocations;
+  const tags = appliedFilters.appliedTags;
+
+  // Stwórz klucze do dependencies - używamy JSON.stringify aby React wykrywał zmiany również dla pustych tablic
+  const categoriesKey = JSON.stringify(categories);
+  const locationsKey = JSON.stringify(locations);
+  const tagsKey = JSON.stringify(tags);
+
+  console.log('🔍 useFilteredEvents - filtry:', {
+    categories,
+    locations,
+    tags,
+    categoriesKey,
+    locationsKey,
+    tagsKey,
+    eventsCount: events.length,
+  });
 
   return useMemo(() => {
+    console.log('♻️ useMemo PRZELICZA się - filtry się zmieniły!');
     let filtered = events;
 
     // Filtrowanie po kategoriach
     if (categories && categories.length > 0) {
+      console.log('📊 Filtrowanie po kategoriach:', categories);
       filtered = filtered.filter(
         (event) => event.eventCategory && categories.includes(event.eventCategory)
       );
+      console.log(`✅ Po filtrowaniu kategorii: ${filtered.length} z ${events.length} wydarzeń`);
     }
 
     // Filtrowanie po lokalizacjach
@@ -117,6 +137,6 @@ export function useFilteredEvents(events: Event[], selectedFilter: FilterId): Ev
     };
 
     return filtered.filter(filterByDate);
-  }, [events, selectedFilter, categories, locations, tags]);
+  }, [events, selectedFilter, categoriesKey, locationsKey, tagsKey]);
 }
 

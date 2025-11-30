@@ -129,6 +129,56 @@ export const EXAMPLE_EVENTS: Event[] = [
     originalLink: 'https://uek.krakow.pl/wydarzenia/wyklad-przyszlosc-ai',
     cardColor: '#FCE4EC', // Jasny różowy
   },
+  {
+    id: '6',
+    title: 'Turniej Piłki Nożnej UEK',
+    description: 'Coroczny turniej piłki nożnej dla studentów UEK. Zgłoś swoją drużynę!',
+    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800',
+    date: '8 gru',
+    time: '10:00',
+    location: 'Orlik UEK',
+    tags: [EventTag.Health, EventTag.PersonalDevelopment],
+    eventType: EventType.Tournament,
+    eventCategory: EventCategory.Sports,
+    eventLocation: EventLocation.OnUekCampus,
+    entranceFee: 'Wstęp wolny',
+    requiresRegistration: true,
+    registeredCount: 8,
+    maxParticipants: 12,
+    summary: [
+      'Turniej piłki nożnej dla wszystkich studentów',
+      'Drużyny 5-osobowe + bramkarz',
+      'Nagrody dla zwycięzców',
+      'Profesjonalny sędzia',
+      'Zapewnione piłki i sprzęt',
+    ],
+    organizerDetails: 'Akademicki Związek Sportowy UEK',
+    originalLink: 'https://uek.krakow.pl/wydarzenia/turniej-pilki-noznej',
+    cardColor: '#E1F5FE', // Jasny niebieski
+  },
+  {
+    id: '7',
+    title: 'Zajęcia Jogi dla Początkujących',
+    description: 'Darmowe zajęcia jogi dla studentów. Relaks i rozciąganie po ciężkim dniu nauki.',
+    date: '15 gru',
+    time: '18:00',
+    location: 'Sala gimnastyczna - Budynek C',
+    tags: [EventTag.Health, EventTag.PersonalDevelopment],
+    eventType: EventType.SportsClass,
+    eventCategory: EventCategory.Sports,
+    eventLocation: EventLocation.OnUekCampus,
+    entranceFee: 'Wstęp wolny',
+    requiresRegistration: false,
+    summary: [
+      'Zajęcia dla początkujących - nie potrzebujesz doświadczenia',
+      'Mata do jogi zapewniona',
+      'Instruktor z certyfikatem',
+      'Techniki oddechowe i relaksacyjne',
+    ],
+    organizerDetails: 'Koło Naukowe Zdrowego Stylu Życia',
+    originalLink: 'https://uek.krakow.pl/wydarzenia/joga-dla-poczatkujacych',
+    cardColor: '#F1F8E9', // Jasny zielony
+  },
 ];
 
 /**
