@@ -23,7 +23,6 @@ const OrbitingParticle = ({ index, radius, duration, startAnimation }: { index: 
     }
 
     hasStarted.current = true;
-    console.log(`🌍 Startuje orbiting particle ${index + 1}`);
 
     // Fade in
     Animated.timing(opacity, {
@@ -82,7 +81,6 @@ const BurstParticle = ({ angle, delay, startAnimation }: { angle: number; delay:
     }
 
     hasStarted.current = true;
-    console.log(`💥 Startuje burst particle (angle: ${Math.round(angle * 180 / Math.PI)}°)`);
 
     const distance = 80;
     const endX = Math.cos(angle) * distance;
@@ -176,7 +174,6 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
     }
 
     hasAnimated.current = true;
-    console.log('🎉 Startuje animacja "Jesteś na bieżąco"!');
 
     // Animacja wejścia - energiczne pojawienie się (natychmiastowy start!)
     Animated.sequence([

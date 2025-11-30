@@ -65,7 +65,6 @@ export class HttpConnector {
     this.axiosInstance.interceptors.request.use(
       (config) => {
         // Możesz tu dodać np. tokeny autoryzacji
-        console.log(`🚀 Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
@@ -77,7 +76,6 @@ export class HttpConnector {
     // Response interceptor z retry logic
     this.axiosInstance.interceptors.response.use(
       (response) => {
-        console.log(`✅ Response: ${response.status} ${response.config.url}`);
         return response;
       },
       async (error: AxiosError) => {

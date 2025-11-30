@@ -32,14 +32,7 @@ export function RepositoriesProvider({ children }: RepositoriesProviderProps) {
     // W Expo SDK 50+ zmienne z prefiksem EXPO_PUBLIC_ są automatycznie dostępne
     const isMockEnabled = process.env.EXPO_PUBLIC_IS_API_MOCK_ENABLED === 'true';
     
-    console.log('EXPO_PUBLIC_IS_API_MOCK_ENABLED from .env:', process.env.EXPO_PUBLIC_IS_API_MOCK_ENABLED);
-    console.log('isMockEnabled:', isMockEnabled);
 
-    if (isMockEnabled) {
-      console.log('🎭 Using MOCKED repositories');
-    } else {
-      console.log('🌐 Using REAL API repositories');
-    }
 
     return {
       eventsRepository: isMockEnabled ? mockEventsRepository : eventsRepository,

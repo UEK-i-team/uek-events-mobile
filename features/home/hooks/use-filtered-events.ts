@@ -18,27 +18,15 @@ export function useFilteredEvents(events: Event[], selectedFilter: FilterId): Ev
   const locationsKey = JSON.stringify(locations);
   const tagsKey = JSON.stringify(tags);
 
-  console.log('🔍 useFilteredEvents - filtry:', {
-    categories,
-    locations,
-    tags,
-    categoriesKey,
-    locationsKey,
-    tagsKey,
-    eventsCount: events.length,
-  });
 
   return useMemo(() => {
-    console.log('♻️ useMemo PRZELICZA się - filtry się zmieniły!');
     let filtered = events;
 
     // Filtrowanie po kategoriach
     if (categories && categories.length > 0) {
-      console.log('📊 Filtrowanie po kategoriach:', categories);
       filtered = filtered.filter(
         (event) => event.eventCategory && categories.includes(event.eventCategory)
       );
-      console.log(`✅ Po filtrowaniu kategorii: ${filtered.length} z ${events.length} wydarzeń`);
     }
 
     // Filtrowanie po lokalizacjach

@@ -48,7 +48,6 @@ export function ViewedEventsProvider({ children }: { children: React.ReactNode }
   const handleAppStateChange = async (nextAppState: AppStateStatus) => {
     // Gdy aplikacja wraca na pierwszy plan - odśwież dane (ale bez zmiany initialViewedIds!)
     if (nextAppState === 'active' && isInitialLoadDone) {
-      console.log('🔄 Aplikacja aktywna - odświeżam dane zobaczonych eventów');
       await loadViewedEvents(false); // false = nie zmieniaj initialViewedIds
     }
   };
@@ -64,13 +63,10 @@ export function ViewedEventsProvider({ children }: { children: React.ReactNode }
         if (isInitialLoad) {
           const ids = parsed.map((item) => item.eventId);
           setInitialViewedIds(ids);
-          console.log('📋 Początkowe zobaczone wydarzenia:', ids.length, 'IDs:', ids);
           setIsInitialLoadDone(true);
         } else {
-          console.log('🔄 Odświeżono dane zobaczonych (bez zmiany sortowania):', parsed.length);
         }
       } else {
-        console.log('Brak zapisanych zobaczonych wydarzeń');
         if (isInitialLoad) {
           setIsInitialLoadDone(true);
         }
@@ -111,13 +107,11 @@ export function ViewedEventsProvider({ children }: { children: React.ReactNode }
       
       if (stored) {
         currentData = JSON.parse(stored) as ViewedEventData[];
-        console.log('📥 Wczytano aktualne dane z AsyncStorage:', currentData.length);
       }
       
       // Sprawdź czy już nie jest oznaczony w danych z AsyncStorage
       const alreadyViewed = currentData.some((item) => item.eventId === eventId);
       if (alreadyViewed) {
-        console.log('👁️ Event już zobaczony:', eventId);
         
         // Zaktualizuj stan lokalny jeśli się różni
         if (!viewedEventsData.some((item) => item.eventId === eventId)) {
@@ -126,7 +120,6 @@ export function ViewedEventsProvider({ children }: { children: React.ReactNode }
         return;
       }
 
-      console.log('👀 Oznaczam event jako zobaczony:', eventId);
 
       const newViewedData: ViewedEventData = {
         eventId,
@@ -142,7 +135,6 @@ export function ViewedEventsProvider({ children }: { children: React.ReactNode }
       // Zapisz do AsyncStorage
       await saveViewedEvents(updatedData);
       
-      console.log('✅ Zapisano zobaczony event. Total zobaczonych:', updatedData.length);
     } catch (error) {
       console.error('❌ Błąd podczas oznaczania eventu jako zobaczony:', error);
     }

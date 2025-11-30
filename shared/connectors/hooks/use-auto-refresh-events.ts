@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { useEventsRepository } from '../context';
 import { cacheService } from '../services/cache-service';
@@ -18,6 +18,9 @@ export function useAutoRefreshEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [newEventsCount, setNewEventsCount] = useState(0); // Nowe: licznik nowych eventów
+  const [wasRefreshed, setWasRefreshed] = useState(false); // Flaga czy był refresh
+  const [refreshCounter, setRefreshCounter] = useState(0); // Licznik refreshy
   const appState = useRef(AppState.currentState);
   const isInitialMount = useRef(true);
 
@@ -47,6 +50,7 @@ export function useAutoRefreshEvents() {
    * @param useSince - Czy użyć since (najnowszy event z cache)
    */
   const fetchEvents = useCallback(async (useSince: boolean = false) => {
+    useSince = true;
     try {
       if (useSince) {
         setIsRefreshing(true);
@@ -62,17 +66,26 @@ export function useAutoRefreshEvents() {
         const newestDate = await cacheService.getNewestEventDate();
         if (newestDate) {
           sinceParam = newestDate;
-          console.log('🔄 Refreshing events since:', sinceParam);
-        } else {
-          console.log('📭 No cached events found, fetching all');
-        }
-      } else {
-        console.log('📥 Initial fetch - getting all events');
-      }
-
+        } 
+      } 
       // Pobierz eventy (z since lub bez)
       // Repository automatycznie zapisze je w cache
+      console.log('rar', sinceParam)
       const newEvents = await eventsRepo.getEvents(sinceParam);
+
+      // Zapisz liczbę nowych eventów
+      if (useSince) {
+        setNewEventsCount(newEvents.length);
+        setWasRefreshed(true); // Oznacz że był refresh
+        setRefreshCounter(prev => {
+          const newCounter = prev + 1;
+          return newCounter;
+        }); // Zwiększ licznik refreshy
+      } else {
+        setNewEventsCount(0); // Przy pierwszym załadowaniu nie pokazuj jako nowe
+        setWasRefreshed(false);
+        setRefreshCounter(0); // Reset licznika przy initial load
+      }
 
       // ZAWSZE pobierz wszystkie eventy z cache i posortuj
       const allEventsFromCache = await cacheService.getEvents();
@@ -82,15 +95,10 @@ export function useAutoRefreshEvents() {
         const sortedEvents = sortEventsByStartDate(allEventsFromCache);
         setEvents(sortedEvents);
         
-        if (sinceParam) {
-          console.log(`✅ Refreshed: ${newEvents.length} new events added, total: ${sortedEvents.length}`);
-        } else {
-          console.log(`✅ Loaded ${sortedEvents.length} events`);
-        }
+        
       } else {
         // Brak cache (nie powinno się zdarzyć po getEvents, ale dla bezpieczeństwa)
         setEvents(newEvents);
-        console.log(`✅ Loaded ${newEvents.length} events (no cache)`);
       }
     } catch (err) {
       console.error('❌ Error fetching events:', err);
@@ -102,7 +110,6 @@ export function useAutoRefreshEvents() {
         if (cachedEvents && cachedEvents.length > 0) {
           const sortedEvents = sortEventsByStartDate(cachedEvents);
           setEvents(sortedEvents);
-          console.log('📱 Loaded from cache due to error');
         }
       } catch (cacheErr) {
         console.error('Failed to load from cache:', cacheErr);
@@ -136,7 +143,6 @@ export function useAutoRefreshEvents() {
         appState.current.match(/inactive|background/) &&
         nextAppState === 'active'
       ) {
-        console.log('📱 App came to foreground - refreshing events');
         // Użyj since bo to odświeżanie
         fetchEvents(true);
       }
@@ -156,6 +162,9 @@ export function useAutoRefreshEvents() {
     isRefreshing,
     refresh,
     refetch: () => fetchEvents(false), // Wymuś pełne pobranie
+    newEventsCount, // Nowe: licznik nowych eventów
+    wasRefreshed, // Flaga czy był refresh
+    refreshCounter, // Licznik refreshy
   };
 }
 

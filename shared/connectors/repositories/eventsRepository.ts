@@ -41,21 +41,31 @@ export class EventsRepository extends HttpConnector implements IEventsRepository
     since?: string | null,
     useCache: boolean = true
   ): Promise<Event[]> {
+    console.log('tutaj', since)
     try {
       let url = 'api/events';
       
       // Dodaj query param jeśli since jest podane
       if (since) {
         url += `?since=${encodeURIComponent(since)}`;
+        console.log(`📡 API REQUEST: GET ${url} (refresh - pobieranie nowych eventów od ${since})`);
+      } else {
+        console.log(`📡 API REQUEST: GET ${url} (initial load - pobieranie wszystkich eventów)`);
       }
       
       // Pobierz dane z API w formacie ApiEventsResponse
       const response = await this.get<ApiEventsResponse>(url);
       const apiResponse = response.data;
       
+      console.log(`📊 API RESPONSE: count=${apiResponse.count}, data.length=${apiResponse.data?.length || 0}`);
+      
       // Sprawdź czy są jakieś dane
       if (apiResponse.count === 0 || !apiResponse.data || apiResponse.data.length === 0) {
-        console.log('ℹ️ No new events from API');
+        if (since) {
+          console.log(`ℹ️ API: Brak nowych eventów (since=${since})`);
+        } else {
+          console.log('ℹ️ API: Brak eventów w odpowiedzi');
+        }
         
         // Jeśli to odświeżanie (z since), zwróć pustą tablicę
         if (since) {
@@ -66,7 +76,7 @@ export class EventsRepository extends HttpConnector implements IEventsRepository
         if (useCache) {
           const cachedEvents = await cacheService.getEvents();
           if (cachedEvents && cachedEvents.length > 0) {
-            console.log('📦 No new events, returning cache');
+            console.log('📦 Brak eventów z API, zwracam cache:', cachedEvents.length, 'eventów');
             return cachedEvents;
           }
         }
@@ -76,7 +86,12 @@ export class EventsRepository extends HttpConnector implements IEventsRepository
       
       // Konwertuj ApiEvent[] na Event[] używając mappera
       const events = EventMapper.toEvents(apiResponse.data);
-      console.log(`✅ Fetched ${events.length} events from API`);
+      
+      if (since) {
+        console.log(`✅ API: Pobrano ${events.length} NOWYCH eventów z API (refresh od ${since})`);
+      } else {
+        console.log(`✅ API: Pobrano ${events.length} eventów z API (initial load)`);
+      }
       
       // Zapisz pobrane eventy w cache
       if (events.length > 0) {

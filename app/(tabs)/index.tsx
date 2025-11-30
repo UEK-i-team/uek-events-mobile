@@ -1,3 +1,4 @@
+import { useAppliedFilters } from '@/features/filters/contexts';
 import { CaughtUpCard } from '@/features/home/components/caught-up-card';
 import { EventCard } from '@/features/home/components/event-card';
 import { FilterButton } from '@/features/home/components/filter-button';
@@ -6,7 +7,6 @@ import { FILTER_OPTIONS } from '@/features/home/constants/events';
 import { useEventsData, useFilteredEvents, useSortedEvents } from '@/features/home/hooks';
 import { useHomeScreen } from '@/features/home/hooks/use-home-screen';
 import { useViewedEvents } from '@/features/viewed';
-import { useAppliedFilters } from '@/features/filters/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
@@ -41,11 +41,9 @@ export default function HomeScreen() {
 
   // Filtruj wydarzenia według wybranego filtru
   const filteredEvents = useFilteredEvents(events, selectedFilter);
-  console.log('🏠 HomeScreen - filteredEvents.length:', filteredEvents.length);
   
   // Sortuj wydarzenia (niezobaczone na górze)
   const sortedEvents = useSortedEvents(filteredEvents);
-  console.log('🏠 HomeScreen - sortedEvents.length:', sortedEvents.length);
   
   // Sprawdź czy są aktywne jakieś filtry
   const hasActiveFilters = 
@@ -53,7 +51,6 @@ export default function HomeScreen() {
     appliedFilters.appliedCategories.length > 0 ||
     appliedFilters.appliedLocations.length > 0 ||
     appliedFilters.appliedTags.length > 0;
-  console.log('🏠 HomeScreen - hasActiveFilters:', hasActiveFilters, 'categories:', appliedFilters.appliedCategories.length);
 
   const [height, setHeight] = useState(0);
   const [isSeparatorVisible, setIsSeparatorVisible] = useState(false);
@@ -70,7 +67,6 @@ export default function HomeScreen() {
       if (item.isViewable && item.item?.id) {
         // Sprawdź czy to separator "Jesteś na bieżąco"
         if (item.item.isSeparator) {
-          console.log('👀 Separator "Jesteś na bieżąco" jest widoczny!');
           setIsSeparatorVisible(true);
         } else {
           // Oznacz normalne eventy jako zobaczone

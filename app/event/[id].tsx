@@ -149,14 +149,11 @@ export default function EventDetailsScreen() {
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
           // Udostępniono przez konkretną aplikację (iOS)
-          console.log('Udostępniono przez:', result.activityType);
         } else {
           // Udostępniono
-          console.log('Wydarzenie zostało udostępnione');
         }
       } else if (result.action === Share.dismissedAction) {
         // Anulowano udostępnianie
-        console.log('Anulowano udostępnianie');
       }
     } catch (error) {
       console.error('Błąd podczas udostępniania:', error);

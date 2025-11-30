@@ -9,8 +9,8 @@ import {
   eventCategoryTranslations,
   eventTagTranslations,
 } from '@/shared/types/event-enums';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { BackHandler, StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -131,7 +131,6 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
                   key={category}
                   style={styles.checkboxOption}
                   onPress={() => {
-                    console.log('🖱️ Kliknięto na kategorię:', category, 'isSelected:', isSelected);
                     toggleCategory(category);
                   }}
                   activeOpacity={0.7}>

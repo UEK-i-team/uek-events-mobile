@@ -21,6 +21,39 @@ export default function InfoScreen() {
   const { clearViewed } = useViewedEvents();
   const { clearFavorites } = useFavorites();
 
+  const handleDeleteHalfEvents = async () => {
+    try {
+      // Pobierz wszystkie eventy z cache
+      const cachedEvents = await cacheService.getEvents();
+      
+      if (cachedEvents && cachedEvents.length > 0) {
+        // Usuń połowę eventów z cache
+        const halfLength = Math.floor(cachedEvents.length / 2);
+        const halfEvents = cachedEvents.slice(0, halfLength);
+        await cacheService.saveEvents(halfEvents);
+      }
+      
+      // Pobierz wszystkie viewed events z AsyncStorage
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const stored = await AsyncStorage.getItem('@uek_events_viewed');
+      
+      if (stored) {
+        const viewedData = JSON.parse(stored);
+        if (viewedData.length > 0) {
+          // Usuń połowę viewed events
+          const halfLength = Math.floor(viewedData.length / 2);
+          const halfViewed = viewedData.slice(0, halfLength);
+          await AsyncStorage.setItem('@uek_events_viewed', JSON.stringify(halfViewed));
+        }
+      }
+      
+      Alert.alert('Sukces', 'Usunięto połowę eventów z cache i viewed events.');
+    } catch (error) {
+      console.error('Błąd podczas usuwania połowy eventów:', error);
+      Alert.alert('Błąd', 'Wystąpił problem podczas usuwania połowy eventów.');
+    }
+  };
+
   const handleClearMemory = () => {
     Alert.alert(
       'Wyczyść wszystkie dane aplikacji',
@@ -112,6 +145,38 @@ export default function InfoScreen() {
             Zarządzanie danymi
           </ThemedText>
           
+          {/* TYMCZASOWY PRZYCISK - Usuń połowę eventów */}
+          <TouchableOpacity
+            onPress={handleDeleteHalfEvents}
+            style={[
+              styles.clearButton,
+              {
+                borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : '#FFE0B2',
+              }
+            ]}
+            activeOpacity={0.7}>
+            <ThemedView style={styles.clearButtonContent}>
+              <MaterialIcons
+                name="remove-circle-outline"
+                size={24}
+                color={isDark ? '#FF9800' : '#F57C00'}
+              />
+              <ThemedView style={styles.clearButtonTextContainer}>
+                <ThemedText style={[styles.clearButtonTitle, { color: isDark ? '#FF9800' : '#F57C00' }]}>
+                  [TEST] Usuń połowę eventów
+                </ThemedText>
+                <ThemedText style={[styles.clearButtonDescription, { color: isDark ? '#999999' : '#666666' }]}>
+                  Usuń 50% cache i viewed events
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+            <MaterialIcons
+              name="chevron-right"
+              size={24}
+              color={isDark ? '#FF9800' : '#F57C00'}
+            />
+          </TouchableOpacity>
+
           <TouchableOpacity
             onPress={handleClearMemory}
             style={[

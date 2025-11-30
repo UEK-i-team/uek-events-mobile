@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useEventsRepository } from '../context';
+import { cacheService } from '../services/cache-service';
 import type { Event } from '../types';
 
 /**
@@ -23,12 +24,23 @@ export function useCachedEvents() {
    * Pobierz eventy (z API lub cache)
    */
   const fetchEvents = useCallback(async (useCache = true) => {
+    console.log('now1')
     try {
       setLoading(true);
       setError(null);
       
+      // Sprawdź czy cache istnieje i pobierz datę najnowszego eventu
+      let sinceParam: string | null = null;
+
+      if (useCache) {
+        const newestDate = await cacheService.getNewestEventDate();
+        if (newestDate) {
+          sinceParam = newestDate;
+        } 
+      }
+      
       // Pobierz eventy (automatycznie cache'owane)
-      const data = await eventsRepo.getEvents(null, useCache);
+      const data = await eventsRepo.getEvents(sinceParam, useCache);
       setEvents(data);
       setIsOffline(false);
       

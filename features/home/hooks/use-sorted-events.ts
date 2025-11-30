@@ -23,17 +23,14 @@ export function useSortedEvents(events: Event[]): Event[] {
   const [sortedEvents, setSortedEvents] = useState<Event[]>([]);
 
   // Debug: Log każdej zmiany events
-  console.log('🔄 useSortedEvents wywołany z events.length:', events.length);
 
   useEffect(() => {
     // Sortuj TYLKO gdy zmieniają się events (np. po załadowaniu z API lub po filtrowaniu)
     // viewedEventIds jest stały przez całą sesję
     
-    console.log('🔄 Sortowanie eventów. Total:', events.length, 'Viewed IDs:', viewedEventIds.length);
     
     // Jeśli events są puste (np. po filtrowaniu), zwróć pustą tablicę
     if (events.length === 0) {
-      console.log('📭 Brak wydarzeń do sortowania - zwracam pustą tablicę');
       setSortedEvents([]);
       return;
     }
@@ -42,7 +39,6 @@ export function useSortedEvents(events: Event[]): Event[] {
     const unseen = events.filter((e) => !viewedEventIds.includes(e.id));
     const seen = events.filter((e) => viewedEventIds.includes(e.id));
 
-    console.log('📊 Niezobaczone:', unseen.length, 'Zobaczone:', seen.length);
 
     // Helper do sortowania wydarzeń z priorytetem dla przyszłych/dzisiejszych
     const sortWithFuturePriority = (events: Event[]) => {
@@ -103,12 +99,10 @@ export function useSortedEvents(events: Event[]): Event[] {
       };
       
       result = [...sortedUnseen, separator, ...sortedSeen];
-      console.log('✨ Dodano separator "Jesteś na bieżąco"');
     } else {
       result = [...sortedUnseen, ...sortedSeen];
     }
     
-    console.log('✅ Posortowano. Kolejność pierwszych 5:', result.slice(0, 5).map(e => e.isSeparator ? '⭐ SEPARATOR' : `${e.title.substring(0, 20)}... (${viewedEventIds.includes(e.id) ? 'seen' : 'NEW'})`));
     
     setSortedEvents(result);
     
