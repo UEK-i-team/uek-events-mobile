@@ -53,9 +53,9 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
   const cardBackgroundColor = event.cardColor || (isDark ? '#1E1E1E' : '#FFFFFF');
   
   // Jeśli mamy cardColor (jasne kolory), użyj ciemnego tekstu, inaczej użyj domyślnego
-  const textColor = event.cardColor ? '#1a1a1a' : (isDark ? Colors.dark.text : Colors.light.text);
-  const secondaryTextColor = event.cardColor ? '#4a4a4a' : (isDark ? '#CCCCCC' : '#666666');
-  const iconColor = event.cardColor ? '#666666' : (isDark ? '#9BA1A6' : '#687076');
+  const textColor = event.cardColor ? Colors.light.text : (isDark ? Colors.dark.text : Colors.light.text);
+  const secondaryTextColor = event.cardColor ? Colors.light.icon : (isDark ? Colors.dark.icon : Colors.light.icon);
+  const iconColor = event.cardColor ? Colors.light.icon : (isDark ? Colors.dark.icon : Colors.light.icon);
 
   const getTagColor = (index: number) => {
     // Jeśli mamy cardColor, używamy normalnych kolorów (nie dark), bo karta jest jasna
