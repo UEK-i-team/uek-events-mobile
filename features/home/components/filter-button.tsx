@@ -15,7 +15,6 @@ interface FilterButtonProps {
 export function FilterButton({ filter, isSelected, onPress }: FilterButtonProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const tintColor = isDark ? Colors.dark.tint :'#0053F4';
 
   // Animacja scale
   const scale = useSharedValue(1);
@@ -45,10 +44,8 @@ export function FilterButton({ filter, isSelected, onPress }: FilterButtonProps)
           styles.button,
           {
             backgroundColor: isSelected
-              ? tintColor
-              : isDark
-              ? 'rgba(255, 255, 255, 0.08)'
-              : '#FBFBFB',
+              ? isDark ? Colors.dark.tint : Colors.light.tint
+              : isDark ? Colors.dark.background : Colors.light.background,
           },
           isSelected && styles.buttonSelected,
         ]}
@@ -61,7 +58,8 @@ export function FilterButton({ filter, isSelected, onPress }: FilterButtonProps)
             styles.text,
             {
               color: isSelected
-                ? '#fff' : '#111'
+                ? Colors.dark.text
+                : (isDark ? Colors.dark.text : Colors.light.text)
             },
           ]}>
           {filter.label}
@@ -88,7 +86,7 @@ const styles = StyleSheet.create({
     flexWrap: 'nowrap',
   },
   buttonSelected: {
-    shadowColor: '#0a7ea4',
+    shadowColor: '#0a7ea4', // TODO: nie mamy color sheme :(
     shadowOffset: {
       width: 0,
       height: 2,
