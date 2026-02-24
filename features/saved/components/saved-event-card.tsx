@@ -1,8 +1,8 @@
+import { useFavorites } from '@/features/saved/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
 import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
 import { Event } from '@/shared/types/event';
-import { useFavorites } from '@/features/saved/contexts';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -12,19 +12,42 @@ interface SavedEventCardProps {
   event: Event;
 }
 
+// Mapowanie kolorów dla trybu ciemnego
+const CARD_COLORS_MAP: Record<string, string> = {
+  '#E8F5E9': '#1B2E21', // Green
+  '#E3F2FD': '#1A2633', // Blue
+  '#FFF3E0': '#332415', // Orange
+  '#F3E5F5': '#2A1A33', // Purple
+  '#FCE4EC': '#331A21', // Pink
+  '#E0F2F1': '#1A2C33', // Light Blue
+};
+
+const CARD_TEXT_COLORS_MAP: Record<string, string> = {
+  '#1976D2': '#64B5F6', // Green
+  '#388E3C': '#81C784', // Blue
+  '#F57C00': '#FFB74D', // Orange
+  '#7B1FA2': '#BA68C8', // Purple
+  '#C2185B': '#F48FB1', // Pink
+  '#00796B': '#4DB6AC', // Light Blue
+};
 export function SavedEventCard({ event }: SavedEventCardProps) {
   const colorScheme = useColorScheme();
   const router = useRouter();
   const { isFavorite, toggleFavorite } = useFavorites();
   const isDark = colorScheme === 'dark';
-  
+
   // Użyj koloru z eventu lub domyślnego
-  const cardBackgroundColor = event.cardColor || (isDark ? '#1E1E1E' : '#FFFFFF');
-  
-  // Jeśli mamy cardColor, użyj ciemnego tekstu
-  const textColor = event.cardColor ? '#1a1a1a' : (isDark ? Colors.dark.text : Colors.light.text);
-  const secondaryTextColor = event.cardColor ? '#4a4a4a' : (isDark ? '#CCCCCC' : '#666666');
-  const iconColor = event.cardColor ? '#666666' : (isDark ? '#9BA1A6' : '#687076');
+  const baseColor = event.cardColor || '#FFFFFF';
+  const cardBackgroundColor = isDark
+    ? (event.cardColor ? (CARD_COLORS_MAP[event.cardColor] || '#1E1E1E') : '#1E1E1E')
+    : baseColor;
+
+  // Dostosuj kolory tekstu do tła
+  const textColor = isDark
+    ? (event.cardColor ? (CARD_TEXT_COLORS_MAP[event.cardColor] || Colors.dark.text) : Colors.dark.text)
+    : '#1a1a1a';
+  const secondaryTextColor = isDark ? '#CCCCCC' : '#4a4a4a';
+  const iconColor = isDark ? '#9BA1A6' : '#666666';
 
   const handleCardPress = () => {
     router.push(`/event/${event.id}`);
