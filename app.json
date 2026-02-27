@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.item.uekevents",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.item.uekevents",
@@ -51,6 +55,12 @@
       "eas": {
         "projectId": "0015ea15-697c-44f8-8b5f-1ca9798f6d5d"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0015ea15-697c-44f8-8b5f-1ca9798f6d5d"
     }
   }
 }

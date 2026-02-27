@@ -112,7 +112,7 @@ export default function InfoScreen() {
             </ThemedText>
           </ThemedView>
           <ThemedView style={styles.linkItem}>
-            <ExternalLink href="https://example.com/polityka-prywatnosci" style={styles.link}>
+            <ExternalLink href="https://docs.google.com/document/d/1ZtBS_iP8tRmzVGzpZCT3o02OfTYsusL32y1VqHeC4U4/edit?usp=sharing" style={styles.link}>
               <ThemedText style={[styles.linkText, { color: textColor }]}>
                 Polityka prywatności
               </ThemedText>
@@ -121,7 +121,7 @@ export default function InfoScreen() {
           </ThemedView>
           
           <ThemedView style={styles.linkItem}>
-            <ExternalLink href="https://example.com/regulamin" style={styles.link}>
+            <ExternalLink href="https://docs.google.com/document/d/1bdcU4efTBGvGav-XYkDxs_IsBnk9bA7qfA32pncD71w/edit?usp=sharing" style={styles.link}>
               <ThemedText style={[styles.linkText, { color: textColor }]}>
                 Regulamin
               </ThemedText>
@@ -130,7 +130,7 @@ export default function InfoScreen() {
           </ThemedView>
 
           <ThemedView style={styles.linkItem}>
-            <ExternalLink href="https://example.com/formualrz_kontaktowy" style={styles.link}>
+            <ExternalLink href="https://forms.gle/6mnxYAN183NdLESm7" style={styles.link}>
               <ThemedText style={[styles.linkText, { color: textColor }]}>
                 Formularz kontaktowy
               </ThemedText>
