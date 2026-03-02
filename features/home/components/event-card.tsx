@@ -12,7 +12,7 @@ import {
 } from "@/shared/types/event-enums";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -26,29 +26,112 @@ interface EventCardProps {
   cardHeight: number;
 }
 
-// te kolory będzie mozna przenieść do theme
+// Paleta kolorów do generowania tła kart
+const COLOR_PALETTE = [
+  "#E8F5E9", // Green
+  "#E3F2FD", // Blue
+  "#FFF3E0", // Orange
+  "#F3E5F5", // Purple
+  "#FCE4EC", // Pink
+  "#E0F2F1", // Teal
+  "#E1F5FE", // Light Blue
+  "#F1F8E9", // Light Green
+  "#FFF8E1", // Amber
+  "#F3E5F5", // Deep Purple
+  "#E8EAF6", // Indigo
+  "#ECEFF1", // Blue Grey
+];
 
-const CARD_COLORS_MAP: Record<string, { light: string; dark: string }> = {
-  "#E8F5E9": { light: "#E8F5E9", dark: "#1B2E21" }, // Green
-  "#E3F2FD": { light: "#E3F2FD", dark: "#1A2633" }, // Blue
-  "#FFF3E0": { light: "#FFF3E0", dark: "#332415" }, // Orange
-  "#F3E5F5": { light: "#F3E5F5", dark: "#2A1A33" }, // Purple
-  "#FCE4EC": { light: "#FCE4EC", dark: "#331A21" }, // Pink
-  "#E0F2F1": { light: "#E0F2F1", dark: "#1A2C33" }, // Light Blue
-  "#E1F5FE": { light: "#E1F5FE", dark: "#1A2633" }, // Light Sky Blue
-  "#F1F8E9": { light: "#F1F8E9", dark: "#1B2E21" }, // Light Green
+// Funkcja do konwersji hex na RGB
+const hexToRgb = (hex: string): { r: number; g: number; b: number } | null => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
 };
 
-const CARD_TEXT_COLORS_MAP: Record<string, { light: string; dark: string }> = {
-  "#E8F5E9": { light: "#1B2E21", dark: "#C8E6C9" }, // Green
-  "#E3F2FD": { light: "#1A2633", dark: "#BBDEFB" }, // Blue
-  "#FFF3E0": { light: "#332415", dark: "#FFE0B2" }, // Orange
-  "#F3E5F5": { light: "#2A1A33", dark: "#E1BEE7" }, // Purple
-  "#FCE4EC": { light: "#331A21", dark: "#F8BBD0" }, // Pink
-  "#E0F2F1": { light: "#1A2C33", dark: "#B2DFDB" }, // Light Blue
-  "#E1F5FE": { light: "#1A2633", dark: "#B3E5FC" }, // Light Sky Blue
-  "#F1F8E9": { light: "#1B2E21", dark: "#DCEDC8" }, // Light Green
+// Funkcja do konwersji RGB na hex
+const rgbToHex = (r: number, g: number, b: number): string => {
+  return "#" + [r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("");
 };
+
+// Funkcja do rozjaśnienia koloru (dla light mode)
+const lightenColor = (hex: string, factor: number = 0.85): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  
+  const r = Math.round(rgb.r + (255 - rgb.r) * factor);
+  const g = Math.round(rgb.g + (255 - rgb.g) * factor);
+  const b = Math.round(rgb.b + (255 - rgb.b) * factor);
+  
+  return rgbToHex(r, g, b);
+};
+
+// Funkcja do przyciemnienia koloru (dla dark mode)
+const darkenColor = (hex: string, factor: number = 0.7): string => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  
+  const r = Math.round(rgb.r * (1 - factor));
+  const g = Math.round(rgb.g * (1 - factor));
+  const b = Math.round(rgb.b * (1 - factor));
+  
+  return rgbToHex(r, g, b);
+};
+
+// Funkcja do obliczenia luminancji koloru
+const getLuminance = (hex: string): number => {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return 0.5;
+  
+  const [r, g, b] = [rgb.r, rgb.g, rgb.b].map((v) => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+// Funkcja do uzyskania odpowiedniego koloru tekstu
+const getContrastTextColor = (bgHex: string, isDark: boolean): string => {
+  const luminance = getLuminance(bgHex);
+  
+  if (isDark) {
+    return luminance > 0.15 ? "#1A1A1A" : "#E8E8E8";
+  } else {
+    return luminance > 0.5 ? "#1A1A1A" : "#E8E8E8";
+  }
+};
+
+// Funkcja generująca hash z stringa
+const hashString = (str: string): number => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+};
+
+// Funkcja generująca kolor na podstawie ID wydarzenia
+const generateColorFromId = (id: string): string => {
+  const hash = hashString(id);
+  return COLOR_PALETTE[hash % COLOR_PALETTE.length];
+};
+
+// Dynamiczny import react-native-image-colors z obsługą błędu
+let getColors: typeof import("react-native-image-colors").getColors | null = null;
+try {
+  getColors = require("react-native-image-colors").getColors;
+} catch (e) {
+  // Moduł natywny niedostępny (np. Expo Go)
+  console.log("react-native-image-colors not available, using fallback colors");
+}
 
 const TAG_COLORS = [
   { bg: "#E3F2FD", text: "#1976D2" },
@@ -78,25 +161,52 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
 
   const viewed = isViewed(event.id);
 
-  // Użyj koloru z eventu lub domyślnego
-  const cardBackgroundColor = event.cardColor
-    ? isDark
-      ? CARD_COLORS_MAP[event.cardColor]?.dark
-      : CARD_COLORS_MAP[event.cardColor]?.light
-    : isDark
-      ? "#1E1E1E"
-      : "#FFFFFF";
-  // Jeśli mamy cardColor (jasne kolory), użyj ciemnego tekstu, inaczej użyj domyślnego
-  const textColor = isDark ? Colors.dark.text : Colors.light.text;
-  const secondaryTextColor = event.cardColor
-    ? (isDark
-        ? CARD_TEXT_COLORS_MAP[event.cardColor]?.dark
-        : CARD_TEXT_COLORS_MAP[event.cardColor]?.light) ||
-      (isDark ? Colors.dark.icon : Colors.light.icon)
-    : isDark
-      ? Colors.dark.icon
-      : Colors.light.icon;
-  const iconColor = isDark ? Colors.dark.icon : Colors.light.icon;
+  // State dla dominującego koloru z obrazu
+  const [extractedColor, setExtractedColor] = useState<string | null>(null);
+
+  // Ekstrakcja dominującego koloru z obrazu (jeśli moduł natywny dostępny)
+  useEffect(() => {
+    const extractColors = async () => {
+      if (!event.image || !getColors) {
+        setExtractedColor(null);
+        return;
+      }
+
+      try {
+        const colors = await getColors(event.image, {
+          fallback: "#FFFFFF",
+          cache: true,
+          key: event.id,
+        });
+
+        if (colors.platform === "android") {
+          setExtractedColor(colors.dominant || colors.vibrant || null);
+        } else if (colors.platform === "ios") {
+          setExtractedColor(colors.primary || colors.background || null);
+        } else {
+          setExtractedColor(colors.dominant || colors.vibrant || null);
+        }
+      } catch (error) {
+        console.warn("Failed to extract colors from image:", error);
+        setExtractedColor(null);
+      }
+    };
+
+    extractColors();
+  }, [event.image, event.id]);
+
+  // Użyj wyekstrahowanego koloru, dominantColor z backendu lub wygeneruj z ID
+  const baseColor = extractedColor || (event as any).dominantColor || generateColorFromId(event.id);
+
+  // Oblicz kolor tła na podstawie bazowego koloru
+  const cardBackgroundColor = isDark
+    ? darkenColor(baseColor, 0.75)
+    : lightenColor(baseColor, 0.5);
+
+  // Kolor tekstu bazujący na tle
+  const textColor = getContrastTextColor(cardBackgroundColor, isDark);
+  const secondaryTextColor = getContrastTextColor(cardBackgroundColor, isDark);
+  const iconColor = getContrastTextColor(cardBackgroundColor, isDark);
 
   const getTagColor = (index: number) => {
     const colors = isDark ? TAG_COLORS_DARK : TAG_COLORS;
@@ -140,7 +250,7 @@ export function EventCard({ event, cardHeight }: EventCardProps) {
             <Image
               source={{ uri: event.image }}
               style={styles.image}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           ) : (
             <View
@@ -391,8 +501,8 @@ const styles = StyleSheet.create({
     position: "relative",
     flexShrink: 1,
     minHeight: 120,
-    paddingHorizontal: 12, // Odstęp aby widać boki karty
-    paddingTop: 12,
+    // paddingHorizontal: 12, // Odstęp aby widać boki karty
+    // paddingTop: 12,
   },
   image: {
     width: "100%",

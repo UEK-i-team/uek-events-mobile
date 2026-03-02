@@ -224,7 +224,8 @@ export default function EventDetailsScreen() {
             <Image
               source={{ uri: event.image }}
               style={styles.image}
-              resizeMode="cover"
+              resizeMode="contain"
+            
             />
           ) : (
             <View
