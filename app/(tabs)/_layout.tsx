@@ -1,14 +1,27 @@
-import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
-import { PlatformPressable } from '@react-navigation/elements';
-import * as Haptics from 'expo-haptics';
-import { Tabs } from 'expo-router';
-import React from 'react';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
+import { PlatformPressable } from "@react-navigation/elements";
+import * as Haptics from "expo-haptics";
+import { Tabs } from "expo-router";
+import React from "react";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
-import { useFilters } from '@/features/filters/contexts/filters-context';
-import { HapticTab } from '@/shared/components/haptic-tab';
-import { useColorScheme } from '@/shared/hooks/use-color-scheme';
+import { useFilters } from "@/features/filters/contexts/filters-context";
+import { HapticTab } from "@/shared/components/haptic-tab";
+import { SvgIcon } from "@/shared/components/ui/svg-icon";
+import { theme } from "@/shared/constants/theme";
+
+// import icons
+import FilterIconOutline from "@/assets/icons/filter-icon-outline.svg";
+import HeartIconFilled from "@/assets/icons/heart-icon-filled.svg";
+import HeartIconOutline from "@/assets/icons/heart-icon-outline.svg";
+import HomeIconFilled from "@/assets/icons/home-icon-filled.svg";
+import HomeIconOutline from "@/assets/icons/home-icon-outline.svg";
+import InfoIconFilled from "@/assets/icons/info-icon-filled.svg";
+import InfoIconOutline from "@/assets/icons/info-icon-outline.svg";
 
 const AnimatedPressable = Animated.createAnimatedComponent(PlatformPressable);
 
@@ -26,7 +39,7 @@ function FiltersTabButton(props: BottomTabBarButtonProps) {
     scale.value = withTiming(0.95, {
       duration: 100,
     });
-    if (process.env.EXPO_OS === 'ios') {
+    if (process.env.EXPO_OS === "ios") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     props.onPressIn?.(ev);
@@ -53,42 +66,69 @@ function FiltersTabButton(props: BottomTabBarButtonProps) {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#004AEB',
+        tabBarActiveTintColor: theme.light.dark_grey,
+        tabBarInactiveTintColor: theme.light.dark_grey,
         headerShown: false,
         tabBarButton: HapticTab,
-      }}>
+        tabBarStyle: {
+          backgroundColor: theme.light.mainBackground,
+        },
+        tabBarLabelStyle: {
+          fontWeight: "300",
+          fontSize: 10,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Strona główna',
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+          title: "Strona główna",
+          tabBarIcon: ({ color, focused }) => (
+            <SvgIcon
+              Icon={focused ? HomeIconFilled : HomeIconOutline}
+              size={24}
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="saved"
         options={{
-          title: 'Zapisane',
-          tabBarIcon: ({ color }) => <Ionicons name="heart" size={24} color={color} />,
+          title: "Zapisane",
+          tabBarIcon: ({ color, focused }) => (
+            <SvgIcon
+              Icon={focused ? HeartIconFilled : HeartIconOutline}
+              size={24}
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="filters"
         options={{
-          title: 'Filtry',
-          tabBarIcon: ({ color }) => <Ionicons name="options" size={24} color={color} />,
+          title: "Filtry",
+          tabBarIcon: ({ color, focused }) => (
+            <SvgIcon Icon={FilterIconOutline} size={24} color={color} />
+          ),
           tabBarButton: FiltersTabButton,
         }}
       />
       <Tabs.Screen
         name="info"
         options={{
-          title: 'Info',
-          tabBarIcon: ({ color }) => <Ionicons name="information-circle" size={24} color={color} />,
+          title: "Info",
+          tabBarIcon: ({ color, focused }) => (
+            <SvgIcon
+              Icon={focused ? InfoIconFilled : InfoIconOutline}
+              size={24}
+              color={color}
+            />
+          ),
         }}
       />
     </Tabs>

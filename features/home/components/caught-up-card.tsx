@@ -1,30 +1,42 @@
-import { ThemedText } from '@/shared/components/themed-text';
-import { Colors } from '@/shared/constants/theme';
-import { useColorScheme } from '@/shared/hooks/use-color-scheme';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ThemedText } from "@/shared/components/themed-text";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import React, { useEffect, useRef } from "react";
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 interface CaughtUpCardProps {
   cardHeight: number;
-  isVisible?: boolean; // Czy karta jest aktualnie widoczna na ekranie
+  isVisible?: boolean;
 }
 
 // Komponent dla kulki krążącej po orbicie
-const OrbitingParticle = ({ index, radius, duration, startAnimation }: { index: number; radius: number; duration: number; startAnimation: boolean }) => {
+const OrbitingParticle = ({
+  index,
+  radius,
+  duration,
+  startAnimation,
+}: {
+  index: number;
+  radius: number;
+  duration: number;
+  startAnimation: boolean;
+}) => {
   const rotation = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const hasStarted = useRef(false);
 
   useEffect(() => {
-    // Animacja startuje TYLKO gdy startAnimation === true i nie była wcześniej uruchomiona
     if (!startAnimation || hasStarted.current) {
       return;
     }
 
     hasStarted.current = true;
 
-    // Fade in
     Animated.timing(opacity, {
       toValue: 1,
       duration: 500,
@@ -32,24 +44,23 @@ const OrbitingParticle = ({ index, radius, duration, startAnimation }: { index: 
       useNativeDriver: true,
     }).start();
 
-    // Ciągła rotacja
     Animated.loop(
       Animated.timing(rotation, {
         toValue: 1,
         duration: duration,
-        delay: index * 200, // Każda kulka startuje z opóźnieniem
+        delay: index * 200,
         easing: Easing.linear,
         useNativeDriver: true,
-      })
+      }),
     ).start();
   }, [startAnimation, rotation, opacity, index, duration]);
 
   const rotateValue = rotation.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
+    outputRange: ["0deg", "360deg"],
   });
 
-  const colors = ['#833AB4', '#FD1D1D', '#FCB045', '#F77737', '#E100FF'];
+  const colors = ["#833AB4", "#FD1D1D", "#FCB045", "#F77737", "#E100FF"];
   const color = colors[index % colors.length];
 
   return (
@@ -60,14 +71,28 @@ const OrbitingParticle = ({ index, radius, duration, startAnimation }: { index: 
           transform: [{ rotate: rotateValue }],
           opacity,
         },
-      ]}>
-      <View style={[styles.orbitingParticle, { backgroundColor: color, top: -radius }]} />
+      ]}
+    >
+      <View
+        style={[
+          styles.orbitingParticle,
+          { backgroundColor: color, top: -radius },
+        ]}
+      />
     </Animated.View>
   );
 };
 
 // Komponent dla pojedynczego "wybuchu" z okręgu
-const BurstParticle = ({ angle, delay, startAnimation }: { angle: number; delay: number; startAnimation: boolean }) => {
+const BurstParticle = ({
+  angle,
+  delay,
+  startAnimation,
+}: {
+  angle: number;
+  delay: number;
+  startAnimation: boolean;
+}) => {
   const translateX = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0)).current;
@@ -75,7 +100,6 @@ const BurstParticle = ({ angle, delay, startAnimation }: { angle: number; delay:
   const hasStarted = useRef(false);
 
   useEffect(() => {
-    // Animacja startuje TYLKO gdy startAnimation === true i nie była wcześniej uruchomiona
     if (!startAnimation || hasStarted.current) {
       return;
     }
@@ -132,8 +156,8 @@ const BurstParticle = ({ angle, delay, startAnimation }: { angle: number; delay:
     ]).start();
   }, [startAnimation, angle, delay, translateX, translateY, scale, opacity]);
 
-  const colors = ['#833AB4', '#FD1D1D', '#FCB045', '#F77737', '#E100FF'];
-  const colorIndex = Math.floor(angle / (Math.PI * 2 / colors.length));
+  const colors = ["#833AB4", "#FD1D1D", "#FCB045", "#F77737", "#E100FF"];
+  const colorIndex = Math.floor(angle / ((Math.PI * 2) / colors.length));
   const color = colors[colorIndex % colors.length];
 
   return (
@@ -142,11 +166,7 @@ const BurstParticle = ({ angle, delay, startAnimation }: { angle: number; delay:
         styles.burstParticle,
         {
           backgroundColor: color,
-          transform: [
-            { translateX },
-            { translateY },
-            { scale },
-          ],
+          transform: [{ translateX }, { translateY }, { scale }],
           opacity,
         },
       ]}
@@ -154,11 +174,12 @@ const BurstParticle = ({ angle, delay, startAnimation }: { angle: number; delay:
   );
 };
 
-export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProps) {
-  const colorScheme = useColorScheme();
+export function CaughtUpCard({
+  cardHeight,
+  isVisible = false,
+}: CaughtUpCardProps) {
   const { width: SCREEN_WIDTH } = useWindowDimensions();
-  const isDark = colorScheme === 'dark';
-  
+
   // Animacje
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -168,29 +189,24 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
   const hasAnimated = useRef(false);
 
   useEffect(() => {
-    // Animacja startuje TYLKO gdy karta staje się widoczna i nie była wcześniej animowana
     if (!isVisible || hasAnimated.current) {
       return;
     }
 
     hasAnimated.current = true;
 
-    // Animacja wejścia - energiczne pojawienie się (natychmiastowy start!)
     Animated.sequence([
-      // Fade in karty
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
       }),
-      // Wielki pop ikony
       Animated.spring(scaleAnim, {
         toValue: 1.2,
         friction: 3,
         tension: 50,
         useNativeDriver: true,
       }),
-      // Lekki bounce back
       Animated.spring(scaleAnim, {
         toValue: 1,
         friction: 4,
@@ -199,7 +215,6 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
       }),
     ]).start();
 
-    // Pulse animation - subtelny efekt "życia" dla ikony (startuje po głównej animacji)
     const pulseTimer = setTimeout(() => {
       Animated.loop(
         Animated.sequence([
@@ -215,11 +230,10 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: true,
           }),
-        ])
+        ]),
       ).start();
-    }, 800); // Startuje po głównej animacji
+    }, 800);
 
-    // Glow animation - pulsujący blask (startuje po głównej animacji)
     const glowTimer = setTimeout(() => {
       Animated.loop(
         Animated.sequence([
@@ -251,20 +265,19 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
               useNativeDriver: true,
             }),
           ]),
-        ])
+        ]),
       ).start();
-    }, 800); // Startuje po głównej animacji
+    }, 800);
 
-    // Cleanup timers
     return () => {
       clearTimeout(pulseTimer);
       clearTimeout(glowTimer);
     };
   }, [isVisible, scaleAnim, fadeAnim, pulseAnim, glowScale, glowOpacityAnim]);
 
-  const backgroundColor = isDark ? '#1a1a1a' : '#ffffff';
-  const textColor = isDark ? Colors.dark.text : Colors.light.text;
-  const secondaryTextColor = isDark ? '#CCCCCC' : '#666666';
+  const backgroundColor = "#ffffff";
+  const textColor = "#000000";
+  const secondaryTextColor = "#666666";
 
   // Generuj burst particles wokół okręgu
   const burstParticles = Array.from({ length: 12 }).map((_, i) => ({
@@ -272,11 +285,11 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
     delay: 400 + i * 30,
   }));
 
-  // Orbiting particles - kulki krążące wokół
+  // Orbiting particles
   const orbitingParticles = [
-    { radius: 85, duration: 4000 }, // Szybsza, bliższa
+    { radius: 85, duration: 4000 },
     { radius: 95, duration: 5000 },
-    { radius: 105, duration: 6000 }, // Wolniejsza, dalsza
+    { radius: 105, duration: 6000 },
   ];
 
   return (
@@ -287,7 +300,8 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
           width: SCREEN_WIDTH,
           height: cardHeight,
         },
-      ]}>
+      ]}
+    >
       <Animated.View
         style={[
           styles.card,
@@ -297,34 +311,35 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
             height: cardHeight - 32,
             opacity: fadeAnim,
           },
-        ]}>
-        
+        ]}
+      >
         {/* Gradient overlay - subtelny */}
-        <View style={[styles.gradientOverlay, { 
-          backgroundColor: isDark 
-            ? 'rgba(131, 58, 180, 0.08)' 
-            : 'rgba(131, 58, 180, 0.04)',
-          borderRadius: 16,
-        }]} />
+        <View
+          style={[
+            styles.gradientOverlay,
+            {
+              backgroundColor: "rgba(131, 58, 180, 0.04)",
+              borderRadius: 16,
+            },
+          ]}
+        />
 
         {/* Ikona z burst particles i orbiting particles */}
         <View style={styles.iconWrapper}>
-          {/* Burst particles - wyskakują promienisto */}
           {burstParticles.map((particle, i) => (
-            <BurstParticle 
-              key={i} 
-              angle={particle.angle} 
+            <BurstParticle
+              key={i}
+              angle={particle.angle}
               delay={particle.delay}
               startAnimation={isVisible}
             />
           ))}
 
-          {/* Orbiting particles - kulki krążące wokół */}
           {orbitingParticles.map((orbit, i) => (
-            <OrbitingParticle 
-              key={`orbit-${i}`} 
-              index={i} 
-              radius={orbit.radius} 
+            <OrbitingParticle
+              key={`orbit-${i}`}
+              index={i}
+              radius={orbit.radius}
               duration={orbit.duration}
               startAnimation={isVisible}
             />
@@ -341,24 +356,18 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
             ]}
           />
 
-
           {/* Ikona container z animacją */}
-          <Animated.View 
+          <Animated.View
             style={[
               styles.iconContainer,
-              { 
-                transform: [
-                  { scale: Animated.multiply(scaleAnim, pulseAnim) }
-                ] 
-              }
-            ]}>
+              {
+                transform: [{ scale: Animated.multiply(scaleAnim, pulseAnim) }],
+              },
+            ]}
+          >
             <View style={styles.iconCircleOuter}>
               <View style={styles.iconCircleInner}>
-                <MaterialIcons
-                  name="verified"
-                  size={64}
-                  color="#FFFFFF"
-                />
+                <MaterialIcons name="verified" size={64} color="#FFFFFF" />
               </View>
             </View>
           </Animated.View>
@@ -372,38 +381,44 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
               {
                 color: textColor,
               },
-            ]}>
+            ]}
+          >
             Jesteś na bieżąco!
           </ThemedText>
 
-          {/* Subtitle */}
           <ThemedText
             style={[
               styles.subtitle,
               {
                 color: secondaryTextColor,
               },
-            ]}>
-            Gratulacje! 
+            ]}
+          >
+            Gratulacje!
           </ThemedText>
 
-          {/* Opis */}
           <ThemedText
             style={[
               styles.description,
               {
                 color: secondaryTextColor,
               },
-            ]}>
+            ]}
+          >
             Przejrzałeś wszystkie nowe wydarzenia. 👏
           </ThemedText>
 
           {/* Separator line */}
-          <View style={[styles.separator, { 
-            backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' 
-          }]} />
+          <View
+            style={[
+              styles.separator,
+              {
+                backgroundColor: "rgba(0,0,0,0.1)",
+              },
+            ]}
+          />
 
-          {/* Strzałka bez animacji */}
+          {/* Strzałka */}
           <View style={styles.arrowContainer}>
             <View style={styles.arrowIconWrapper}>
               <MaterialIcons
@@ -416,9 +431,10 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
               style={[
                 styles.arrowText,
                 {
-                  color: '#833AB4',
+                  color: "#833AB4",
                 },
-              ]}>
+              ]}
+            >
               Przesuń w dół
             </ThemedText>
           </View>
@@ -430,7 +446,8 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
               {
                 color: secondaryTextColor,
               },
-            ]}>
+            ]}
+          >
             Zobacz ponownie poprzednie wydarzenia
           </ThemedText>
         </Animated.View>
@@ -441,20 +458,20 @@ export function CaughtUpCard({ cardHeight, isVisible = false }: CaughtUpCardProp
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     flex: 1,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   card: {
     borderRadius: 16,
-    overflow: 'hidden',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
+    overflow: "hidden",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 32,
     paddingVertical: 40,
-    shadowColor: '#833AB4',
+    shadowColor: "#833AB4",
     shadowOffset: {
       width: 0,
       height: 8,
@@ -464,37 +481,37 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   gradientOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
   },
   iconWrapper: {
-    position: 'relative',
+    position: "relative",
     marginBottom: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   burstParticle: {
-    position: 'absolute',
+    position: "absolute",
     width: 12,
     height: 12,
     borderRadius: 6,
   },
   orbitContainer: {
-    position: 'absolute',
+    position: "absolute",
     width: 1,
     height: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   orbitingParticle: {
-    position: 'absolute',
+    position: "absolute",
     width: 10,
     height: 10,
     borderRadius: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -504,12 +521,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   glowCircle: {
-    position: 'absolute',
+    position: "absolute",
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: '#833AB4',
-    shadowColor: '#833AB4',
+    backgroundColor: "#833AB4",
+    shadowColor: "#833AB4",
     shadowOffset: {
       width: 0,
       height: 0,
@@ -525,10 +542,10 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#833AB4',
-    shadowColor: '#833AB4',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#833AB4",
+    shadowColor: "#833AB4",
     shadowOffset: {
       width: 0,
       height: 8,
@@ -541,55 +558,55 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#833AB4',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#833AB4",
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 24,
     marginTop: 20,
-    textAlign: 'center',
+    textAlign: "center",
     letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   description: {
     fontSize: 15,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
     lineHeight: 22,
   },
   separator: {
-    width: '60%',
+    width: "60%",
     height: 1,
     marginVertical: 16,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   arrowContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 12,
   },
   arrowIconWrapper: {
-    backgroundColor: 'rgba(131, 58, 180, 0.1)',
+    backgroundColor: "rgba(131, 58, 180, 0.1)",
     borderRadius: 20,
     padding: 4,
   },
   arrowText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 6,
     letterSpacing: 0.5,
   },
   encouragement: {
     fontSize: 13,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    textAlign: "center",
+    fontStyle: "italic",
     opacity: 0.8,
   },
 });
