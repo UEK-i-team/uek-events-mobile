@@ -23,7 +23,8 @@
 // } from "react-native";
 // import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 
 // // Kolory dla tagów
 // const TAG_COLORS = [
@@ -645,5 +646,20 @@ import { View } from "react-native";
 // });
 
 export default function EventDetailsScreen() {
-  return <View></View>;
+  const params = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+
+  const eventId = params.id;
+
+  return (
+    // podmienić safeAreaView na react-native-safe-area-context
+    <SafeAreaView>
+      <View>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8}>
+          <Text style={{ color: "#0066FF", fontSize: 40 }}>Wróć do listy</Text>
+        </TouchableOpacity>
+        <Text>{eventId}</Text>
+      </View>
+    </SafeAreaView>
+  );
 }

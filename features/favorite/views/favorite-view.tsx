@@ -1,147 +1,115 @@
-import { View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useContext } from "react";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-type SortType = "date-added" | "event-date";
+import { ThemedText } from "@/shared/components";
+import { theme } from "@/shared/constants/theme";
+import { EventContext } from "@/shared/context/EventContext/EventContext";
+import { IEvent } from "@/shared/types/event";
 
-const SORT_OPTIONS = [
-  { id: "date-added", label: "Od daty dodania" },
-  { id: "event-date", label: "Data wydarzenia" },
-];
+import { FavoriteEventCard } from "../components/favorite-event-card/favorite-event-card";
+import { styles } from "./favorite-view.styles";
 
-export const FavoriteView = () => {};
+export default function FavoriteView() {
+  const { events, status, errorMessage, toggleFavoriteEvent } =
+    useContext(EventContext);
 
-export default function SavedScreen() {
-  // const colorScheme = useColorScheme();
-  // const isDark = colorScheme === 'dark';
-  // const backgroundColor = isDark ? Colors.dark.background : Colors.light.background;
-  // const textColor = isDark ? Colors.dark.text : Colors.light.text;
-  // const { favoriteIds, isLoading: favoritesLoading } = useFavorites();
-  // const { events, loading: eventsLoading } = useEventsData();
-  // const [sortType, setSortType] = useState<SortType>('date-added');
+  const favoriteEvents = events?.filter((event) => event.isFavorite) || [];
 
-  // const isLoading = favoritesLoading || eventsLoading;
+  const renderEventCard = ({ item }: { item: IEvent }) => (
+    <FavoriteEventCard event={item} onRemove={toggleFavoriteEvent} />
+  );
 
-  // // Pobierz eventy które są w ulubionych i posortuj je
-  // const savedEvents = useMemo(() => {
-  //   const filtered = events.filter((event) => favoriteIds.includes(event.id));
+  const renderLoadingState = () => (
+    <View style={styles.emptyContainer}>
+      <ActivityIndicator size="large" color="#000000" />
+      <ThemedText
+        style={[styles.emptyText, { color: "#666666", marginTop: 16 }]}
+      >
+        Ładowanie ulubionych...
+      </ThemedText>
+    </View>
+  );
 
-  //   if (sortType === 'date-added') {
-  //     // Sortuj według kolejności w favoriteIds (ostatnio dodane na górze)
-  //     return filtered.sort((a, b) => {
-  //       const indexA = favoriteIds.indexOf(a.id);
-  //       const indexB = favoriteIds.indexOf(b.id);
-  //       return indexB - indexA; // Odwróć kolejność
-  //     });
-  //   } else {
-  //     // Sortuj według daty wydarzenia (alfabetycznie na razie, można dodać parsing dat)
-  //     return filtered.sort((a, b) => a.date.localeCompare(b.date));
-  //   }
-  // }, [events, favoriteIds, sortType]);
+  const renderErrorState = () => (
+    <View style={styles.emptyContainer}>
+      <ThemedText style={[styles.emptyText, { color: "#d32f2f" }]}>
+        Wystąpił błąd podczas ładowania ulubionych wydarzeń
+      </ThemedText>
+      <ThemedText
+        style={[
+          styles.emptyText,
+          { color: "#666666", marginTop: 8, fontSize: 14 },
+        ]}
+      >
+        {errorMessage}
+      </ThemedText>
+    </View>
+  );
 
-  // // const renderSortButton = ({ item }: { item: typeof SORT_OPTIONS[0] }) => (
-  // //   <FilterButton
-  // //     filter={item}
-  // //     isSelected={sortType === item.id}
-  // //     onPress={(id) => setSortType(id as SortType)}
-  // //   />
-  // // );
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Ionicons name="bookmark-outline" size={80} color="#999999" />
+      <ThemedText style={styles.emptyTitle}>Brak ulubionych</ThemedText>
+      <ThemedText style={styles.emptySubtext}>
+        Wydarzenia, które polubisz, pojawią się tutaj
+      </ThemedText>
+    </View>
+  );
 
-  // const renderEventCard = ({ item }: { item: Event }) => (
-  //   <SavedEventCard event={item} />
-  // );
+  if (status === "loading") {
+    return (
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.light.mainBackground },
+        ]}
+      >
+        <SafeAreaView edges={["top"]} />
+        {renderLoadingState()}
+      </View>
+    );
+  }
 
-  // const renderFilterButton = ({ item }: { item: typeof SORT_OPTIONS[0] }) => (
-  //   <FilterButton
-  //     filter={item}
-  //     isSelected={sortType === item.id}
-  //     onPress={(id) => setSortType(id as SortType)}
-  //   />
-  // );
-
-  // const renderEmptyState = () => (
-  //   <View style={styles.emptyContainer}>
-  //     <MaterialIcons
-  //       name="bookmark-border"
-  //       size={80}
-  //       color={isDark ? '#555555' : '#7EAAFF'}
-  //     />
-  //     <ThemedText style={[styles.emptyTitle, { color: textColor }]}>
-  //       Brak zapisanych wydarzeń
-  //     </ThemedText>
-  //     <ThemedText style={[styles.emptyDescription, { color: isDark ? '#999999' : '#666666' }]}>
-  //       Wydarzenia które dodasz do ulubionych pojawią się tutaj
-  //     </ThemedText>
-  //   </View>
-  // );
-
-  // if (isLoading) {
-  //   return (
-  //     <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
-  //       <View style={styles.header}>
-  //         <ThemedText type="title" style={[styles.headerTitle, { color: textColor }]}>
-  //           Zapisane
-  //         </ThemedText>
-  //       </View>
-  //       <View style={styles.loadingContainer}>
-  //         <ActivityIndicator size="large" color={isDark ? '#64B5F6' : '#1976D2'} />
-  //         <ThemedText style={{ color: isDark ? '#999999' : '#666666', marginTop: 16 }}>
-  //           Ładowanie...
-  //         </ThemedText>
-  //       </View>
-  //     </SafeAreaView>
-  //   );
-  // }
+  if (status === "error") {
+    return (
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: theme.light.mainBackground },
+        ]}
+      >
+        <SafeAreaView edges={["top"]} />
+        {renderErrorState()}
+      </View>
+    );
+  }
 
   return (
-    <View></View>
-    // <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
-    //   <View style={styles.header}>
-    //     <ThemedText type="title" style={[styles.headerTitle, { color: textColor }]}>
-    //       Zapisane
-    //     </ThemedText>
-    //   </View>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: theme.light.mainBackground },
+      ]}
+    >
+      <View>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Twoje Ulubione</Text>
+        </View>
 
-    //   {savedEvents.length > 0 && (
-    //     <View
-    //       style={[
-    //         styles.sortContainer,
-    //         {
-    //           backgroundColor: backgroundColor,
-    //         },
-    //       ]}>
-    //          <FlatList
-    //           data={SORT_OPTIONS}
-    //           renderItem={renderFilterButton}
-    //           keyExtractor={(item) => item.id}
-    //           horizontal
-    //           showsHorizontalScrollIndicator={false}
-    //           contentContainerStyle={styles.filtersContent}
-
-    //           scrollEnabled={true}
-    //           nestedScrollEnabled={true}
-    //        />
-    //       {/* <FlatList
-    //         data={SORT_OPTIONS}
-    //         renderItem={renderSortButton}
-    //         keyExtractor={(item) => item.id}
-    //         horizontal
-    //         showsHorizontalScrollIndicator={false}
-    //         contentContainerStyle={styles.sortButtons}
-    //         nestedScrollEnabled={true}
-    //       /> */}
-    //     </View>
-    //   )}
-
-    //   {savedEvents.length === 0 ? (
-    //     renderEmptyState()
-    //   ) : (
-    //     <FlatList
-    //       data={savedEvents}
-    //       renderItem={renderEventCard}
-    //       keyExtractor={(item) => item.id}
-    //       showsVerticalScrollIndicator={false}
-    //       contentContainerStyle={styles.listContent}
-    //     />
-    //   )}
-    // </SafeAreaView>
+        {favoriteEvents.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <FlatList
+            data={favoriteEvents}
+            renderItem={renderEventCard}
+            keyExtractor={(item: IEvent) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }

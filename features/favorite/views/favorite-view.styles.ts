@@ -5,54 +5,42 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 16,
   },
   headerTitle: {
-    fontSize: 34,
-    fontWeight: "700",
-    marginBottom: 0,
-  },
-  sortContainer: {
-    paddingVertical: 12,
-    paddingBottom: 4,
-  },
-  sortButtons: {
-    paddingHorizontal: 16,
-    gap: 12,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#000000",
   },
   listContent: {
     paddingTop: 8,
-    paddingBottom: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    paddingBottom: 24,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 40,
-    marginTop: -80,
-    textAlign: "center",
   },
   emptyTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginTop: 24,
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 16,
+    color: "#000000",
     textAlign: "center",
   },
-  emptyDescription: {
+  emptyText: {
     fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
   },
-  filtersContent: {
-    paddingHorizontal: 16,
-    gap: 12,
+  emptySubtext: {
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    marginTop: 8,
+    color: "#666666",
   },
 });
