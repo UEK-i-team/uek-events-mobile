@@ -1,105 +1,361 @@
+import { useFilters } from '@/features/filters/contexts';
 import { ThemedText } from '@/shared/components/themed-text';
-import { Colors } from '@/shared/constants/theme';
 import { useColorScheme } from '@/shared/hooks/use-color-scheme';
-import { FilterOption } from '@/shared/types/event';
-import React from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useThemeColor } from '@/shared/hooks/use-theme-color';
+import {
+  EventCategory,
+  EventLocation,
+  EventTag,
+  eventCategoryTranslations,
+  eventTagTranslations,
+} from '@/shared/types/event-enums';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { BackHandler, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-interface FilterButtonProps {
-  filter: FilterOption;
-  isSelected: boolean;
-  onPress: (filterId: string) => void;
+interface FiltersBottomSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function FilterButton({ filter, isSelected, onPress }: FilterButtonProps) {
+export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps) {
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const scrollViewRef = useRef<any>(null);
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
   const colorScheme = useColorScheme();
+  const {
+    selectedCategories,
+    selectedLocations,
+    selectedTags,
+    toggleCategory,
+    toggleLocation,
+    toggleTag,
+    clearFilters,
+  } = useFilters();
   const isDark = colorScheme === 'dark';
-  const tintColor = isDark ? Colors.dark.tint : '#0053F4';
-  const textColor = isDark ? Colors.dark.text : Colors.light.text;
 
-  // Animacja scale
-  const scale = useSharedValue(1);
+  // Snap points: 70% jako początkowy, 95% jako pełny ekran
+  const snapPoints = useMemo(() => ['70%', '95%'], []);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-    };
-  });
+  // Kontrolowany index - otwarty = 0, zamknięty = -1
+  const sheetIndex = useMemo(() => (isOpen ? 0 : -1), [isOpen]);
 
-  const handlePressIn = () => {
-    scale.value = withTiming(0.95, {
-      duration: 100,
+  useEffect(() => {
+    if (isOpen) {
+      // Resetuj scroll do góry po otwarciu
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      }, 100);
+    } else {
+      // Resetuj scroll przy zamykaniu
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [isOpen]);
+
+  // Obsługa przycisku wstecz na Androidzie
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose();
+      return true; // Zapobiega domyślnej akcji (zamknięcie aplikacji)
     });
-  };
 
-  const handlePressOut = () => {
-    scale.value = withTiming(1, {
-      duration: 100,
-    });
-  };
+    return () => backHandler.remove();
+  }, [isOpen, onClose]);
+
+  const handleSheetChanges = useCallback((index: number) => {
+    // Synchronizuj stan tylko gdy użytkownik zamknie bottom sheet ręcznie (przez swipe)
+    // Unikaj wywoływania onClose jeśli już jest zamknięty (zapobiega pętlom)
+    if (index === -1 && isOpen) {
+      onClose();
+    }
+  }, [onClose, isOpen]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  );
 
   return (
-    <Animated.View style={[animatedStyle, { flexShrink: 0, alignSelf: 'flex-start' }]}>
-      <TouchableOpacity
-        style={[
-          styles.button,
-          {
-            backgroundColor: isSelected
-              ? tintColor
-              : isDark
-              ? 'rgba(255, 255, 255, 0.08)'
-              : '#FBFBFB',
-            borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : '#ECECEC',
-          },
-          isSelected && styles.buttonSelected,
-        ]}
-        onPress={() => onPress(filter.id)}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}>
-        <ThemedText
-          style={[
-            styles.text,
-            {
-              color: isSelected
-                ? '#fff' : textColor
-            },
-          ]}>
-          {filter.label}
-        </ThemedText>
-      </TouchableOpacity>
-    </Animated.View>
+    <BottomSheet
+      ref={bottomSheetRef}
+      index={sheetIndex}
+      snapPoints={snapPoints}
+      onChange={handleSheetChanges}
+      enablePanDownToClose
+      backdropComponent={renderBackdrop}
+      backgroundStyle={[styles.bottomSheetBackground, { backgroundColor }]}
+      handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: colorScheme === 'dark' ? '#9BA1A6' : '#687076' }]}
+    >
+      <BottomSheetScrollView
+        ref={scrollViewRef}
+        style={styles.contentContainer}
+        contentContainerStyle={styles.contentContainerStyle}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <ThemedText type="title" style={[styles.headerTitle, { color: textColor }]}>
+            Filtry
+          </ThemedText>
+        </View>
+
+        {/* Typ wydarzenia (EventCategory) */}
+        <View style={styles.filterSection}>
+          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+            Typ wydarzenia
+          </ThemedText>
+          <View style={styles.checkboxList}>
+            {Object.values(EventCategory).map((category) => {
+              const isSelected = selectedCategories.includes(category);
+              return (
+                <TouchableOpacity
+                  key={category}
+                  style={styles.checkboxOption}
+                  onPress={() => {
+                    toggleCategory(category);
+                  }}
+                  activeOpacity={0.7}>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      {
+                        backgroundColor: isSelected
+                          ? '#0066FF'
+                          : 'transparent',
+                        borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                      },
+                    ]}>
+                    {isSelected && (
+                      <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                    )}
+                  </View>
+                  <ThemedText
+                    style={[
+                      styles.checkboxLabel,
+                      { color: textColor },
+                    ]}>
+                    {eventCategoryTranslations[category]}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Format (EventLocation) */}
+        <View style={styles.filterSection}>
+          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+            Format
+          </ThemedText>
+          <View style={styles.checkboxList}>
+            {[
+              { location: EventLocation.OnUekCampus, label: 'Stacjonarne' },
+              { location: EventLocation.Online, label: 'Online' },
+              { location: EventLocation.Hybrid, label: 'Hybrydowe' },
+            ].map(({ location, label }) => {
+              const isSelected = selectedLocations.includes(location);
+              return (
+                <TouchableOpacity
+                  key={location}
+                  style={styles.checkboxOption}
+                  onPress={() => toggleLocation(location)}
+                  activeOpacity={0.7}>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      {
+                        backgroundColor: isSelected
+                          ? '#0066FF'
+                          : 'transparent',
+                        borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                      },
+                    ]}>
+                    {isSelected && (
+                      <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                    )}
+                  </View>
+                  <ThemedText
+                    style={[
+                      styles.checkboxLabel,
+                      { color: textColor },
+                    ]}>
+                    {label}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Tematy (EventTag) */}
+        <View style={styles.filterSection}>
+          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+            Tematy
+          </ThemedText>
+          <View style={styles.tagsContainer}>
+            {Object.values(EventTag).map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  onPress={() => toggleTag(tag)}
+                  activeOpacity={0.7}
+                  style={[
+                    styles.tag,
+                    {
+                      backgroundColor: isSelected
+                        ? '#0066FF'
+                        : (isDark ? '#2A2A2A' : '#F5F5F5'),
+                      borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                    },
+                  ]}>
+                  <ThemedText
+                    style={[
+                      styles.tagText,
+                      {
+                        color: isSelected
+                          ? '#FFFFFF'
+                          : (isDark ? '#FFFFFF' : '#000000'),
+                      },
+                    ]}>
+                    {eventTagTranslations[tag]}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Przycisk wyczyść */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.clearButton,
+              {
+                backgroundColor: isDark ? '#2A2A2A' : '#FFFFFF',
+                borderColor: isDark ? '#666666' : '#CCCCCC',
+              },
+            ]}
+            onPress={clearFilters}
+            activeOpacity={0.7}>
+            <ThemedText
+              style={[
+                styles.clearButtonText,
+                { color: textColor },
+              ]}>
+              Wyczyść
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 24,
-    marginRight: 0,
-    minHeight: 40,
+  contentContainer: {
+    flex: 1,
+  },
+  contentContainerStyle: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  bottomSheetBackground: {
+    // backgroundColor will be set dynamically
+  },
+  handleIndicator: {
+    // backgroundColor will be set dynamically
+    width: 40,
+    height: 4,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  filterSection: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  checkboxList: {
+    gap: 12,
+  },
+  checkboxOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 4,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
     borderWidth: 2,
-    flexShrink: 0,
-    alignSelf: 'flex-start',
-    flexWrap: 'nowrap',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  buttonSelected: {
-    shadowColor: '#0a7ea4',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+  checkboxLabel: {
+    fontSize: 16,
+    lineHeight: 22,
   },
-  text: {
-    fontSize: 15,
-    letterSpacing: 0.2,
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  tag: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  tagText: {
+    fontSize: 14,
     fontWeight: '500',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  clearButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  clearButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
