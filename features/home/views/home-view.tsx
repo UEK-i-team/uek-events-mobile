@@ -1,14 +1,14 @@
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
-import { ThemedText } from "@/shared/components";
+import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { IEvent } from "@/shared/types/event";
 import React, { useContext, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  View,
-  ViewabilityConfig,
+    ActivityIndicator,
+    FlatList,
+    View,
+    ViewabilityConfig,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";

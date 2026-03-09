@@ -1,8 +1,9 @@
 import { Link } from "expo-router";
 import { StyleSheet, View } from "react-native";
 
-import { ThemedText } from "@/shared/components/themed-text";
+import { ThemedText } from "@/shared/components/themed-text/themed-text";
 
+// Sprwadzić po co to jest i zaktaulizować ten komentarz
 export default function ModalScreen() {
   return (
     <View style={styles.container}>

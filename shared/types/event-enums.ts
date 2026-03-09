@@ -1,4 +1,4 @@
-// TODO: to będzie do usunięcia
+// TODO: to będzie do usunięcia i refactoru
 
 /**
  * Typy dla kategorii, lokalizacji, tagów i typów wydarzeń

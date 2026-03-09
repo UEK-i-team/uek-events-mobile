@@ -7,15 +7,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useViewedEvents } from "@/features/viewed";
-import { ExternalLink } from "@/shared/components/external-link";
-import { ThemedText } from "@/shared/components/themed-text";
-import { IconSymbol } from "@/shared/components/ui/icon-symbol";
+import { ExternalLink } from "@/shared/components/external-link/external-link";
+import { IconSymbol } from "@/shared/components/icon-symbol/icon-symbol";
+import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export default function InfoScreen() {
-  const { clearViewed } = useViewedEvents();
-
   const handleDeleteHalfEvents = async () => {
     try {
       const AsyncStorage =

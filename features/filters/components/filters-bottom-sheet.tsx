@@ -1,5 +1,5 @@
 import { useFilters } from "@/features/filters/contexts";
-import { ThemedText } from "@/shared/components/themed-text";
+import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import {
   EventCategory,
   EventLocation,

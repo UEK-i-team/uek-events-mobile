@@ -10,8 +10,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useFilters } from "@/features/filters/contexts/filters-context";
-import { HapticTab } from "@/shared/components/haptic-tab";
-import { SvgIcon } from "@/shared/components/ui/svg-icon";
+import { HapticTab } from "@/shared/components/haptic-tab/haptic-tab";
+import { SvgIcon } from "@/shared/components/svg-icon/svg-icon";
 import { theme } from "@/shared/constants/theme";
 
 // import icons
