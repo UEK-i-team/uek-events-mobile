@@ -1,19 +1,24 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import 'react-native-reanimated';
+import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
 
-import { FiltersBottomSheet } from '@/features/filters/components/filters-bottom-sheet';
-import { FiltersProvider, useFilters } from '@/features/filters/contexts/filters-context';
-import { NotificationProvider, NotificationToastContainer } from '@/features/notifications';
-import { FavoritesProvider } from '@/features/saved/contexts';
-import { ViewedEventsProvider } from '@/features/viewed';
-import { RepositoriesProvider } from '@/shared/connectors';
-import { useColorScheme } from '@/shared/hooks/use-color-scheme';
+import { FiltersBottomSheet } from "@/features/filters/components/filters-bottom-sheet";
+import {
+  FiltersProvider,
+  useFilters,
+} from "@/features/filters/contexts/filters-context";
+import {
+  NotificationProvider,
+  NotificationToastContainer,
+} from "@/features/notifications";
+import { ViewedEventsProvider } from "@/features/viewed";
+import { EventContextProvider } from "@/shared/context/EventContext/EventContext";
+import { DependencyProvider } from "@/shared/di/DependencyProvider";
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: "(tabs)",
 };
 
 function AppContent() {
@@ -22,16 +27,19 @@ function AppContent() {
     <>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        <Stack.Screen 
-          name="event/[id]" 
-          options={{ 
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: "modal", title: "Modal" }}
+        />
+        <Stack.Screen
+          name="event/[id]"
+          options={{
             headerShown: false,
-            animation: 'default',
-            presentation: 'card',
+            animation: "default",
+            presentation: "card",
             gestureEnabled: true,
             freezeOnBlur: false,
-          }} 
+          }}
         />
       </Stack>
       <FiltersBottomSheet isOpen={isOpen} onClose={closeFilters} />
@@ -41,24 +49,22 @@ function AppContent() {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <RepositoriesProvider>
-          <FavoritesProvider>
+      <DependencyProvider>
+        <EventContextProvider>
+          <ThemeProvider value={DefaultTheme}>
             <ViewedEventsProvider>
               <NotificationProvider>
                 <FiltersProvider>
                   <AppContent />
-                  <StatusBar style="auto" />
+                  <StatusBar style="dark" />
                 </FiltersProvider>
               </NotificationProvider>
             </ViewedEventsProvider>
-          </FavoritesProvider>
-        </RepositoriesProvider>
-      </ThemeProvider>
+          </ThemeProvider>
+        </EventContextProvider>
+      </DependencyProvider>
     </GestureHandlerRootView>
   );
 }

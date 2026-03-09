@@ -1,30 +1,33 @@
-import { useFilters } from '@/features/filters/contexts';
-import { ThemedText } from '@/shared/components/themed-text';
-import { useColorScheme } from '@/shared/hooks/use-color-scheme';
-import { useThemeColor } from '@/shared/hooks/use-theme-color';
+import { useFilters } from "@/features/filters/contexts";
+import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import {
   EventCategory,
   EventLocation,
   EventTag,
   eventCategoryTranslations,
   eventTagTranslations,
-} from '@/shared/types/event-enums';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { BackHandler, StyleSheet, TouchableOpacity, View } from 'react-native';
+} from "@/shared/types/event-enums";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { BackHandler, StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface FiltersBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps) {
+export function FiltersBottomSheet({
+  isOpen,
+  onClose,
+}: FiltersBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const scrollViewRef = useRef<any>(null);
-  const backgroundColor = useThemeColor({}, 'background');
-  const textColor = useThemeColor({}, 'text');
-  const colorScheme = useColorScheme();
+  const backgroundColor = "#FFFFFF";
+  const textColor = "#000000";
   const {
     selectedCategories,
     selectedLocations,
@@ -34,22 +37,19 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
     toggleTag,
     clearFilters,
   } = useFilters();
-  const isDark = colorScheme === 'dark';
 
   // Snap points: 70% jako początkowy, 95% jako pełny ekran
-  const snapPoints = useMemo(() => ['70%', '95%'], []);
+  const snapPoints = useMemo(() => ["70%", "95%"], []);
 
   // Kontrolowany index - otwarty = 0, zamknięty = -1
   const sheetIndex = useMemo(() => (isOpen ? 0 : -1), [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
-      // Resetuj scroll do góry po otwarciu
       setTimeout(() => {
         scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       }, 100);
     } else {
-      // Resetuj scroll przy zamykaniu
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   }, [isOpen]);
@@ -60,21 +60,25 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       return;
     }
 
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      onClose();
-      return true; // Zapobiega domyślnej akcji (zamknięcie aplikacji)
-    });
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        onClose();
+        return true;
+      },
+    );
 
     return () => backHandler.remove();
   }, [isOpen, onClose]);
 
-  const handleSheetChanges = useCallback((index: number) => {
-    // Synchronizuj stan tylko gdy użytkownik zamknie bottom sheet ręcznie (przez swipe)
-    // Unikaj wywoływania onClose jeśli już jest zamknięty (zapobiega pętlom)
-    if (index === -1 && isOpen) {
-      onClose();
-    }
-  }, [onClose, isOpen]);
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1 && isOpen) {
+        onClose();
+      }
+    },
+    [onClose, isOpen],
+  );
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -85,7 +89,7 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
         opacity={0.5}
       />
     ),
-    []
+    [],
   );
 
   return (
@@ -97,7 +101,10 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={[styles.bottomSheetBackground, { backgroundColor }]}
-      handleIndicatorStyle={[styles.handleIndicator, { backgroundColor: colorScheme === 'dark' ? '#9BA1A6' : '#687076' }]}
+      handleIndicatorStyle={[
+        styles.handleIndicator,
+        { backgroundColor: "#687076" },
+      ]}
     >
       <BottomSheetScrollView
         ref={scrollViewRef}
@@ -106,21 +113,23 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       >
         {/* Header */}
         <View style={styles.header}>
-          <ThemedText type="title" style={[styles.headerTitle, { color: textColor }]}>
+          <ThemedText
+            type="title"
+            style={[styles.headerTitle, { color: textColor }]}
+          >
             Filtry
           </ThemedText>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons
-              name="close"
-              size={24}
-              color={isDark ? '#FFFFFF' : '#000000'}
-            />
+            <MaterialIcons name="close" size={24} color="#000000" />
           </TouchableOpacity>
         </View>
 
         {/* Typ wydarzenia (EventCategory) */}
         <View style={styles.filterSection}>
-          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+          <ThemedText
+            type="subtitle"
+            style={[styles.sectionTitle, { color: textColor }]}
+          >
             Typ wydarzenia
           </ThemedText>
           <View style={styles.checkboxList}>
@@ -133,26 +142,24 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
                   onPress={() => {
                     toggleCategory(category);
                   }}
-                  activeOpacity={0.7}>
+                  activeOpacity={0.7}
+                >
                   <View
                     style={[
                       styles.checkbox,
                       {
-                        backgroundColor: isSelected
-                          ? '#0066FF'
-                          : 'transparent',
-                        borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                        backgroundColor: isSelected ? "#0066FF" : "transparent",
+                        borderColor: isSelected ? "#0066FF" : "#CCCCCC",
                       },
-                    ]}>
+                    ]}
+                  >
                     {isSelected && (
                       <MaterialIcons name="check" size={16} color="#FFFFFF" />
                     )}
                   </View>
                   <ThemedText
-                    style={[
-                      styles.checkboxLabel,
-                      { color: textColor },
-                    ]}>
+                    style={[styles.checkboxLabel, { color: textColor }]}
+                  >
                     {eventCategoryTranslations[category]}
                   </ThemedText>
                 </TouchableOpacity>
@@ -163,14 +170,17 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
 
         {/* Format (EventLocation) */}
         <View style={styles.filterSection}>
-          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+          <ThemedText
+            type="subtitle"
+            style={[styles.sectionTitle, { color: textColor }]}
+          >
             Format
           </ThemedText>
           <View style={styles.checkboxList}>
             {[
-              { location: EventLocation.OnUekCampus, label: 'Stacjonarne' },
-              { location: EventLocation.Online, label: 'Online' },
-              { location: EventLocation.Hybrid, label: 'Hybrydowe' },
+              { location: EventLocation.OnUekCampus, label: "Stacjonarne" },
+              { location: EventLocation.Online, label: "Online" },
+              { location: EventLocation.Hybrid, label: "Hybrydowe" },
             ].map(({ location, label }) => {
               const isSelected = selectedLocations.includes(location);
               return (
@@ -178,26 +188,24 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
                   key={location}
                   style={styles.checkboxOption}
                   onPress={() => toggleLocation(location)}
-                  activeOpacity={0.7}>
+                  activeOpacity={0.7}
+                >
                   <View
                     style={[
                       styles.checkbox,
                       {
-                        backgroundColor: isSelected
-                          ? '#0066FF'
-                          : 'transparent',
-                        borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                        backgroundColor: isSelected ? "#0066FF" : "transparent",
+                        borderColor: isSelected ? "#0066FF" : "#CCCCCC",
                       },
-                    ]}>
+                    ]}
+                  >
                     {isSelected && (
                       <MaterialIcons name="check" size={16} color="#FFFFFF" />
                     )}
                   </View>
                   <ThemedText
-                    style={[
-                      styles.checkboxLabel,
-                      { color: textColor },
-                    ]}>
+                    style={[styles.checkboxLabel, { color: textColor }]}
+                  >
                     {label}
                   </ThemedText>
                 </TouchableOpacity>
@@ -208,7 +216,10 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
 
         {/* Tematy (EventTag) */}
         <View style={styles.filterSection}>
-          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: textColor }]}>
+          <ThemedText
+            type="subtitle"
+            style={[styles.sectionTitle, { color: textColor }]}
+          >
             Tematy
           </ThemedText>
           <View style={styles.tagsContainer}>
@@ -222,21 +233,19 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
                   style={[
                     styles.tag,
                     {
-                      backgroundColor: isSelected
-                        ? '#0066FF'
-                        : (isDark ? '#2A2A2A' : '#F5F5F5'),
-                      borderColor: isSelected ? '#0066FF' : (isDark ? '#666666' : '#CCCCCC'),
+                      backgroundColor: isSelected ? "#0066FF" : "#F5F5F5",
+                      borderColor: isSelected ? "#0066FF" : "#CCCCCC",
                     },
-                  ]}>
+                  ]}
+                >
                   <ThemedText
                     style={[
                       styles.tagText,
                       {
-                        color: isSelected
-                          ? '#FFFFFF'
-                          : (isDark ? '#FFFFFF' : '#000000'),
+                        color: isSelected ? "#FFFFFF" : "#000000",
                       },
-                    ]}>
+                    ]}
+                  >
                     {eventTagTranslations[tag]}
                   </ThemedText>
                 </TouchableOpacity>
@@ -251,17 +260,14 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
             style={[
               styles.clearButton,
               {
-                backgroundColor: isDark ? '#2A2A2A' : '#FFFFFF',
-                borderColor: isDark ? '#666666' : '#CCCCCC',
+                backgroundColor: "#FFFFFF",
+                borderColor: "#CCCCCC",
               },
             ]}
             onPress={clearFilters}
-            activeOpacity={0.7}>
-            <ThemedText
-              style={[
-                styles.clearButtonText,
-                { color: textColor },
-              ]}>
+            activeOpacity={0.7}
+          >
+            <ThemedText style={[styles.clearButtonText, { color: textColor }]}>
               Wyczyść
             </ThemedText>
           </TouchableOpacity>
@@ -283,40 +289,39 @@ const styles = StyleSheet.create({
     // backgroundColor will be set dynamically
   },
   handleIndicator: {
-    // backgroundColor will be set dynamically
     width: 40,
     height: 4,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 24,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   closeButton: {
     width: 32,
     height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   filterSection: {
     marginBottom: 32,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 16,
   },
   checkboxList: {
     gap: 12,
   },
   checkboxOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     paddingVertical: 4,
   },
@@ -325,16 +330,16 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 6,
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxLabel: {
     fontSize: 16,
     lineHeight: 22,
   },
   tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   tag: {
@@ -345,11 +350,11 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   actionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "flex-start",
     marginTop: 8,
     marginBottom: 20,
   },
@@ -358,12 +363,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   clearButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
-
