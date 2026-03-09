@@ -1,53 +1,64 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export type Theme = "light" | "dark";
 
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#0a7ea4';
-
-export const Colors = {
+export const theme = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    primary: "#FF6A2A",
+    mainBackground: "#E1DDD9",
+    ligth_grey: "#F4F3F2",
+    dark_grey: "#111111",
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    primary: "#FF6A2A",
+    mainBackground: "#E1DDD9",
+    ligth_grey: "#F4F3F2",
+    dark_grey: "#111111",
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+// To delete soon
+export const Colors = {
+  light: {
+    text: "#000000",
+    background: "#FFFFFF",
+    icon: "#687076",
+    tint: "#0a7ea4",
+    tabIconDefault: "#687076",
+    tabIconSelected: "#0a7ea4",
   },
+  dark: {
+    text: "#000000",
+    background: "#FFFFFF",
+    icon: "#687076",
+    tint: "#0a7ea4",
+    tabIconDefault: "#687076",
+    tabIconSelected: "#0a7ea4",
+  },
+};
+
+export const Fonts = {
   default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+    fontSize: 16,
+    lineHeight: 24,
   },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  title: {
+    fontSize: 32,
+    fontWeight: "bold" as const,
+    lineHeight: 32,
   },
-});
+  subtitle: {
+    fontSize: 20,
+    fontWeight: "bold" as const,
+  },
+};
+
+export function getTagColor(index: number) {
+  const TAG_COLORS = [
+    { bg: "#E3F2FD", text: "#1976D2" },
+    { bg: "#E8F5E9", text: "#388E3C" },
+    { bg: "#FFF3E0", text: "#F57C00" },
+    { bg: "#F3E5F5", text: "#7B1FA2" },
+    { bg: "#FCE4EC", text: "#C2185B" },
+    { bg: "#E0F2F1", text: "#00796B" },
+  ];
+  return TAG_COLORS[index % TAG_COLORS.length];
+}
