@@ -119,11 +119,7 @@ export function FiltersBottomSheet({
           >
             Filtry
           </ThemedText>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color="#000000" />
-          </TouchableOpacity>
         </View>
-
         {/* Typ wydarzenia (EventCategory) */}
         <View style={styles.filterSection}>
           <ThemedText
