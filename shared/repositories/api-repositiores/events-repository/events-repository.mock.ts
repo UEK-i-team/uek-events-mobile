@@ -11,7 +11,11 @@ export class EventsRepositoryMock implements IEventsRepository {
         title: "Wielki Hackathon IT",
         short_desc:
           "24-godzinny maraton programowania dla studentów z nagrodami.",
-        topics: ["IT", "Programowanie"],
+        topics: [
+          "Tworzenie innowacyjnych rozwiązań z wykorzystaniem sztucznej inteligencji.",
+          "Optymalizacja algorytmów w środowisku rozproszonym.",
+          "Projektowanie skalowalnych architektur systemowych.",
+        ],
         event_category: "IT",
         location_category: "CAM",
         location: "Pawilon C, sala 300",
@@ -30,7 +34,11 @@ export class EventsRepositoryMock implements IEventsRepository {
         end_date: "2026-05-15T12:00:00Z",
         title: "Targi Pracy i Kariery UEK",
         short_desc: "Największe Akademickie Targi Pracy w Krakowie.",
-        topics: ["Kariera", "Biznes"],
+        topics: [
+          "Spotkania z przedstawicielami największych firm z branży finansowej i technologicznej.",
+          "Konsultacje dokumentów aplikacyjnych oraz próbne rozmowy kwalifikacyjne z rekruterami.",
+          "Warsztaty z zakresu planowania ścieżki zawodowej i budowania marki osobistej.",
+        ],
         event_category: "BUSINESS",
         location_category: "CAM",
         location: "Pawilon G, Hala Główna",
@@ -68,7 +76,11 @@ export class EventsRepositoryMock implements IEventsRepository {
         end_date: "2026-06-15T23:00:00Z",
         title: "Gala Finałowa Juwenaliów",
         short_desc: "Uroczyste zakończenie Dni Studentów z koncertami.",
-        topics: ["Rozrywka", "Kultura"],
+        topics: [
+          "Występy czołowych artystów polskiej sceny muzycznej i rozrywkowej.",
+          "Uroczyste wręczenie kluczy do miasta oraz nagród w konkursach juwenaliowych.",
+          "Widowiskowe pokazy laserowe i pirotechniczne wieńczące święto studentów.",
+        ],
         event_category: "ENTERTAINMENT",
         location_category: "OUT",
         location: "Scena Główna - Miasteczko Studenckie",

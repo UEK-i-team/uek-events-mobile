@@ -7,12 +7,14 @@ export interface IEventContext {
   status: "idle" | "loading" | "success" | "error";
   errorMessage?: string | null;
   toggleFavoriteEvent: (eventId: string, isFavorite: boolean) => Promise<void>;
+  getEventById: (eventId: string) => IEvent | undefined;
 }
 
 const defualtEventsContext: IEventContext = {
   events: null,
   status: "idle",
   toggleFavoriteEvent: async () => {},
+  getEventById: () => undefined,
 };
 
 export const EventContext = createContext<IEventContext>(defualtEventsContext);
@@ -55,6 +57,10 @@ export const EventContextProvider = ({
     }
   };
 
+  const getEventById = (eventId: string) => {
+    return events?.find((e) => e.id === eventId);
+  };
+
   useEffect(() => {
     setStatus("loading");
 
@@ -72,7 +78,13 @@ export const EventContextProvider = ({
 
   return (
     <EventContext.Provider
-      value={{ events, status, errorMessage, toggleFavoriteEvent }}
+      value={{
+        events,
+        status,
+        errorMessage,
+        toggleFavoriteEvent,
+        getEventById,
+      }}
     >
       {children}
     </EventContext.Provider>
