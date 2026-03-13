@@ -10,7 +10,6 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 16,
-    // width: "100%",
     gap: 12,
     backgroundColor: theme.light.mainBackgroundDarker,
   },

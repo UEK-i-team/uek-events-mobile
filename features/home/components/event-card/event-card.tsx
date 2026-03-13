@@ -1,12 +1,12 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
 import React from "react";
 import {
-  Image,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
+import { Image } from "expo-image";
 
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { IEvent } from "@/shared/types/event";
@@ -79,11 +79,11 @@ export function EventCard({
       >
         <View style={styles.imageContainer}>
           <Image
-            source={{
-              uri: "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg",
-            }}
+            source={{ uri: event.image_url }}
             style={styles.image}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={200}
           />
           <RoundedButton
             icon={FavoriteIcon}
@@ -97,13 +97,14 @@ export function EventCard({
         <View style={styles.infoContainer}>
           <DateAndTime dateISO={event.start_date} style={{ marginTop: 22 }} />
           <Text style={styles.title}>{event.title}</Text>
-          <Text style={styles.description}>{event.short_desc}</Text>
+          <Text style={styles.description} numberOfLines={2}>{event.short_desc}</Text>
           <Location
             locationCategory={event.location_category}
             registrationType={event.registration_type}
             style={{ marginTop: 18 }}
           />
           <Badge
+            key={event.event_category}
             name={event.event_category}
             color={theme.light.dark_grey}
             style={{ marginTop: 18 }}
@@ -111,7 +112,7 @@ export function EventCard({
           <View style={styles.tagsContainer}>
             {event.tags.map((tag, index) => (
               <Badge
-                key={tag}
+                key={tag + index}
                 name={tag}
                 color={TAG_COLORS[index] || TAG_COLORS[0]}
                 textColor={theme.light.dark_grey}

@@ -1,13 +1,19 @@
-import { Image, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import {  Text, View, ScrollView, TouchableOpacity, Linking } from "react-native";
+import {Image} from 'expo-image';
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { styles } from "./event-details.styles";
 import { useContext } from "react";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
-import HeartIcon from "@/assets/icons/heart-icon-filled.svg";
 import HeartOutlineIcon from "@/assets/icons/heart-icon-outline.svg";
+import HeartFilledIcon from "@/assets/icons/heart-icon-filled.svg";
 import CalendarIcon from "@/assets/icons/calendar.svg";
 import ScheduleIcon from "@/assets/icons/schedule.svg";
+import ArrowBackIcon from "@/assets/icons/arrow-left-300.svg";
+import ShareIcon from "@/assets/icons/share-300.svg";
+import LocationIcon from "@/assets/icons/location.svg";
+import PersonIcon from "@/assets/icons/person-200.svg";
 import { theme } from "@/shared/constants/theme";
 import { InfoRow } from "@/features/event-details/components/info-row/info-row";
 
@@ -16,7 +22,8 @@ export interface EventDetailsViewProps {
 }
 
 export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
-  const { getEventById } = useContext(EventContext);
+  const router = useRouter();
+  const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
 
   const event = getEventById(eventId);
 
@@ -50,7 +57,6 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const minutes = dateObj.getMinutes().toString().padStart(2, "0");
   const startTimeFormatted = `${hours}:${minutes}`;
 
-  console.log(event);
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
@@ -60,25 +66,32 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
       >
         <View style={styles.imageContainer}>
           <Image
-            source={{
-              uri: "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg",
-            }}
+            source={{ uri: event.image_url }}
             style={styles.image}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={200}
           />
           <View style={styles.positionButtons}>
-            {/* zmienić ikone na share */}
             <RoundedButton
-              icon={HeartIcon}
+              icon={ShareIcon}
               backgroundColor={theme.light.primary}
             />
-            {/* zmienić grubośc ikony na grubszą */}
-            <RoundedButton icon={HeartOutlineIcon} />
+            <RoundedButton
+              icon={event.isFavorite ? HeartFilledIcon : HeartOutlineIcon}
+              backgroundColor={event.isFavorite ? "#FF6B6B" : theme.light.ligth_grey}
+              style={{
+                borderWidth: 1,
+                borderColor: theme.light.mainBackground,
+              }}
+              onPress={() => toggleFavoriteEvent(event.id, !event.isFavorite)}
+            />
           </View>
           <View style={styles.positionBackButton}>
             <RoundedButton
-              icon={HeartOutlineIcon}
+              icon={ArrowBackIcon}
               backgroundColor={theme.light.mainBackground}
+              onPress={() => router.back()}
             />
           </View>
         </View>
@@ -90,10 +103,14 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             <InfoRow icon={ScheduleIcon} text={startTimeFormatted} />
           </View>
           <View style={styles.locationRowContainerAndOrganizerRowContainer}>
-            <InfoRow icon={ScheduleIcon} text={event.location} />
+            <InfoRow icon={LocationIcon} text={event.location} />
           </View>
           <View style={styles.locationRowContainerAndOrganizerRowContainer}>
-            <InfoRow icon={ScheduleIcon} text={event.organisators} />
+            <InfoRow
+              icon={PersonIcon}
+              text={event.organisators}
+              label="Organizator"
+            />
           </View>
 
           <Text style={styles.sectionTitle}>Tematy</Text>
@@ -142,7 +159,11 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
       </ScrollView>
 
       <View style={styles.stickyBottomContainer}>
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          activeOpacity={0.8}
+          onPress={() => Linking.openURL(event.origin_url)}
+        >
           <Text style={styles.actionButtonText}>
             Zobacz szczegóły wydarzenia
           </Text>
