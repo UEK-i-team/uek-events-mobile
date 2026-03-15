@@ -1,12 +1,13 @@
 import { StyleSheet } from "react-native";
 
-export type RoundedButtonSize = "medium";
+export type RoundedButtonSize = "medium" | "small";
 
 const sizeMap: Record<
   RoundedButtonSize,
   { container: number; icon: number; borderRadius: number }
 > = {
   medium: { container: 60, icon: 30, borderRadius: 16 },
+  small: { container: 48, icon: 24, borderRadius: 12 },
 };
 
 export const getSizeConfig = (size: RoundedButtonSize) => sizeMap[size];

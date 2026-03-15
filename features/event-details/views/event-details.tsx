@@ -95,16 +95,22 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
               size="medium"
               onPress={() => toggleFavoriteEvent(event.id, !event.isFavorite)}
               style={
-                event.isFavorite && {
-                  borderColor: theme.light.red_regular,
-                  borderWidth: 1,
-                }
+                event.isFavorite
+                  ? {
+                      borderColor: theme.light.red_regular,
+                      borderWidth: 1,
+                    }
+                  : {
+                      borderColor: theme.light.mainBackground,
+                      borderWidth: 1,
+                    }
               }
             />
           </View>
           <View style={styles.positionBackButton}>
             <RoundedButton
               icon={ArrowBackIcon}
+              size={"small"}
               backgroundColor={theme.light.mainBackground}
               onPress={() => router.back()}
             />

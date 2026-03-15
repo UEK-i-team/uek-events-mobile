@@ -9,12 +9,14 @@ import {
   eventTagTranslations,
 } from "@/shared/types/event-enums";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import BottomSheet, {
+import {
+  BottomSheetModal,
   BottomSheetBackdrop,
   BottomSheetScrollView,
+  TouchableOpacity,
 } from "@gorhom/bottom-sheet";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { BackHandler, StyleSheet, TouchableOpacity, View } from "react-native";
+import { BackHandler, StyleSheet, View } from "react-native";
 
 interface FiltersBottomSheetProps {
   isOpen: boolean;
@@ -25,7 +27,7 @@ export function FiltersBottomSheet({
   isOpen,
   onClose,
 }: FiltersBottomSheetProps) {
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const scrollViewRef = useRef<any>(null);
   const backgroundColor = "#FFFFFF";
   const textColor = "#000000";
@@ -42,15 +44,14 @@ export function FiltersBottomSheet({
   // Snap points: 70% jako początkowy, 95% jako pełny ekran
   const snapPoints = useMemo(() => ["70%", "95%"], []);
 
-  // Kontrolowany index - otwarty = 0, zamknięty = -1
-  const sheetIndex = useMemo(() => (isOpen ? 0 : -1), [isOpen]);
-
   useEffect(() => {
     if (isOpen) {
+      bottomSheetRef.current?.present();
       setTimeout(() => {
         scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       }, 100);
     } else {
+      bottomSheetRef.current?.dismiss();
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   }, [isOpen]);
@@ -94,9 +95,8 @@ export function FiltersBottomSheet({
   );
 
   return (
-    <BottomSheet
+    <BottomSheetModal
       ref={bottomSheetRef}
-      index={sheetIndex}
       snapPoints={snapPoints}
       onChange={handleSheetChanges}
       enablePanDownToClose
@@ -274,7 +274,7 @@ export function FiltersBottomSheet({
           </TouchableOpacity>
         </View>
       </BottomSheetScrollView>
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }
 

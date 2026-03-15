@@ -33,12 +33,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 600,
     marginTop: 40,
   },
   shortDesc: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 300,
     marginTop: 8,
   },
@@ -79,7 +79,7 @@ export const styles = StyleSheet.create({
     marginRight: 8,
   },
   bulletText: {
-    fontSize: 18,
+    fontSize: 16,
     color: theme.light.dark_grey,
     fontWeight: "300",
     lineHeight: 22,

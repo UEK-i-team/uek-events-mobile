@@ -82,62 +82,67 @@ export default function FavoriteView() {
       ]}
       edges={["top"]}
     >
-      <View style={styles.tabsRow}>
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            sortMode === "liked" ? styles.tabActive : styles.tabInactive,
-          ]}
-          onPress={() => setSortMode("liked")}
-          activeOpacity={0.8}
-        >
-          <Text
-            style={
-              sortMode === "liked"
-                ? styles.tabTextActive
-                : styles.tabTextInactive
-            }
-          >
-            Od daty polubienia
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.tab,
-            sortMode === "added" ? styles.tabActive : styles.tabInactive,
-          ]}
-          onPress={() => setSortMode("added")}
-          activeOpacity={0.8}
-        >
-          <Text
-            style={
-              sortMode === "added"
-                ? styles.tabTextActive
-                : styles.tabTextInactive
-            }
-          >
-            Od daty wydarzenia
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       {favoriteEvents.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="bookmark-outline" size={80} color="#999999" />
+          <Ionicons
+            name="bookmark-outline"
+            size={40}
+            color={theme.light.dark_grey}
+          />
           <ThemedText style={styles.emptyTitle}>Brak ulubionych</ThemedText>
           <ThemedText style={styles.emptySubtext}>
             Wydarzenia, które polubisz, pojawią się tutaj
           </ThemedText>
         </View>
       ) : (
-        <FlatList
-          data={favoriteEvents}
-          renderItem={renderEventCard}
-          keyExtractor={(item: IEvent) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-        />
+        <>
+          <View style={styles.tabsRow}>
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                sortMode === "liked" ? styles.tabActive : styles.tabInactive,
+              ]}
+              onPress={() => setSortMode("liked")}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={
+                  sortMode === "liked"
+                    ? styles.tabTextActive
+                    : styles.tabTextInactive
+                }
+              >
+                Od daty polubienia
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.tab,
+                sortMode === "added" ? styles.tabActive : styles.tabInactive,
+              ]}
+              onPress={() => setSortMode("added")}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={
+                  sortMode === "added"
+                    ? styles.tabTextActive
+                    : styles.tabTextInactive
+                }
+              >
+                Od daty wydarzenia
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={favoriteEvents}
+            renderItem={renderEventCard}
+            keyExtractor={(item: IEvent) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+          />
+        </>
       )}
     </SafeAreaView>
   );

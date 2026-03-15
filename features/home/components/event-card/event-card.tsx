@@ -32,21 +32,21 @@ export function EventCard({
   cardHeight,
   toggleFavorite,
 }: EventCardProps) {
-  const { width: SCREEN_WIDTH } = useWindowDimensions();
+  const {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    fontScale,
+  } = useWindowDimensions();
   const router = useRouter();
 
-  // const { isViewed } = useViewedEvents();
-
-  // const viewed = isViewed(event.id);
-
-  // const cardBackgroundColor = "#FFFFFF";
-  // const textColor = "#000000";
-  // const secondaryTextColor = "#666666";
-  // const iconColor = "#687076";
-
-  // const getTagColor = (index: number) => {
-  //   return TAG_COLORS[index % TAG_COLORS.length];
-  // };
+  const isSmallScreen =
+    SCREEN_HEIGHT < 800 ||
+    (SCREEN_HEIGHT < 900 && fontScale > 1.15) ||
+    fontScale > 1.3;
+  const isVerySmallScreen =
+    SCREEN_HEIGHT < 750 ||
+    (SCREEN_HEIGHT < 850 && fontScale > 1.3) ||
+    fontScale > 1.4;
 
   const handleCardPress = () => {
     router.push(`/event/${event.id}`);
@@ -78,7 +78,9 @@ export function EventCard({
           },
         ]}
       >
-        <View style={styles.imageContainer}>
+        <View
+          style={[styles.imageContainer, isVerySmallScreen && { height: 180 }]}
+        >
           <Image
             source={{ uri: event.image_url }}
             style={styles.image}
@@ -107,10 +109,28 @@ export function EventCard({
         </View>
         <View style={styles.infoContainer}>
           <DateAndTime dateISO={event.start_date} style={{ marginTop: 22 }} />
-          <Text style={styles.title}>{event.title}</Text>
-          <Text style={styles.description} numberOfLines={2}>
-            {event.short_desc}
+          <Text
+            style={[
+              styles.title,
+              isSmallScreen && { fontSize: 24, marginTop: 4 },
+            ]}
+            maxFontSizeMultiplier={1.2}
+          >
+            {event.title}
           </Text>
+          {/* Ukrywamy opis lub zmniejszamy ilość linii na bardzo małych oknach */}
+          {!isVerySmallScreen && (
+            <Text
+              style={[
+                styles.description,
+                isSmallScreen && { fontSize: 16, marginTop: 4 },
+              ]}
+              numberOfLines={isVerySmallScreen ? 1 : 2}
+              maxFontSizeMultiplier={1.2}
+            >
+              {event.short_desc}
+            </Text>
+          )}
           <Location
             locationCategory={event.location_category}
             registrationType={event.registration_type}

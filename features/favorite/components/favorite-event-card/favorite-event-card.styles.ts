@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
   dateRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 8,
     marginBottom: 14,
   },
   dateSection: {
@@ -53,10 +53,13 @@ export const styles = StyleSheet.create({
   tagsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    alignItems: "center",
     justifyContent: "center",
-    gap: 14,
-    paddingVertical: 16,
+    columnGap: 14,
+    rowGap: 50,
+    marginTop: 16,
+    marginBottom: 16,
+    height: 40,
+    overflow: "hidden",
   },
   tag: {
     paddingHorizontal: 16,

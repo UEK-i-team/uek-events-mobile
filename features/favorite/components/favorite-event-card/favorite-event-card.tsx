@@ -103,7 +103,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
       </View>
 
       <View style={styles.tagsRow}>
-        {allTags.slice(0, 3).map((tag, index) => (
+        {allTags.map((tag, index) => (
           <View
             key={tag}
             style={[
