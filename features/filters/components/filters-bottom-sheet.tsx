@@ -1,5 +1,6 @@
 import { useFilters } from "@/features/filters/contexts";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
+import { theme } from "@/shared/constants/theme";
 import {
   EventCategory,
   EventLocation,
@@ -144,8 +145,12 @@ export function FiltersBottomSheet({
                     style={[
                       styles.checkbox,
                       {
-                        backgroundColor: isSelected ? "#0066FF" : "transparent",
-                        borderColor: isSelected ? "#0066FF" : "#CCCCCC",
+                        backgroundColor: isSelected
+                          ? theme.light.primary
+                          : "transparent",
+                        borderColor: isSelected
+                          ? theme.light.primary
+                          : "#CCCCCC",
                       },
                     ]}
                   >

@@ -1,4 +1,5 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
+import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
 import React from "react";
 import {
   Text,
@@ -86,18 +87,30 @@ export function EventCard({
             transition={200}
           />
           <RoundedButton
-            icon={FavoriteIcon}
-            iconColor={event.isFavorite ? "white" : theme.light.dark_grey}
-            backgroundColor={event.isFavorite ? "red" : "white"}
+            icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
+            iconColor={
+              event.isFavorite ? theme.light.red_regular : theme.light.dark_grey
+            }
+            backgroundColor={event.isFavorite ? theme.light.red_light : "white"}
             size="medium"
             onPress={handleFavoritePress}
-            style={{ position: "absolute", bottom: -30, right: 16 }}
+            style={{
+              position: "absolute",
+              bottom: -30,
+              right: 16,
+              borderColor: event.isFavorite
+                ? theme.light.red_regular
+                : theme.light.mainBackground,
+              borderWidth: 1,
+            }}
           />
         </View>
         <View style={styles.infoContainer}>
           <DateAndTime dateISO={event.start_date} style={{ marginTop: 22 }} />
           <Text style={styles.title}>{event.title}</Text>
-          <Text style={styles.description} numberOfLines={2}>{event.short_desc}</Text>
+          <Text style={styles.description} numberOfLines={2}>
+            {event.short_desc}
+          </Text>
           <Location
             locationCategory={event.location_category}
             registrationType={event.registration_type}

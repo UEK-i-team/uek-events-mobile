@@ -1,5 +1,11 @@
-import {  Text, View, ScrollView, TouchableOpacity, Linking } from "react-native";
-import {Image} from 'expo-image';
+import {
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { styles } from "./event-details.styles";
@@ -57,7 +63,6 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const minutes = dateObj.getMinutes().toString().padStart(2, "0");
   const startTimeFormatted = `${hours}:${minutes}`;
 
-
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <ScrollView
@@ -79,12 +84,22 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             />
             <RoundedButton
               icon={event.isFavorite ? HeartFilledIcon : HeartOutlineIcon}
-              backgroundColor={event.isFavorite ? "#FF6B6B" : theme.light.ligth_grey}
-              style={{
-                borderWidth: 1,
-                borderColor: theme.light.mainBackground,
-              }}
+              iconColor={
+                event.isFavorite
+                  ? theme.light.red_regular
+                  : theme.light.dark_grey
+              }
+              backgroundColor={
+                event.isFavorite ? theme.light.red_light : "white"
+              }
+              size="medium"
               onPress={() => toggleFavoriteEvent(event.id, !event.isFavorite)}
+              style={
+                event.isFavorite && {
+                  borderColor: theme.light.red_regular,
+                  borderWidth: 1,
+                }
+              }
             />
           </View>
           <View style={styles.positionBackButton}>

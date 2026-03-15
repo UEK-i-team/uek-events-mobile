@@ -1,10 +1,52 @@
+import CalendarIcon from "@/assets/icons/calendar.svg";
+import ClockIcon from "@/assets/icons/schedule.svg";
+import { IEvent } from "@/shared/types/event";
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, Text, TouchableOpacity } from "react-native";
-
-import { IEvent } from "@/shared/types/event";
+import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./favorite-event-card.styles";
+
+const DAYS_SHORT = ["niedz", "pon", "wt", "śr", "czw", "pt", "sob"];
+const MONTHS_SHORT = [
+  "sty",
+  "lut",
+  "mar",
+  "kwi",
+  "maj",
+  "cze",
+  "lip",
+  "sie",
+  "wrz",
+  "paź",
+  "lis",
+  "gru",
+];
+
+const TAG_COLORS = [
+  "#B4DEFF",
+  "#FAE5FF",
+  "#C3F1EC",
+  "#FFF3E0",
+  "#E8F5E9",
+  "#FCE4EC",
+];
+
+function formatDate(isoString: string): string {
+  const date = new Date(isoString);
+  const day = DAYS_SHORT[date.getDay()];
+  const dayNum = date.getDate();
+  const month = MONTHS_SHORT[date.getMonth()];
+  return `${day} - ${dayNum} ${month}`;
+}
+
+function formatTime(isoString: string): string {
+  const date = new Date(isoString);
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
 
 interface FavoriteEventCardProps {
   event: IEvent;
@@ -13,31 +55,76 @@ interface FavoriteEventCardProps {
 
 export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const router = useRouter();
+  const allTags = [event.event_category, ...event.tags].filter(Boolean);
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={styles.card}
+      activeOpacity={0.9}
       onPress={() => router.push(`/event/${event.id}`)}
     >
-      <Image
-        source={{
-          uri: "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg",
-        }}
-        style={styles.image}
-      />
+      <View style={styles.topPartContainer}>
+        <Image
+          source={{ uri: event.image_url }}
+          style={styles.image}
+          contentFit="cover"
+        />
 
-      <Text style={styles.title} numberOfLines={2}>
-        {event.title}
-      </Text>
+        <View style={styles.content}>
+          <Text style={styles.title} numberOfLines={2}>
+            {event.title}
+          </Text>
+
+          <View style={styles.dateRow}>
+            <View style={styles.dateSection}>
+              <CalendarIcon
+                width={18}
+                height={18}
+                fill="#111111"
+                color="#111111"
+              />
+              <Text style={styles.dateText}>
+                {formatDate(event.start_date)}
+              </Text>
+            </View>
+            <View style={styles.dateSection}>
+              <ClockIcon
+                width={18}
+                height={18}
+                fill="#111111"
+                color="#111111"
+              />
+              <Text style={styles.dateText}>
+                {formatTime(event.start_date)}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.tagsRow}>
+        {allTags.slice(0, 3).map((tag, index) => (
+          <View
+            key={tag}
+            style={[
+              styles.tag,
+              { backgroundColor: TAG_COLORS[index % TAG_COLORS.length] },
+            ]}
+          >
+            <Text style={styles.tagText}>{tag}</Text>
+          </View>
+        ))}
+      </View>
 
       <TouchableOpacity
-        style={styles.iconButton}
+        style={styles.closeButton}
         onPress={(e) => {
           e.stopPropagation();
           onRemove(event.id, false);
         }}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Ionicons name="heart" size={24} color="#D32F2F" />
+        <Ionicons name="close" size={24} color="#111111" />
       </TouchableOpacity>
     </TouchableOpacity>
   );

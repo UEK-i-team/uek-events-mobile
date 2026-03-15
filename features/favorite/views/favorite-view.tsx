@@ -1,6 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useContext } from "react";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import React, { useContext, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
@@ -11,78 +17,60 @@ import { IEvent } from "@/shared/types/event";
 import { FavoriteEventCard } from "../components/favorite-event-card/favorite-event-card";
 import { styles } from "./favorite-view.styles";
 
+type SortMode = "liked" | "added";
+
 export default function FavoriteView() {
   const { events, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
+  const [sortMode, setSortMode] = useState<SortMode>("liked");
 
-  const favoriteEvents = events?.filter((event) => event.isFavorite) || [];
+  const favoriteEvents = useMemo(() => {
+    const favs = events?.filter((event) => event.isFavorite) || [];
+    if (sortMode === "added") {
+      return [...favs].sort(
+        (a, b) =>
+          new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+      );
+    }
+    return favs;
+  }, [events, sortMode]);
 
   const renderEventCard = ({ item }: { item: IEvent }) => (
     <FavoriteEventCard event={item} onRemove={toggleFavoriteEvent} />
   );
 
-  const renderLoadingState = () => (
-    <View style={styles.emptyContainer}>
-      <ActivityIndicator size="large" color="#000000" />
-      <ThemedText
-        style={[styles.emptyText, { color: "#666666", marginTop: 16 }]}
-      >
-        Ładowanie ulubionych...
-      </ThemedText>
-    </View>
-  );
-
-  const renderErrorState = () => (
-    <View style={styles.emptyContainer}>
-      <ThemedText style={[styles.emptyText, { color: "#d32f2f" }]}>
-        Wystąpił błąd podczas ładowania ulubionych wydarzeń
-      </ThemedText>
-      <ThemedText
-        style={[
-          styles.emptyText,
-          { color: "#666666", marginTop: 8, fontSize: 14 },
-        ]}
-      >
-        {errorMessage}
-      </ThemedText>
-    </View>
-  );
-
-  const renderEmptyState = () => (
-    <View style={styles.emptyContainer}>
-      <Ionicons name="bookmark-outline" size={80} color="#999999" />
-      <ThemedText style={styles.emptyTitle}>Brak ulubionych</ThemedText>
-      <ThemedText style={styles.emptySubtext}>
-        Wydarzenia, które polubisz, pojawią się tutaj
-      </ThemedText>
-    </View>
-  );
-
   if (status === "loading") {
     return (
-      <View
+      <SafeAreaView
         style={[
           styles.container,
           { backgroundColor: theme.light.mainBackground },
         ]}
+        edges={["top"]}
       >
-        <SafeAreaView edges={["top"]} />
-        {renderLoadingState()}
-      </View>
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="large" color="#000000" />
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (status === "error") {
     return (
-      <View
+      <SafeAreaView
         style={[
           styles.container,
           { backgroundColor: theme.light.mainBackground },
         ]}
+        edges={["top"]}
       >
-        <SafeAreaView edges={["top"]} />
-        {renderErrorState()}
-      </View>
+        <View style={styles.emptyContainer}>
+          <ThemedText style={[styles.emptyTitle, { color: "#d32f2f" }]}>
+            Błąd ładowania ulubionych
+          </ThemedText>
+          <ThemedText style={styles.emptySubtext}>{errorMessage}</ThemedText>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -92,24 +80,65 @@ export default function FavoriteView() {
         styles.container,
         { backgroundColor: theme.light.mainBackground },
       ]}
+      edges={["top"]}
     >
-      <View>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Twoje Ulubione</Text>
-        </View>
+      <View style={styles.tabsRow}>
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            sortMode === "liked" ? styles.tabActive : styles.tabInactive,
+          ]}
+          onPress={() => setSortMode("liked")}
+          activeOpacity={0.8}
+        >
+          <Text
+            style={
+              sortMode === "liked"
+                ? styles.tabTextActive
+                : styles.tabTextInactive
+            }
+          >
+            Od daty polubienia
+          </Text>
+        </TouchableOpacity>
 
-        {favoriteEvents.length === 0 ? (
-          renderEmptyState()
-        ) : (
-          <FlatList
-            data={favoriteEvents}
-            renderItem={renderEventCard}
-            keyExtractor={(item: IEvent) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
-          />
-        )}
+        <TouchableOpacity
+          style={[
+            styles.tab,
+            sortMode === "added" ? styles.tabActive : styles.tabInactive,
+          ]}
+          onPress={() => setSortMode("added")}
+          activeOpacity={0.8}
+        >
+          <Text
+            style={
+              sortMode === "added"
+                ? styles.tabTextActive
+                : styles.tabTextInactive
+            }
+          >
+            Od daty wydarzenia
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      {favoriteEvents.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="bookmark-outline" size={80} color="#999999" />
+          <ThemedText style={styles.emptyTitle}>Brak ulubionych</ThemedText>
+          <ThemedText style={styles.emptySubtext}>
+            Wydarzenia, które polubisz, pojawią się tutaj
+          </ThemedText>
+        </View>
+      ) : (
+        <FlatList
+          data={favoriteEvents}
+          renderItem={renderEventCard}
+          keyExtractor={(item: IEvent) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </SafeAreaView>
   );
 }
