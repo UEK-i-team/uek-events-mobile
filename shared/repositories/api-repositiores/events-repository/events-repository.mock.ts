@@ -2,7 +2,7 @@ import { IEventsRepository } from "./events-repository";
 
 export class EventsRepositoryMock implements IEventsRepository {
   public async getEvents() {
-    return [
+    const events =  [
       {
         id: "4",
         update_date: "2026-03-12T16:00:00Z",
@@ -130,5 +130,8 @@ export class EventsRepositoryMock implements IEventsRepository {
         registration_type: "REGISTRATION_REQUIRED",
       },
     ];
+
+    events.sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+    return events;
   }
 }
