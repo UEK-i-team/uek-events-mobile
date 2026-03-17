@@ -1,18 +1,26 @@
+import { isSameDay, resetTime } from "@/utils/functions/date-utils";
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { IEvent } from "@/shared/types/event";
-import React, { useContext, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+} from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    View,
-    ViewabilityConfig,
+  ActivityIndicator,
+  FlatList,
+  View,
+  ViewToken,
+  ViewabilityConfig,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
+import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
 
 export default function HomeView() {
   const { flatListRef, headerHeight } = useHomeScreen();
@@ -23,6 +31,11 @@ export default function HomeView() {
   const containerRef = useRef<View>(null);
 
   const [height, setHeight] = useState(0);
+
+  const [selectedDate, setSelectedDate] = useState<Date | null | undefined>(
+    null,
+  );
+  const [visibleEventId, setVisibleEventId] = useState<string | null>(null);
 
   const viewabilityConfig = useRef<ViewabilityConfig>({
     viewAreaCoveragePercentThreshold: 50,
@@ -35,6 +48,55 @@ export default function HomeView() {
         event={item}
         cardHeight={height}
         toggleFavorite={toggleFavoriteEvent}
+      />
+    );
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+
+    if (!events || !flatListRef.current) return;
+
+    const index = events.findIndex((e) =>
+      isSameDay(e.start_date, date),
+    );
+
+    if (index !== -1) {
+      flatListRef.current.scrollToIndex({ index, animated: true });
+    }
+  };
+
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0) {
+        const visibleItem = viewableItems[0];
+        const event = visibleItem.item as IEvent;
+
+        if (event) {
+          setVisibleEventId(event.id);
+          if (event.start_date) {
+            const date = new Date(event.start_date);
+            setSelectedDate((prev) => {
+              // Only update if date changed essentially (day level)
+              if (!prev || !isSameDay(prev, date)) {
+                return date;
+              }
+              return prev;
+            });
+          }
+        }
+      }
+    },
+    [],
+  );
+
+  const renderTimelineScroller = () => {
+    return (
+      <TimelineScroller
+        events={events}
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        visibleEventId={visibleEventId}
       />
     );
   };
@@ -86,7 +148,7 @@ export default function HomeView() {
       ]}
       edges={["top"]}
     >
-      <View style={styles.calendarMock}></View>
+      {renderTimelineScroller()}
       <View
         ref={containerRef}
         style={styles.eventsContainer}
@@ -115,6 +177,7 @@ export default function HomeView() {
                     decelerationRate="fast"
                     disableIntervalMomentum={true}
                     viewabilityConfig={viewabilityConfig}
+                    onViewableItemsChanged={onViewableItemsChanged}
                   />
                 )}
       </View>
