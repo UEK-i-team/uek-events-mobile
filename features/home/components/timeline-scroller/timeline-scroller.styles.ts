@@ -24,11 +24,11 @@ container: {
     paddingLeft: 12,
   },
   monthTextActive: {
-    fontWeight: '700',
+    fontWeight: '300',
   },
   monthTextSide: {
-    fontSize: 20,
-    fontWeight: '400',
+    fontSize: 24,
+    fontWeight: '300',
   },
   monthTextSideLight: {
     color: '#111111',
