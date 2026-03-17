@@ -11,6 +11,7 @@ import { ExternalLink } from "@/shared/components/external-link/external-link";
 import { IconSymbol } from "@/shared/components/icon-symbol/icon-symbol";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { theme } from "@/shared/constants/theme";
 
 export default function InfoScreen() {
   const handleDeleteHalfEvents = async () => {
@@ -72,7 +73,10 @@ export default function InfoScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: "#FFFFFF" }]}
+      style={[
+        styles.container,
+        { backgroundColor: theme.light.mainBackground },
+      ]}
       edges={["top"]}
     >
       <ScrollView
@@ -87,14 +91,7 @@ export default function InfoScreen() {
           >
             O aplikacji
           </ThemedText>
-          <View
-            style={[
-              styles.creatorsSection,
-              {
-                backgroundColor: "#F9FCFF",
-              },
-            ]}
-          >
+          <View style={[styles.creatorsSection]}>
             <ThemedText style={[styles.creatorsTitle, { color: "#000000" }]}>
               CEL APLIKACJI ORAZ TWÓRCY:
             </ThemedText>
@@ -108,9 +105,9 @@ export default function InfoScreen() {
               style={[styles.creatorsText, { color: "#000000" }]}
             ></ThemedText>
             <ThemedText style={[styles.creatorsText, { color: "#000000" }]}>
-              Jesteśmy Koło Naukowe Informatyki i::team, studenci UEK, którzy
-              rozwiązują problemy z kodem w ręku. Stworzono przez studentów, dla
-              studentów. 🚀
+              {
+                "Jesteśmy studentami UEK, którzy mają dokładnie ten sam problem i chcemy go rozwiązać. \n\nAplikacja stwrzona \nprzez studentów, dla studentów. 🚀"
+              }
             </ThemedText>
           </View>
           <View style={styles.linkItem}>
@@ -240,7 +237,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   sectionTitle: {
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: "700",
     paddingHorizontal: 20,
   },

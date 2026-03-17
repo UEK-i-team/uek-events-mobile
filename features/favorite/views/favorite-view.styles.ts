@@ -1,21 +1,45 @@
+import { theme } from "@/shared/constants/theme";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 16,
+  tabsRow: {
+    flexDirection: "row",
+    paddingHorizontal: 14,
+    gap: 8,
+    marginBottom: 20,
+    marginTop: 8,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
+  tab: {
+    flex: 1,
+    height: 55,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E9E9E9",
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  tabActive: {
+    borderColor: theme.light.primary,
+  },
+  tabInactive: {
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.13)",
+  },
+  tabTextActive: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: theme.light.primary,
+  },
+  tabTextInactive: {
+    fontSize: 14,
+    fontWeight: "300",
     color: "#000000",
   },
   listContent: {
-    paddingTop: 8,
     paddingBottom: 24,
   },
   emptyContainer: {
@@ -30,11 +54,6 @@ export const styles = StyleSheet.create({
     marginTop: 16,
     color: "#000000",
     textAlign: "center",
-  },
-  emptyText: {
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
   },
   emptySubtext: {
     fontSize: 14,

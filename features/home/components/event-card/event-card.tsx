@@ -1,12 +1,13 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
+import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
 import React from "react";
 import {
-  Image,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
+import { Image } from "expo-image";
 
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { IEvent } from "@/shared/types/event";
@@ -31,21 +32,21 @@ export function EventCard({
   cardHeight,
   toggleFavorite,
 }: EventCardProps) {
-  const { width: SCREEN_WIDTH } = useWindowDimensions();
+  const {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    fontScale,
+  } = useWindowDimensions();
   const router = useRouter();
 
-  // const { isViewed } = useViewedEvents();
-
-  // const viewed = isViewed(event.id);
-
-  // const cardBackgroundColor = "#FFFFFF";
-  // const textColor = "#000000";
-  // const secondaryTextColor = "#666666";
-  // const iconColor = "#687076";
-
-  // const getTagColor = (index: number) => {
-  //   return TAG_COLORS[index % TAG_COLORS.length];
-  // };
+  const isSmallScreen =
+    SCREEN_HEIGHT < 800 ||
+    (SCREEN_HEIGHT < 900 && fontScale > 1.15) ||
+    fontScale > 1.3;
+  const isVerySmallScreen =
+    SCREEN_HEIGHT < 750 ||
+    (SCREEN_HEIGHT < 850 && fontScale > 1.3) ||
+    fontScale > 1.4;
 
   const handleCardPress = () => {
     router.push(`/event/${event.id}`);
@@ -77,33 +78,66 @@ export function EventCard({
           },
         ]}
       >
-        <View style={styles.imageContainer}>
+        <View
+          style={[styles.imageContainer, isVerySmallScreen && { height: 180 }]}
+        >
           <Image
-            source={{
-              uri: "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg",
-            }}
+            source={{ uri: event.image_url }}
             style={styles.image}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={200}
           />
           <RoundedButton
-            icon={FavoriteIcon}
-            iconColor={event.isFavorite ? "white" : theme.light.dark_grey}
-            backgroundColor={event.isFavorite ? "red" : "white"}
+            icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
+            iconColor={
+              event.isFavorite ? theme.light.red_regular : theme.light.dark_grey
+            }
+            backgroundColor={event.isFavorite ? theme.light.red_light : "white"}
             size="medium"
             onPress={handleFavoritePress}
-            style={{ position: "absolute", bottom: -30, right: 16 }}
+            style={{
+              position: "absolute",
+              bottom: -30,
+              right: 16,
+              borderColor: event.isFavorite
+                ? theme.light.red_regular
+                : theme.light.mainBackground,
+              borderWidth: 1,
+            }}
           />
         </View>
         <View style={styles.infoContainer}>
           <DateAndTime dateISO={event.start_date} style={{ marginTop: 22 }} />
-          <Text style={styles.title}>{event.title}</Text>
-          <Text style={styles.description}>{event.short_desc}</Text>
+          <Text
+            style={[
+              styles.title,
+              isSmallScreen && { fontSize: 24, marginTop: 4 },
+            ]}
+            maxFontSizeMultiplier={1.2}
+          >
+            {event.title}
+          </Text>
+          {/* Ukrywamy opis lub zmniejszamy ilość linii na bardzo małych oknach */}
+          {!isVerySmallScreen && (
+            <Text
+              style={[
+                styles.description,
+                isSmallScreen && { fontSize: 16, marginTop: 4 },
+              ]}
+              numberOfLines={isVerySmallScreen ? 1 : 2}
+              maxFontSizeMultiplier={1.2}
+            >
+              {event.short_desc}
+            </Text>
+          )}
           <Location
             locationCategory={event.location_category}
             registrationType={event.registration_type}
             style={{ marginTop: 18 }}
           />
           <Badge
+            key={event.event_category}
             name={event.event_category}
             color={theme.light.dark_grey}
             style={{ marginTop: 18 }}
@@ -111,7 +145,7 @@ export function EventCard({
           <View style={styles.tagsContainer}>
             {event.tags.map((tag, index) => (
               <Badge
-                key={tag}
+                key={tag + index}
                 name={tag}
                 color={TAG_COLORS[index] || TAG_COLORS[0]}
                 textColor={theme.light.dark_grey}

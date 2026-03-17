@@ -1,6 +1,7 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
@@ -16,6 +17,7 @@ import {
 import { ViewedEventsProvider } from "@/features/viewed";
 import { EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
+import { theme } from "@/shared/constants/theme";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -57,8 +59,13 @@ export default function RootLayout() {
             <ViewedEventsProvider>
               <NotificationProvider>
                 <FiltersProvider>
-                  <AppContent />
-                  <StatusBar style="dark" />
+                  <BottomSheetModalProvider>
+                    <AppContent />
+                    <StatusBar
+                      style="dark"
+                      backgroundColor={theme.light.mainBackground}
+                    />
+                  </BottomSheetModalProvider>
                 </FiltersProvider>
               </NotificationProvider>
             </ViewedEventsProvider>
