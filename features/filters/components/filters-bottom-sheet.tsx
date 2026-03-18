@@ -17,6 +17,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { BackHandler, StyleSheet, View } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface FiltersBottomSheetProps {
   isOpen: boolean;
@@ -57,22 +58,23 @@ export function FiltersBottomSheet({
   }, [isOpen]);
 
   // Obsługa przycisku wstecz na Androidzie
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+useFocusEffect(
+  useCallback(() => {
+    if (!isOpen) return;
 
-    const backHandler = BackHandler.addEventListener(
+    const onBackPress = () => {
+      onClose(); // 👈 zamyka bottom sheet (czyli ustawia isOpen = false w parent)
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
       "hardwareBackPress",
-      () => {
-        onClose();
-        return true;
-      },
+      onBackPress
     );
 
-    return () => backHandler.remove();
-  }, [isOpen, onClose]);
-
+    return () => subscription.remove();
+  }, [isOpen, onClose])
+);
   const handleSheetChanges = useCallback(
     (index: number) => {
       if (index === -1 && isOpen) {
@@ -372,3 +374,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
