@@ -40,6 +40,7 @@ export function EventCard({
   } = useWindowDimensions();
   const router = useRouter();
   const [dominantColor, setDominantColor] = useState<string>(theme.light.mainBackground);
+  const [resizeMode, setResizeMode] = useState<"contain" | "cover">("contain");
 
   const isSmallScreen =
     SCREEN_HEIGHT < 800 ||
@@ -55,6 +56,19 @@ export function EventCard({
 
   useEffect(() => {
     if (imageUrl) {
+      // Determine resize mode based on dimensions
+      Image.getSize(
+        imageUrl,
+        (width, height) => {
+          if (width <= height) {
+            setResizeMode("cover");
+          } else {
+            setResizeMode("contain");
+          }
+        },
+        (error) => console.warn("Failed to get image size:", error)
+      );
+
       getColors(imageUrl, {
         fallback: theme.light.mainBackground,
         cache: true,
@@ -62,8 +76,9 @@ export function EventCard({
       })
         .then((colors) => {
           const color =
-            (colors as any).dominant ||
+            (colors as any).background ||
             (colors as any).primary ||
+            (colors as any).dominant ||
             theme.light.mainBackground;
           setDominantColor(color);
         })
@@ -111,7 +126,7 @@ export function EventCard({
               uri: imageUrl,
             }}
             style={styles.image}
-            contentFit="contain"
+            contentFit={resizeMode}
             cachePolicy="disk"
             transition={200}
           />
