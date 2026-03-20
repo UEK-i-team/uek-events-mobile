@@ -23,7 +23,11 @@ import LocationIcon from "@/assets/icons/location.svg";
 import PersonIcon from "@/assets/icons/person-200.svg";
 import { theme } from "@/shared/constants/theme";
 import { InfoRow } from "@/features/event-details/components/info-row/info-row";
-import { formatEventDate, formatEventTime, formatShareEventDate } from "@/utils/functions/date-utils";
+import {
+  formatEventTime,
+  formatShareEventDate,
+  formatEventDateWithMonth,
+} from "@/utils/functions/date-utils";
 
 export interface EventDetailsViewProps {
   eventId: string;
@@ -39,31 +43,10 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
     return <Text>Event not found</Text>;
   }
 
-  const dateObj = new Date(event.start_date);
-  const monthsPolish = [
-    "Stycznia",
-    "Lutego",
-    "Marca",
-    "Kwietnia",
-    "Maja",
-    "Czerwca",
-    "Lipca",
-    "Sierpnia",
-    "Września",
-    "Października",
-    "Listopada",
-    "Grudnia",
-  ];
-
   const colorsArray = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
 
-  const day = dateObj.getDate();
-  const month = monthsPolish[dateObj.getMonth()];
-  const startDateFormatted = `${day} ${month}`;
-
-  const hours = dateObj.getHours().toString().padStart(2, "0");
-  const minutes = dateObj.getMinutes().toString().padStart(2, "0");
-  const startTimeFormatted = `${hours}:${minutes}`;
+  const startDateFormatted = formatEventDateWithMonth(event.start_date);
+  const startTimeFormatted = formatEventTime(event.start_date);
 
   const onShare = async () => {
     try {

@@ -75,3 +75,25 @@ export function formatShareEventDate(isoString: string): string {
   const month = MONTHS_SHORT[date.getMonth()];
   return `${prep} ${day} ${dayNum} ${month}`;
 }
+
+const MONTHS_POLISH_GENITIVE = [
+  "Stycznia",
+  "Lutego",
+  "Marca",
+  "Kwietnia",
+  "Maja",
+  "Czerwca",
+  "Lipca",
+  "Sierpnia",
+  "Września",
+  "Października",
+  "Listopada",
+  "Grudnia",
+];
+
+export function formatEventDateWithMonth(isoString: string): string {
+  const dateObj = new Date(isoString);
+  const day = dateObj.getDate();
+  const month = MONTHS_POLISH_GENITIVE[dateObj.getMonth()];
+  return `${day} ${month}`;
+}
