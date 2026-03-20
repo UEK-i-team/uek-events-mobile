@@ -1,8 +1,9 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
-import { getColors } from "react-native-image-colors";
 import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
 import React, { useEffect, useState } from "react";
+import { getColors } from "react-native-image-colors";
 import {
+  Image as RNImage,
   Text,
   TouchableOpacity,
   View,
@@ -51,16 +52,16 @@ export function EventCard({
     (SCREEN_HEIGHT < 850 && fontScale > 1.3) ||
     fontScale > 1.4;
 
-  // Extract date and image url
+    // Extract date and image url
   const imageUrl = event.image_url || "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
 
   useEffect(() => {
     if (imageUrl) {
       // Determine resize mode based on dimensions
-      Image.getSize(
+      RNImage.getSize(
         imageUrl,
         (width, height) => {
-          if (width <= height) {
+          if (width <= (1.3 * height)) {
             setResizeMode("cover");
           } else {
             setResizeMode("contain");
@@ -77,8 +78,8 @@ export function EventCard({
         .then((colors) => {
           const color =
             (colors as any).background ||
-            (colors as any).primary ||
             (colors as any).dominant ||
+            (colors as any).primary ||
             theme.light.mainBackground;
           setDominantColor(color);
         })
@@ -86,7 +87,7 @@ export function EventCard({
           console.warn("Failed to extract color for card:", err);
         });
     }
-  }, [imageUrl]);
+  }, [imageUrl]);;
 
   const handleCardPress = () => {
     router.push(`/event/${event.id}`);
