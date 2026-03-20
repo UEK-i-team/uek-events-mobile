@@ -4,6 +4,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  Share,
 } from "react-native";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,6 +23,7 @@ import LocationIcon from "@/assets/icons/location.svg";
 import PersonIcon from "@/assets/icons/person-200.svg";
 import { theme } from "@/shared/constants/theme";
 import { InfoRow } from "@/features/event-details/components/info-row/info-row";
+import { formatEventDate, formatEventTime, formatShareEventDate } from "@/utils/functions/date-utils";
 
 export interface EventDetailsViewProps {
   eventId: string;
@@ -63,6 +65,23 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const minutes = dateObj.getMinutes().toString().padStart(2, "0");
   const startTimeFormatted = `${hours}:${minutes}`;
 
+  const onShare = async () => {
+    try {
+      const formattedDate = formatShareEventDate(event.start_date);
+      const formattedTime = formatEventTime(event.start_date);
+      const categoryText = event.event_category ? `**${event.event_category.toLowerCase()}**` : 'wydarzenie';
+      
+      const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
+
+      await Share.share({
+        message: messageTemplate,
+        url: event.origin_url,
+      });
+    } catch (error: any) {
+      console.error(error.message);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <ScrollView
@@ -81,6 +100,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             <RoundedButton
               icon={ShareIcon}
               backgroundColor={theme.light.primary}
+              onPress={onShare}
             />
             <RoundedButton
               icon={event.isFavorite ? HeartFilledIcon : HeartOutlineIcon}
