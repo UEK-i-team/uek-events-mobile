@@ -1,6 +1,7 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
+import { getColors } from "react-native-image-colors";
 import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   TouchableOpacity,
@@ -38,6 +39,7 @@ export function EventCard({
     fontScale,
   } = useWindowDimensions();
   const router = useRouter();
+  const [dominantColor, setDominantColor] = useState<string>(theme.light.mainBackground);
 
   const isSmallScreen =
     SCREEN_HEIGHT < 800 ||
@@ -47,6 +49,29 @@ export function EventCard({
     SCREEN_HEIGHT < 750 ||
     (SCREEN_HEIGHT < 850 && fontScale > 1.3) ||
     fontScale > 1.4;
+
+  // Extract date and image url
+  const imageUrl = event.image_url || "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
+
+  useEffect(() => {
+    if (imageUrl) {
+      getColors(imageUrl, {
+        fallback: theme.light.mainBackground,
+        cache: true,
+        key: imageUrl,
+      })
+        .then((colors) => {
+          const color =
+            (colors as any).dominant ||
+            (colors as any).primary ||
+            theme.light.mainBackground;
+          setDominantColor(color);
+        })
+        .catch((err) => {
+          console.warn("Failed to extract color for card:", err);
+        });
+    }
+  }, [imageUrl]);
 
   const handleCardPress = () => {
     router.push(`/event/${event.id}`);
@@ -79,12 +104,14 @@ export function EventCard({
         ]}
       >
         <View
-          style={[styles.imageContainer, isVerySmallScreen && { height: 180 }]}
+          style={[styles.imageContainer, isVerySmallScreen && { height: 180 },{ backgroundColor: dominantColor }]}
         >
           <Image
-            source={{ uri: event.image_url }}
+            source={{
+              uri: imageUrl,
+            }}
             style={styles.image}
-            contentFit="cover"
+            contentFit="contain"
             cachePolicy="disk"
             transition={200}
           />
