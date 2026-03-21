@@ -1,25 +1,24 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
 import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
-import React, { useEffect, useState } from "react";
-import { getColors } from "react-native-image-colors";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import React from "react";
 import {
-  Image as RNImage,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
-import { Image } from "expo-image";
 
-import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
-import { IEvent } from "@/shared/types/event";
-import { useRouter } from "expo-router";
-
-import { theme } from "@/shared/constants/theme";
+import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
 import { Location } from "../location/location";
 import { styles } from "./event-card.styles";
+
+import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
+import { theme } from "@/shared/constants/theme";
+import { IEvent } from "@/shared/types/event";
 
 interface EventCardProps {
   event: IEvent;
@@ -40,8 +39,14 @@ export function EventCard({
     fontScale,
   } = useWindowDimensions();
   const router = useRouter();
-  const [dominantColor, setDominantColor] = useState<string>(theme.light.mainBackground);
-  const [resizeMode, setResizeMode] = useState<"contain" | "cover">("contain");
+
+  // Extract date and image url
+  const imageUrl =
+    event.image_url ||
+    "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
+
+  const { dominantColor, resizeMode } =
+    useResizeDominantBackgroundColor(imageUrl);
 
   const isSmallScreen =
     SCREEN_HEIGHT < 800 ||
@@ -51,43 +56,6 @@ export function EventCard({
     SCREEN_HEIGHT < 750 ||
     (SCREEN_HEIGHT < 850 && fontScale > 1.3) ||
     fontScale > 1.4;
-
-    // Extract date and image url
-  const imageUrl = event.image_url || "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
-
-  useEffect(() => {
-    if (imageUrl) {
-      // Determine resize mode based on dimensions
-      RNImage.getSize(
-        imageUrl,
-        (width, height) => {
-          if (width <= (1.3 * height)) {
-            setResizeMode("cover");
-          } else {
-            setResizeMode("contain");
-          }
-        },
-        (error) => console.warn("Failed to get image size:", error)
-      );
-
-      getColors(imageUrl, {
-        fallback: theme.light.mainBackground,
-        cache: true,
-        key: imageUrl,
-      })
-        .then((colors) => {
-          const color =
-            (colors as any).background ||
-            (colors as any).dominant ||
-            (colors as any).primary ||
-            theme.light.mainBackground;
-          setDominantColor(color);
-        })
-        .catch((err) => {
-          console.warn("Failed to extract color for card:", err);
-        });
-    }
-  }, [imageUrl]);;
 
   const handleCardPress = () => {
     router.push(`/event/${event.id}`);
