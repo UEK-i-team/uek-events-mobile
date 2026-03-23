@@ -1,5 +1,7 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
 import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   Text,
@@ -7,17 +9,16 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { Image } from "expo-image";
 
-import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
-import { IEvent } from "@/shared/types/event";
-import { useRouter } from "expo-router";
-
-import { theme } from "@/shared/constants/theme";
+import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
 import { Location } from "../location/location";
 import { styles } from "./event-card.styles";
+
+import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
+import { theme } from "@/shared/constants/theme";
+import { IEvent } from "@/shared/types/event";
 
 interface EventCardProps {
   event: IEvent;
@@ -38,6 +39,14 @@ export function EventCard({
     fontScale,
   } = useWindowDimensions();
   const router = useRouter();
+
+  // Extract date and image url
+  const imageUrl =
+    event.image_url ||
+    "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
+
+  const { dominantColor, resizeMode } =
+    useResizeDominantBackgroundColor(imageUrl);
 
   const isSmallScreen =
     SCREEN_HEIGHT < 800 ||
@@ -79,12 +88,14 @@ export function EventCard({
         ]}
       >
         <View
-          style={[styles.imageContainer, isVerySmallScreen && { height: 180 }]}
+          style={[styles.imageContainer, isVerySmallScreen && { height: 180 },{ backgroundColor: dominantColor }]}
         >
           <Image
-            source={{ uri: event.image_url }}
+            source={{
+              uri: imageUrl,
+            }}
             style={styles.image}
-            contentFit="cover"
+            contentFit={resizeMode}
             cachePolicy="disk"
             transition={200}
           />
