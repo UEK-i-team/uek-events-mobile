@@ -45,8 +45,10 @@ export class DictionariesRepository implements IDictionariesRepository {
         params,
       });
 
-      if (response.status === 200) {
+
+      if (response.status === 200 && response.data) {
         const responseData = response.data;
+        
 
         const mappedDictionaries = this.mapDictionaries(responseData.data);
 
@@ -57,7 +59,7 @@ export class DictionariesRepository implements IDictionariesRepository {
       }
 
       const dictionaries =
-        await this.dictionariesCacheService.getDictionaries();
+        await this.dictionariesCacheService.getDictionaries()
 
       if (!dictionaries) {
         throw new Error("Dictionaries not found");
