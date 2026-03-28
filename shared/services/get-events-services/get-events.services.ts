@@ -25,14 +25,14 @@ export class EventsService implements IEventsService {
 
     return events.map((event) => ({
       ...event,
-      event_category: dictionaries.categories[event.event_category] || "",
+      event_type: dictionaries.event_types[event.event_type] || "",
       location_category:
-        dictionaries.location_categories[event.location_category] || "",
+        dictionaries.event_location[event.location_category] || "",
       organisators_category:
-        dictionaries.organizer_categories[event.organisators_category] || "",
+        dictionaries.organizer_types[event.organisators_category] || "",
       tags: event.tags.map((tag) => dictionaries.tags[tag] || ""),
       registration_type:
-        dictionaries.registration_categories[event.registration_type] || "",
+        dictionaries.registration_types[event.registration_type] || "",
       isFavorite: favoriteEventsIdsSet.has(event.id),
     }));
   }

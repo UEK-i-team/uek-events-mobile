@@ -23,7 +23,7 @@ import { IEvent } from "@/shared/types/event";
 interface EventCardProps {
   event: IEvent;
   cardHeight: number;
-  toggleFavorite: (eventId: string, isFavorite: boolean) => void;
+  toggleFavorite: (eventId: number, isFavorite: boolean) => void;
 }
 
 const TAG_COLORS = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
@@ -148,8 +148,8 @@ export function EventCard({
             style={{ marginTop: 18 }}
           />
           <Badge
-            key={event.event_category}
-            name={event.event_category}
+            key={event.event_type}
+            name={event.event_type}
             color={theme.light.dark_grey}
             style={{ marginTop: 18 }}
           />

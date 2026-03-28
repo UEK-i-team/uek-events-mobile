@@ -4,13 +4,11 @@ import { IDictionariesRepository } from "./dictionaries-repository";
 export class DictionariesRepositoryMock implements IDictionariesRepository {
   public async getDictionaries(): Promise<IDictionaries> {
     return {
-      categories: {
-        IT: "Technologie Informatyczne",
-        BUSINESS: "Biznes i Zarządzanie",
-        TRAINING: "Szkolenie",
-        ENTERTAINMENT: "Kultura i Rozrywka",
+      source_names: {
+        MAIN_PAGE_UEK: "Strona główna UEK",
+        ACK_CALENDAR: "Kalendarz ACK",
       },
-      location_categories: {
+      event_location: {
         CAM: "Kampus UEK",
         ONLINE: "Online",
         ONL: "Zdalnie",
@@ -31,17 +29,23 @@ export class DictionariesRepositoryMock implements IDictionariesRepository {
         Muzyka: "Muzyka",
         Zabawa: "Zabawa",
       },
-      organizer_categories: {
+      organizer_types: {
         ACK: "ACK UEK",
         COMPANY: "Firma",
         KNR: "Koło Naukowe Rachunkowości",
         NZS: "Niezależne Zrzeszenie Studentów",
         SS: "Samorząd Studencki",
       },
-      registration_categories: {
+      registration_types: {
         FREE: "Darmowe",
         REGISTRATION_REQUIRED: "Wymagana rejestracja",
         PAID: "Płatne",
+      },
+      event_types: {
+        IT: "Technologie Informatyczne",
+        BUSINESS: "Biznes i Zarządzanie",
+        TRAINING: "Szkolenie",
+        ENTERTAINMENT: "Kultura i Rozrywka",
       },
     };
   }

@@ -1,21 +1,21 @@
 import { AsyncStorageService } from "@/shared/storage/async-storage-service/async-storage-service";
 
 export interface IFavoriteEventsRepository {
-  getFavoriteEvents(): Promise<string[] | null>;
-  addFavoriteEvent(eventId: string): Promise<void>;
-  removeFavoriteEvent(eventId: string): Promise<void>;
+  getFavoriteEvents(): Promise<number[] | null>;
+  addFavoriteEvent(eventId: number): Promise<void>;
+  removeFavoriteEvent(eventId: number): Promise<void>;
 }
 
 export class FavoriteEventsRepository implements IFavoriteEventsRepository {
   constructor(
-    private readonly asyncStorageFavoriteService: AsyncStorageService<string[]>,
+    private readonly asyncStorageFavoriteService: AsyncStorageService<number[]>,
   ) {}
 
-  async getFavoriteEvents(): Promise<string[] | null> {
+  async getFavoriteEvents(): Promise<number[] | null> {
     return await this.asyncStorageFavoriteService.get();
   }
 
-  async addFavoriteEvent(eventId: string) {
+  async addFavoriteEvent(eventId: number) {
     const favoriteEvents = await this.getFavoriteEvents();
     if (favoriteEvents) {
       favoriteEvents.push(eventId);
@@ -25,7 +25,7 @@ export class FavoriteEventsRepository implements IFavoriteEventsRepository {
     }
   }
 
-  async removeFavoriteEvent(eventId: string) {
+  async removeFavoriteEvent(eventId: number) {
     const favoriteEvents = await this.getFavoriteEvents();
     if (favoriteEvents) {
       const updatedFavoriteEvents = favoriteEvents.filter(

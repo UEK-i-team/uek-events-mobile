@@ -4,7 +4,7 @@ export class EventsRepositoryMock implements IEventsRepository {
   public async getEvents() {
     const events =  [
       {
-        id: "4",
+        id: 4,
         update_date: "2026-03-12T16:00:00Z",
         start_date: "2026-01-12T18:00:00Z",
         end_date: "2026-01-12T20:00:00Z",
@@ -16,7 +16,7 @@ export class EventsRepositoryMock implements IEventsRepository {
           "Nauczysz się poprawnie strukturyzować spotkania biznesowe i maile.",
           "Zdobędziesz praktyczne porady z zakresu delegowania zadań i ustalania terminów.",
         ],
-        event_category: "BUSINESS",
+        event_type: "BUSINESS",
         location_category: "ONLINE",
         location: "MS Teams",
         organisators_category: "ACK",
@@ -29,7 +29,7 @@ export class EventsRepositoryMock implements IEventsRepository {
         registration_type: "FREE",
       },
       {
-        id: "5",
+        id: 5,
         update_date: "2026-03-12T16:10:00Z",
         start_date: "2026-03-09T17:30:00Z",
         end_date: "2026-03-09T18:45:00Z",
@@ -41,7 +41,7 @@ export class EventsRepositoryMock implements IEventsRepository {
           "Praktyczne wskazówki dotyczące bezpiecznego i legalnego rozwoju własnej firmy.",
           "Szkolenie prowadzone przez doświadczonego radcę prawnego, dr. Kamila Dobosza.",
         ],
-        event_category: "BUSINESS",
+        event_type: "BUSINESS",
         location_category: "CAM",
         location: "Sala G13, Budynek G (KSB)",
         organisators_category: "ACK",
@@ -55,7 +55,7 @@ export class EventsRepositoryMock implements IEventsRepository {
       },
 
       {
-        id: "6",
+        id: 6,
         update_date: "2026-03-12T16:11:00Z",
         start_date: "2026-03-09T17:30:00Z",
         end_date: "2026-03-09T18:45:00Z",
@@ -67,7 +67,7 @@ export class EventsRepositoryMock implements IEventsRepository {
           "Poznasz kluczowe decyzje prawne na starcie (forma działalności, wspólnicy).",
           "Nauczysz się identyfikować ryzyka regulacyjne przed wejściem na rynek.",
         ],
-        event_category: "TRAINING",
+        event_type: "TRAINING",
         location_category: "CAM",
         location: "Sala G13, Budynek G (Krakowska Szkoła Biznesu)",
         organisators_category: "ACK",
@@ -80,7 +80,7 @@ export class EventsRepositoryMock implements IEventsRepository {
         registration_type: "REGISTRATION_REQUIRED",
       },
       {
-        id: "7",
+        id: 7,
         update_date: "2026-03-12T16:12:00Z",
         start_date: "2026-03-05T11:30:00Z",
         end_date: "2026-03-05T12:30:00Z",
@@ -92,7 +92,7 @@ export class EventsRepositoryMock implements IEventsRepository {
           "Odkryjesz sposoby na autentyczne przejście przez rozmowę kwalifikacyjną.",
           "Zrozumiesz, jak zbudować silną markę osobistą na rynku pracy.",
         ],
-        event_category: "TRAINING",
+        event_type: "TRAINING",
         location_category: "CAM",
         location: "Pawilon S, I piętro, sala nr 3",
         organisators_category: "COMPANY",
@@ -105,7 +105,7 @@ export class EventsRepositoryMock implements IEventsRepository {
         registration_type: "REGISTRATION_REQUIRED",
       },
       {
-        id: "8",
+        id: 8,
         update_date: "2026-03-12T16:15:00Z",
         start_date: "2026-01-19T18:00:00Z",
         end_date: "2026-01-19T20:00:00Z",
@@ -117,7 +117,7 @@ export class EventsRepositoryMock implements IEventsRepository {
           "Nauczysz się dostosowywać swój styl pracy do osób z różnych środowisk.",
           "Zdobędziesz praktyczne wskazówki do udanej kolaboracji na rynku globalnym.",
         ],
-        event_category: "TRAINING",
+        event_type: "TRAINING",
         location_category: "ONLINE",
         location: "MS Teams",
         organisators_category: "COMPANY",

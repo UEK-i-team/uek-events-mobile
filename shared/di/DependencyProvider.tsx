@@ -23,7 +23,7 @@ const IS_API_MOCK_ENABLED =
 // storage
 const eventsCache = new EventsCacheService(cacheService);
 const dictionariesCache = new DictionariesCacheService(cacheService);
-const favoriteEventsStorage = new AsyncStorageService<string[]>(
+const favoriteEventsStorage = new AsyncStorageService<number[]>(
   "favorite-events",
 );
 const favoriteEventsRepository = new FavoriteEventsRepository(
