@@ -66,6 +66,10 @@ export function EventCard({
     toggleFavorite(event.id, !event.isFavorite);
   };
 
+  const imageHeight = isVerySmallScreen
+    ? 180
+    : Math.max(160, Math.min(220, cardHeight * 0.32));
+
   return (
     <View
       style={[
@@ -87,9 +91,8 @@ export function EventCard({
           },
         ]}
       >
-        <View
-          style={[styles.imageContainer, isVerySmallScreen && { height: 180 },{ backgroundColor: dominantColor }]}
-        >
+          <View   style={[styles.imageContainer, { height: imageHeight }]}
+                >
           <Image
             source={{
               uri: imageUrl,
