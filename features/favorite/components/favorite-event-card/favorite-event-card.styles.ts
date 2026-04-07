@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: 24,
-    paddingRight: 42,
+    paddingRight: 15,
   },
   title: {
     fontSize: 20,
@@ -36,9 +36,12 @@ export const styles = StyleSheet.create({
   },
   dateRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
-    gap: 8,
+    columnGap: 8,
+    rowGap: 8,
     marginBottom: 14,
+    width: "100%",
   },
   dateSection: {
     flexDirection: "row",
@@ -49,16 +52,16 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "300",
     color: "#111111",
+    flexShrink: 1,
   },
   tagsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
     columnGap: 14,
-    rowGap: 50,
+    rowGap: 15,
     marginTop: 16,
     marginBottom: 16,
-    height: 40,
     overflow: "hidden",
   },
   tag: {
