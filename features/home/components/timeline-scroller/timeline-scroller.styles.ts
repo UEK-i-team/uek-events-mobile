@@ -11,17 +11,19 @@ container: {
   monthStripWrapper: {
     overflow: 'hidden',
     marginBottom: 8,
-    height: 32,
+    height: 45,
     justifyContent: 'flex-end',
     paddingLeft: 16,
   },
   monthStripAnimated: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
   },
   monthItem: {
     width: MONTH_ITEM_WIDTH,
     paddingLeft: 12,
+    paddingRight: 12,
+    justifyContent: 'center',
   },
   monthTextActive: {
     fontWeight: '300',
@@ -29,6 +31,9 @@ container: {
   monthTextSide: {
     fontSize: 24,
     fontWeight: '300',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+    lineHeight: 30, // Powinno być nieco większe niż fontSize
   },
   monthTextSideLight: {
     color: '#111111',
@@ -64,7 +69,7 @@ container: {
   },
   dateBoxEmpty: {
     width: 36,
-    height: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
+    minHeight: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
     paddingBottom: 14, // Push the text up to match the visual center of the 48px box
     borderRadius: 10,
     justifyContent: 'center',
