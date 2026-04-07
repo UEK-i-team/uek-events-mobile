@@ -100,6 +100,7 @@ export default function FavoriteView() {
             <TouchableOpacity
               style={[
                 styles.tab,
+                { flex: 1, minWidth: 0 },
                 sortMode === "liked" ? styles.tabActive : styles.tabInactive,
               ]}
               onPress={() => setSortMode("liked")}
@@ -111,6 +112,9 @@ export default function FavoriteView() {
                     ? styles.tabTextActive
                     : styles.tabTextInactive
                 }
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                maxFontSizeMultiplier={1.2}
               >
                 Od daty polubienia
               </Text>
@@ -119,6 +123,7 @@ export default function FavoriteView() {
             <TouchableOpacity
               style={[
                 styles.tab,
+                { flex: 1, minWidth: 0 },
                 sortMode === "added" ? styles.tabActive : styles.tabInactive,
               ]}
               onPress={() => setSortMode("added")}
@@ -130,6 +135,9 @@ export default function FavoriteView() {
                     ? styles.tabTextActive
                     : styles.tabTextInactive
                 }
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                maxFontSizeMultiplier={1.2}
               >
                 Od daty wydarzenia
               </Text>
