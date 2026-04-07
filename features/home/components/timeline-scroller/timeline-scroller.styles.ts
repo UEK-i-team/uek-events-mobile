@@ -69,7 +69,7 @@ container: {
   },
   dateBoxEmpty: {
     width: 36,
-    minHeight: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
+    Height: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
     paddingBottom: 14, // Push the text up to match the visual center of the 48px box
     borderRadius: 10,
     justifyContent: 'center',
@@ -115,13 +115,6 @@ container: {
   dotActive: {
     backgroundColor: '#FF7324',
   },
-  dotInactiveLight: {
-    backgroundColor: '#4A4A4A',
-  },
-  dotInactiveDark: {
-    backgroundColor: '#A0A0A0',
-  },
-});
   dotInactiveLight: {
     backgroundColor: '#4A4A4A',
   },
