@@ -7,22 +7,9 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./favorite-event-card.styles";
+import { formatEventDate, formatEventTime } from "@/utils/functions/date-utils";
 
-const DAYS_SHORT = ["niedz", "pon", "wt", "śr", "czw", "pt", "sob"];
-const MONTHS_SHORT = [
-  "sty",
-  "lut",
-  "mar",
-  "kwi",
-  "maj",
-  "cze",
-  "lip",
-  "sie",
-  "wrz",
-  "paź",
-  "lis",
-  "gru",
-];
+
 
 const TAG_COLORS = [
   "#B4DEFF",
@@ -33,20 +20,7 @@ const TAG_COLORS = [
   "#FCE4EC",
 ];
 
-function formatDate(isoString: string): string {
-  const date = new Date(isoString);
-  const day = DAYS_SHORT[date.getDay()];
-  const dayNum = date.getDate();
-  const month = MONTHS_SHORT[date.getMonth()];
-  return `${day} - ${dayNum} ${month}`;
-}
 
-function formatTime(isoString: string): string {
-  const date = new Date(isoString);
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-}
 
 interface FavoriteEventCardProps {
   event: IEvent;
@@ -84,7 +58,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
                 color="#111111"
               />
               <Text style={styles.dateText}>
-                {formatDate(event.start_date)}
+                {formatEventDate(event.start_date)}
               </Text>
             </View>
             <View style={styles.dateSection}>
@@ -95,7 +69,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
                 color="#111111"
               />
               <Text style={styles.dateText}>
-                {formatTime(event.start_date)}
+                {formatEventTime(event.start_date)}
               </Text>
             </View>
           </View>

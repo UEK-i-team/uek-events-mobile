@@ -54,3 +54,46 @@ export function formatEventTime(isoString: string): string {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
 }
+
+const DAYS_LOCATIVE = [
+  "niedzielę",
+  "poniedziałek",
+  "wtorek",
+  "środę",
+  "czwartek",
+  "piątek",
+  "sobotę",
+];
+const PREPOSITIONS = ["W", "W", "We", "W", "W", "W", "W"];
+
+export function formatShareEventDate(isoString: string): string {
+  const date = new Date(isoString);
+  const dayIndex = date.getDay();
+  const day = DAYS_LOCATIVE[dayIndex];
+  const prep = PREPOSITIONS[dayIndex];
+  const dayNum = date.getDate();
+  const month = MONTHS_SHORT[date.getMonth()];
+  return `${prep} ${day} ${dayNum} ${month}`;
+}
+
+const MONTHS_POLISH_GENITIVE = [
+  "Stycznia",
+  "Lutego",
+  "Marca",
+  "Kwietnia",
+  "Maja",
+  "Czerwca",
+  "Lipca",
+  "Sierpnia",
+  "Września",
+  "Października",
+  "Listopada",
+  "Grudnia",
+];
+
+export function formatEventDateWithMonth(isoString: string): string {
+  const dateObj = new Date(isoString);
+  const day = dateObj.getDate();
+  const month = MONTHS_POLISH_GENITIVE[dateObj.getMonth()];
+  return `${day} ${month}`;
+}
