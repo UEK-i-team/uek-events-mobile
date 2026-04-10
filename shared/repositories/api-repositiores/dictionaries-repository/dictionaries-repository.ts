@@ -5,11 +5,12 @@ import { IHttpConnector } from "../../../connectors/http-connector";
 export type ApiDictionaryItem = { key: string; value: string };
 
 export interface ApiDictionariesData {
-  categories: ApiDictionaryItem[];
-  location_categories: ApiDictionaryItem[];
+  source_names: ApiDictionaryItem[];
+  event_location: ApiDictionaryItem[];
   tags: ApiDictionaryItem[];
-  organizer_categories: ApiDictionaryItem[];
-  registration_categories: ApiDictionaryItem[];
+  organizer_types: ApiDictionaryItem[];
+  registration_types: ApiDictionaryItem[];
+  event_types: ApiDictionaryItem[];
 }
 
 export interface ApiDictionariesMetaData {
@@ -26,7 +27,7 @@ export interface IDictionariesRepository {
 }
 
 export class DictionariesRepository implements IDictionariesRepository {
-  private readonly URL = "api/dictionaries";
+  private readonly URL = "api/tags";
 
   constructor(
     private readonly http: IHttpConnector,
@@ -44,8 +45,10 @@ export class DictionariesRepository implements IDictionariesRepository {
         params,
       });
 
-      if (response.status === 200) {
+
+      if (response.status === 200 && response.data) {
         const responseData = response.data;
+        
 
         const mappedDictionaries = this.mapDictionaries(responseData.data);
 
@@ -56,7 +59,7 @@ export class DictionariesRepository implements IDictionariesRepository {
       }
 
       const dictionaries =
-        await this.dictionariesCacheService.getDictionaries();
+        await this.dictionariesCacheService.getDictionaries()
 
       if (!dictionaries) {
         throw new Error("Dictionaries not found");
@@ -69,42 +72,22 @@ export class DictionariesRepository implements IDictionariesRepository {
   }
 
   private mapDictionaries(dictionaries: ApiDictionariesData): IDictionaries {
+    const arrayToDict = (items: ApiDictionaryItem[]) =>
+      items.reduce(
+        (acc, item) => {
+          acc[item.key] = item.value;
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+
     return {
-      categories: dictionaries.categories.reduce(
-        (acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        },
-        {} as Record<string, string>,
-      ),
-      location_categories: dictionaries.location_categories.reduce(
-        (acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        },
-        {} as Record<string, string>,
-      ),
-      tags: dictionaries.tags.reduce(
-        (acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        },
-        {} as Record<string, string>,
-      ),
-      organizer_categories: dictionaries.organizer_categories.reduce(
-        (acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        },
-        {} as Record<string, string>,
-      ),
-      registration_categories: dictionaries.registration_categories.reduce(
-        (acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        },
-        {} as Record<string, string>,
-      ),
+      source_names: arrayToDict(dictionaries.source_names),
+      event_location: arrayToDict(dictionaries.event_location),
+      tags: arrayToDict(dictionaries.tags),
+      organizer_types: arrayToDict(dictionaries.organizer_types),
+      registration_types: arrayToDict(dictionaries.registration_types),
+      event_types: arrayToDict(dictionaries.event_types),
     };
   }
 }

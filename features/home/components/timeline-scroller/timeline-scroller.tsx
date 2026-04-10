@@ -29,7 +29,7 @@ interface TimelineScrollerProps {
   events: IEvent[] | null;
   selectedDate: Date | null | undefined;
   onDateSelect: (date: Date) => void;
-  visibleEventId: string | null; // Added to highlight the active dot
+  visibleEventId: number | null; // Added to highlight the active dot
 }
 
 interface DayProps {
@@ -37,11 +37,11 @@ interface DayProps {
   item: DateItem;
   isDaySelected: boolean;
   itemWidth: number;
-  visibleEventId: string | null;
+  visibleEventId: number | null;
   isDark: boolean;
 }
 
-const getDotConfig = (events: IEvent[], visibleId: string | null) => {
+const getDotConfig = (events: IEvent[], visibleId: number | null) => {
   if (events.length <= 3) {
     // Show one dot per event
     return events.map((e) => ({
@@ -276,7 +276,7 @@ export function TimelineScroller({
           animated: true,
           viewPosition: 0.5,
         });
-      } catch (e) {
+      } catch {
         // ignore
       }
     }

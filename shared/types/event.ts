@@ -1,12 +1,12 @@
 export interface IEvent {
-  id: string;
+  id: number;
   update_date: string;
   start_date: string;
   end_date: string;
   title: string;
   short_desc: string;
   topics: string[];
-  event_category: string;
+  event_type: string;
   location_category: string;
   location: string;
   organisators_category: string;

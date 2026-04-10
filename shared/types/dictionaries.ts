@@ -1,9 +1,10 @@
 export type DictionaryItem = Record<string, string>;
 
 export interface IDictionaries {
-  categories: DictionaryItem;
-  location_categories: DictionaryItem;
+  source_names: DictionaryItem;
+  event_location: DictionaryItem;
   tags: DictionaryItem;
-  organizer_categories: DictionaryItem;
-  registration_categories: DictionaryItem;
+  organizer_types: DictionaryItem;
+  registration_types: DictionaryItem;
+  event_types: DictionaryItem;
 }

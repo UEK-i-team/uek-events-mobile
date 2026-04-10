@@ -35,7 +35,7 @@ export default function HomeView() {
   const [selectedDate, setSelectedDate] = useState<Date | null | undefined>(
     null,
   );
-  const [visibleEventId, setVisibleEventId] = useState<string | null>(null);
+  const [visibleEventId, setVisibleEventId] = useState<number | null>(null);
 
   const viewabilityConfig = useRef<ViewabilityConfig>({
     viewAreaCoveragePercentThreshold: 50,
@@ -169,7 +169,7 @@ export default function HomeView() {
                     bounces={true}
                     data={events}
                     renderItem={renderEventCard}
-                    keyExtractor={(item: IEvent) => item.id}
+                    keyExtractor={(item: IEvent) => item.id.toString()}
                     pagingEnabled
                     showsVerticalScrollIndicator={false}
                     snapToInterval={height}

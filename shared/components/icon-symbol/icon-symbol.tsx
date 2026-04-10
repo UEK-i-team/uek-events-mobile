@@ -27,7 +27,7 @@ const MAPPING = {
   'people': 'people',
   'arrow.up.right': 'open-in-new',
   'arrow.up.right.square': 'open-in-new',
-} as IconMapping;
+} as unknown as IconMapping;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.

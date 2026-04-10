@@ -138,7 +138,7 @@ export default function FavoriteView() {
           <FlatList
             data={favoriteEvents}
             renderItem={renderEventCard}
-            keyExtractor={(item: IEvent) => item.id}
+            keyExtractor={(item: IEvent) => item.id.toString()}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
           />

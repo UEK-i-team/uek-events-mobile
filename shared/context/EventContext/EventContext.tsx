@@ -6,8 +6,8 @@ export interface IEventContext {
   events: IEvent[] | null;
   status: "idle" | "loading" | "success" | "error";
   errorMessage?: string | null;
-  toggleFavoriteEvent: (eventId: string, isFavorite: boolean) => Promise<void>;
-  getEventById: (eventId: string) => IEvent | undefined;
+  toggleFavoriteEvent: (eventId: number, isFavorite: boolean) => Promise<void>;
+  getEventById: (eventId: number) => IEvent | undefined;
 }
 
 const defualtEventsContext: IEventContext = {
@@ -32,7 +32,7 @@ export const EventContextProvider = ({
   >("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const toggleFavoriteEvent = async (eventId: string, isFavorite: boolean) => {
+  const toggleFavoriteEvent = async (eventId: number, isFavorite: boolean) => {
     setEvents((prev) =>
       prev
         ? prev.map((e) => (e.id === eventId ? { ...e, isFavorite } : e))
@@ -57,7 +57,7 @@ export const EventContextProvider = ({
     }
   };
 
-  const getEventById = (eventId: string) => {
+  const getEventById = (eventId: number) => {
     return events?.find((e) => e.id === eventId);
   };
 

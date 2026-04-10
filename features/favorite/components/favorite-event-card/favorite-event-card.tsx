@@ -24,12 +24,12 @@ const TAG_COLORS = [
 
 interface FavoriteEventCardProps {
   event: IEvent;
-  onRemove: (id: string, isFavorite: boolean) => void;
+  onRemove: (id: number, isFavorite: boolean) => void;
 }
 
 export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const router = useRouter();
-  const allTags = [event.event_category, ...event.tags].filter(Boolean);
+  const allTags = [event.event_type, ...event.tags].filter(Boolean);
 
   return (
     <TouchableOpacity

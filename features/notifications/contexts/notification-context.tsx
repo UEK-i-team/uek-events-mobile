@@ -9,7 +9,7 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hideNotification = useCallback(() => {
     setCurrentNotification(null);

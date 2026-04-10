@@ -37,7 +37,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const router = useRouter();
   const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
 
-  const event = getEventById(eventId);
+  const event = getEventById(Number(eventId));
 
   if (!event) {
     return <Text>Event not found</Text>;
@@ -158,7 +158,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
               <Text
                 style={[styles.tagChipText, { color: theme.light.ligth_grey }]}
               >
-                {event.event_category}
+                {event.event_type}
               </Text>
             </View>
           </View>

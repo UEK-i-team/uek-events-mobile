@@ -4,7 +4,7 @@ import { IHttpConnector } from "../../../connectors/http-connector";
 
 interface ApiEventsMetaData {
   last_update_date_event: string;
-  deleted_events: string[];
+  deleted_events: number[];
 }
 
 interface ApiEventsResponse {

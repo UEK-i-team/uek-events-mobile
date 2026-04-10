@@ -48,7 +48,7 @@ export class EventsCacheService {
     }
   }
 
-  public async deleteEvents(eventIds: string[]): Promise<void> {
+  public async deleteEvents(eventIds: number[]): Promise<void> {
     const existingEvents = (await this.getEvents()) || [];
 
     const eventsMap = new Map(existingEvents.map((e) => [e.id, e]));
