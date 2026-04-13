@@ -1,13 +1,7 @@
 import { useFilters } from "@/features/filters/contexts";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
-import {
-  EventCategory,
-  EventLocation,
-  EventTag,
-  eventCategoryTranslations,
-  eventTagTranslations,
-} from "@/shared/types/event-enums";
+import { EventContext } from "@/shared/context/EventContext/EventContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   BottomSheetModal,
@@ -15,7 +9,7 @@ import {
   BottomSheetScrollView,
   TouchableOpacity,
 } from "@gorhom/bottom-sheet";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { BackHandler, StyleSheet, View } from "react-native";
 
 interface FiltersBottomSheetProps {
@@ -38,8 +32,28 @@ export function FiltersBottomSheet({
     toggleCategory,
     toggleLocation,
     toggleTag,
+    applyFilters,
     clearFilters,
   } = useFilters();
+
+  const { events } = useContext(EventContext);
+
+  // Zbieranie opcji z dostępnych eventów i ich tłumaczeń
+  const availableCategories = useMemo(() => {
+    if (!events) return [];
+    return Array.from(new Set(events.map(e => e.event_type))).filter(Boolean);
+  }, [events]);
+
+  const availableLocations = useMemo(() => {
+    if (!events) return [];
+    return Array.from(new Set(events.map(e => e.location_category))).filter(Boolean);
+  }, [events]);
+
+  const availableTags = useMemo(() => {
+    if (!events) return [];
+    const allTags = events.flatMap(e => e.tags);
+    return Array.from(new Set(allTags)).filter(Boolean);
+  }, [events]);
 
   // Snap points: 70% jako początkowy, 95% jako pełny ekran
   const snapPoints = useMemo(() => ["70%", "95%"], []);
@@ -47,9 +61,8 @@ export function FiltersBottomSheet({
   useEffect(() => {
     if (isOpen) {
       bottomSheetRef.current?.present();
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
-      }, 100);
+      // Usunięto timeout opóźniający otwarcie
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     } else {
       bottomSheetRef.current?.dismiss();
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
@@ -58,9 +71,7 @@ export function FiltersBottomSheet({
 
   // Obsługa przycisku wstecz na Androidzie
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    if (!isOpen) return;
 
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
@@ -76,7 +87,7 @@ export function FiltersBottomSheet({
   const handleSheetChanges = useCallback(
     (index: number) => {
       if (index === -1 && isOpen) {
-        onClose();
+        onClose(); // zamyka modal bez zastosowania (jeśli nie kliknięto applyFilters)
       }
     },
     [onClose, isOpen],
@@ -121,7 +132,9 @@ export function FiltersBottomSheet({
             Filtry
           </ThemedText>
         </View>
-        {/* Typ wydarzenia (EventCategory) */}
+        
+        {/* Typ wydarzenia (kategorie z API w języku polskim) */}
+        {availableCategories.length > 0 && (
         <View style={styles.filterSection}>
           <ThemedText
             type="subtitle"
@@ -130,7 +143,7 @@ export function FiltersBottomSheet({
             Typ wydarzenia
           </ThemedText>
           <View style={styles.checkboxList}>
-            {Object.values(EventCategory).map((category) => {
+            {availableCategories.map((category) => {
               const isSelected = selectedCategories.includes(category);
               return (
                 <TouchableOpacity
@@ -161,15 +174,17 @@ export function FiltersBottomSheet({
                   <ThemedText
                     style={[styles.checkboxLabel, { color: textColor }]}
                   >
-                    {eventCategoryTranslations[category]}
+                    {category}
                   </ThemedText>
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
+        )}
 
-        {/* Format (EventLocation) */}
+        {/* Format (lokalizacje z API w języku polskim) */}
+        {availableLocations.length > 0 && (
         <View style={styles.filterSection}>
           <ThemedText
             type="subtitle"
@@ -178,11 +193,7 @@ export function FiltersBottomSheet({
             Format
           </ThemedText>
           <View style={styles.checkboxList}>
-            {[
-              { location: EventLocation.OnUekCampus, label: "Stacjonarne" },
-              { location: EventLocation.Online, label: "Online" },
-              { location: EventLocation.Hybrid, label: "Hybrydowe" },
-            ].map(({ location, label }) => {
+            {availableLocations.map((location) => {
               const isSelected = selectedLocations.includes(location);
               return (
                 <TouchableOpacity
@@ -195,8 +206,8 @@ export function FiltersBottomSheet({
                     style={[
                       styles.checkbox,
                       {
-                        backgroundColor: isSelected ? "#0066FF" : "transparent",
-                        borderColor: isSelected ? "#0066FF" : "#CCCCCC",
+                        backgroundColor: isSelected ? theme.light.primary : "transparent",
+                        borderColor: isSelected ? theme.light.primary : "#CCCCCC",
                       },
                     ]}
                   >
@@ -207,15 +218,17 @@ export function FiltersBottomSheet({
                   <ThemedText
                     style={[styles.checkboxLabel, { color: textColor }]}
                   >
-                    {label}
+                    {location}
                   </ThemedText>
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
+        )}
 
-        {/* Tematy (EventTag) */}
+        {/* Tematy (tagi z API w języku polskim) */}
+        {availableTags.length > 0 && (
         <View style={styles.filterSection}>
           <ThemedText
             type="subtitle"
@@ -224,7 +237,7 @@ export function FiltersBottomSheet({
             Tematy
           </ThemedText>
           <View style={styles.tagsContainer}>
-            {Object.values(EventTag).map((tag) => {
+            {availableTags.map((tag) => {
               const isSelected = selectedTags.includes(tag);
               return (
                 <TouchableOpacity
@@ -234,8 +247,8 @@ export function FiltersBottomSheet({
                   style={[
                     styles.tag,
                     {
-                      backgroundColor: isSelected ? "#0066FF" : "#F5F5F5",
-                      borderColor: isSelected ? "#0066FF" : "#CCCCCC",
+                      backgroundColor: isSelected ? theme.light.primary : "#F5F5F5",
+                      borderColor: isSelected ? theme.light.primary : "#CCCCCC",
                     },
                   ]}
                 >
@@ -247,15 +260,16 @@ export function FiltersBottomSheet({
                       },
                     ]}
                   >
-                    {eventTagTranslations[tag]}
+                    {tag}
                   </ThemedText>
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
+        )}
 
-        {/* Przycisk wyczyść */}
+        {/* Akcje / Przyciski */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity
             style={[
@@ -270,6 +284,22 @@ export function FiltersBottomSheet({
           >
             <ThemedText style={[styles.clearButtonText, { color: textColor }]}>
               Wyczyść
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.applyButton,
+              {
+                backgroundColor: theme.light.primary,
+                borderColor: theme.light.primary,
+              },
+            ]}
+            onPress={applyFilters}
+            activeOpacity={0.7}
+          >
+            <ThemedText style={[styles.applyButtonText, { color: "#FFFFFF" }]}>
+              Zastosuj filtry
             </ThemedText>
           </TouchableOpacity>
         </View>
@@ -355,11 +385,13 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     marginTop: 8,
     marginBottom: 20,
+    gap: 12,
   },
   clearButton: {
+    flex: 1,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 20,
@@ -368,6 +400,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   clearButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  applyButton: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  applyButtonText: {
     fontSize: 14,
     fontWeight: "600",
   },

@@ -1,18 +1,22 @@
-import { EventCategory, EventLocation, EventTag } from '@/shared/types/event-enums';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
-interface FiltersContextType {
+// Aliasy typów dla lepszego type-safety i czytelności (zamiast nagiego `string`)
+export type FilterCategory = string;
+export type FilterLocation = string;
+export type FilterTag = string;
+
+export interface FiltersContextType {
   isOpen: boolean;
   openFilters: () => void;
   closeFilters: () => void;
-  // Filtry
-  selectedCategories: EventCategory[];
-  selectedLocations: EventLocation[];
-  selectedTags: EventTag[];
+  // Filtry robocze (Draft)
+  selectedCategories: FilterCategory[];
+  selectedLocations: FilterLocation[];
+  selectedTags: FilterTag[];
   // Akcje
-  toggleCategory: (category: EventCategory) => void;
-  toggleLocation: (location: EventLocation) => void;
-  toggleTag: (tag: EventTag) => void;
+  toggleCategory: (category: FilterCategory) => void;
+  toggleLocation: (location: FilterLocation) => void;
+  toggleTag: (tag: FilterTag) => void;
   clearFilters: () => void;
   applyFilters: () => void;
 }
@@ -21,12 +25,12 @@ const FiltersContext = createContext<FiltersContextType | undefined>(undefined);
 
 export function FiltersProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
-  const [selectedLocations, setSelectedLocations] = useState<EventLocation[]>([]);
-  const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
-  const [appliedCategories, setAppliedCategories] = useState<EventCategory[]>([]);
-  const [appliedLocations, setAppliedLocations] = useState<EventLocation[]>([]);
-  const [appliedTags, setAppliedTags] = useState<EventTag[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<FilterCategory[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<FilterLocation[]>([]);
+  const [selectedTags, setSelectedTags] = useState<FilterTag[]>([]);
+  const [appliedCategories, setAppliedCategories] = useState<FilterCategory[]>([]);
+  const [appliedLocations, setAppliedLocations] = useState<FilterLocation[]>([]);
+  const [appliedTags, setAppliedTags] = useState<FilterTag[]>([]);
 
   const openFilters = () => {
     // Przy otwieraniu, przywróć aktualnie zastosowane filtry
@@ -40,36 +44,27 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     setIsOpen(false);
   };
 
-  const toggleCategory = (category: EventCategory) => {
+  const toggleCategory = (category: FilterCategory) => {
     setSelectedCategories(prev => {
-      const newCategories = prev.includes(category)
+      return prev.includes(category)
         ? prev.filter(c => c !== category)
         : [...prev, category];
-      // Automatycznie zapisz filtry
-      setAppliedCategories(newCategories);
-      return newCategories;
     });
   };
 
-  const toggleLocation = (location: EventLocation) => {
+  const toggleLocation = (location: FilterLocation) => {
     setSelectedLocations(prev => {
-      const newLocations = prev.includes(location)
+      return prev.includes(location)
         ? prev.filter(l => l !== location)
         : [...prev, location];
-      // Automatycznie zapisz filtry
-      setAppliedLocations(newLocations);
-      return newLocations;
     });
   };
 
-  const toggleTag = (tag: EventTag) => {
+  const toggleTag = (tag: FilterTag) => {
     setSelectedTags(prev => {
-      const newTags = prev.includes(tag)
+      return prev.includes(tag)
         ? prev.filter(t => t !== tag)
         : [...prev, tag];
-      // Automatycznie zapisz filtry
-      setAppliedTags(newTags);
-      return newTags;
     });
   };
 
@@ -77,10 +72,6 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     setSelectedCategories([]);
     setSelectedLocations([]);
     setSelectedTags([]);
-    // Automatycznie zapisz wyczyszczone filtry
-    setAppliedCategories([]);
-    setAppliedLocations([]);
-    setAppliedTags([]);
   };
 
   const applyFilters = () => {
@@ -89,8 +80,6 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     setAppliedTags([...selectedTags]);
     closeFilters();
   };
-
-   
 
   return (
     <FiltersContext.Provider
@@ -128,11 +117,10 @@ export function useFilters() {
 }
 
 // Hook do uzyskania zastosowanych filtrów (dla filtrowania wydarzeń)
-// Musimy dodać to do kontekstu
-interface AppliedFiltersContextType {
-  appliedCategories: EventCategory[];
-  appliedLocations: EventLocation[];
-  appliedTags: EventTag[];
+export interface AppliedFiltersContextType {
+  appliedCategories: FilterCategory[];
+  appliedLocations: FilterLocation[];
+  appliedTags: FilterTag[];
 }
 
 const AppliedFiltersContext = createContext<AppliedFiltersContextType | undefined>(undefined);
@@ -149,4 +137,5 @@ export function useAppliedFilters() {
   }
   return context;
 }
+
 

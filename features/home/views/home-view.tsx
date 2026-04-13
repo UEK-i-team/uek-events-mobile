@@ -3,10 +3,12 @@ import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
+import { useAppliedFilters } from "@/features/filters/contexts/filters-context";
 import { IEvent } from "@/shared/types/event";
 import React, {
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -27,6 +29,7 @@ export default function HomeView() {
 
   const { events, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
+  const { appliedCategories, appliedLocations, appliedTags } = useAppliedFilters();
 
   const containerRef = useRef<View>(null);
 
@@ -42,6 +45,19 @@ export default function HomeView() {
     minimumViewTime: 200,
   }).current;
 
+  // Filtrowanie zadań za pomocą wyciągniętych filtrów
+  const filteredEvents = useMemo(() => {
+    if (!events) return [];
+    
+    return events.filter(event => {
+      const matchCategory = appliedCategories.length === 0 || appliedCategories.includes(event.event_type);
+      const matchLocation = appliedLocations.length === 0 || appliedLocations.includes(event.location_category);
+      const matchTag = appliedTags.length === 0 || event.tags.some(tag => appliedTags.includes(tag));
+      
+      return matchCategory && matchLocation && matchTag;
+    });
+  }, [events, appliedCategories, appliedLocations, appliedTags]);
+
   const renderEventCard = ({ item }: { item: IEvent }) => {
     return (
       <EventCard
@@ -55,9 +71,9 @@ export default function HomeView() {
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
 
-    if (!events || !flatListRef.current) return;
+    if (!filteredEvents || !flatListRef.current) return;
 
-    const index = events.findIndex((e) =>
+    const index = filteredEvents.findIndex((e) =>
       isSameDay(e.start_date, date),
     );
 
@@ -93,7 +109,7 @@ export default function HomeView() {
   const renderTimelineScroller = () => {
     return (
       <TimelineScroller
-        events={events}
+        events={filteredEvents}
         selectedDate={selectedDate}
         onDateSelect={handleDateSelect}
         visibleEventId={visibleEventId}
@@ -161,13 +177,13 @@ export default function HomeView() {
           ? renderLoadingState()
           : status === "error"
             ? renderErrorState()
-            : events?.length === 0
+            : filteredEvents?.length === 0
               ? renderEmptyState()
-              : events && (
+              : filteredEvents && (
                   <FlatList
                     ref={flatListRef}
                     bounces={true}
-                    data={events}
+                    data={filteredEvents}
                     renderItem={renderEventCard}
                     keyExtractor={(item: IEvent) => item.id.toString()}
                     pagingEnabled
