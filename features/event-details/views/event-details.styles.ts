@@ -107,17 +107,23 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: "transparent",
   },
-  actionButton: {
+actionButton: {
     backgroundColor: theme.light.primary,
-    paddingVertical: 18,
+    paddingVertical: 14,        
+    paddingHorizontal: 12,     
     borderRadius: 16,
     alignItems: "center",
-  },
-  actionButtonText: {
+    justifyContent: "center",  
+    minHeight: 56,             
+    width: '100%',             
+},
+    actionButtonText: {
     color: theme.light.dark_grey,
     fontSize: 18,
     fontWeight: "400",
-  },
+    textAlign: "center",       
+    lineHeight: 22,          
+},
   scrollContent: {
     paddingBottom: 140,
   },

@@ -45,7 +45,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
         />
 
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
             {event.title}
           </Text>
 
