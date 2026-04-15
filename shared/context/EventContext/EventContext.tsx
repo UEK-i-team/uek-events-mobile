@@ -1,9 +1,11 @@
 import { useDependencies } from "@/shared/di/DependencyProvider";
 import { IEvent } from "@/shared/types/event";
+import { IDictionaries } from "@/shared/types/dictionaries";
 import { createContext, useEffect, useState } from "react";
 
 export interface IEventContext {
   events: IEvent[] | null;
+  dictionaries: IDictionaries | null;
   status: "idle" | "loading" | "success" | "error";
   errorMessage?: string | null;
   toggleFavoriteEvent: (eventId: number, isFavorite: boolean) => Promise<void>;
@@ -12,6 +14,7 @@ export interface IEventContext {
 
 const defualtEventsContext: IEventContext = {
   events: null,
+  dictionaries: null,
   status: "idle",
   toggleFavoriteEvent: async () => {},
   getEventById: () => undefined,
@@ -24,9 +27,10 @@ export const EventContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { eventsService, favoriteEventsRepository } = useDependencies();
+  const { eventsService, favoriteEventsRepository, dictionariesRepository } = useDependencies();
 
   const [events, setEvents] = useState<IEvent[] | null>(null);
+  const [dictionaries, setDictionaries] = useState<IDictionaries | null>(null);
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -64,22 +68,26 @@ export const EventContextProvider = ({
   useEffect(() => {
     setStatus("loading");
 
-    eventsService
-      .getAllEvents()
-      .then((events) => {
+    Promise.all([
+      eventsService.getAllEvents(),
+      dictionariesRepository.getDictionaries(),
+    ])
+      .then(([events, dictionaries]) => {
         setEvents(events);
+        setDictionaries(dictionaries);
         setStatus("success");
       })
       .catch((error) => {
         setStatus("error");
         setErrorMessage(error.message);
       });
-  }, [eventsService]);
+  }, [eventsService, dictionariesRepository]);
 
   return (
     <EventContext.Provider
       value={{
         events,
+        dictionaries,
         status,
         errorMessage,
         toggleFavoriteEvent,

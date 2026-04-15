@@ -57,6 +57,7 @@ const eventsService = new EventsService(
 interface AppDependencies {
   eventsService: EventsService;
   favoriteEventsRepository: FavoriteEventsRepository;
+  dictionariesRepository: DictionariesRepository | DictionariesRepositoryMock;
 }
 
 const DependencyContext = createContext<AppDependencies | null>(null);
@@ -70,6 +71,7 @@ export const DependencyProvider = ({ children }: ProviderProps) => {
     () => ({
       eventsService,
       favoriteEventsRepository,
+      dictionariesRepository,
     }),
     [],
   );

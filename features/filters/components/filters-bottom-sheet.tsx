@@ -9,7 +9,7 @@ import {
   BottomSheetScrollView,
   TouchableOpacity,
 } from "@gorhom/bottom-sheet";
-import React, { useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, StyleSheet, View } from "react-native";
 
 interface FiltersBottomSheetProps {
@@ -36,24 +36,71 @@ export function FiltersBottomSheet({
     clearFilters,
   } = useFilters();
 
-  const { events } = useContext(EventContext);
+  const { events, dictionaries } = useContext(EventContext);
 
-  // Zbieranie opcji z dostępnych eventów i ich tłumaczeń
-  const availableCategories = useMemo(() => {
-    if (!events) return [];
-    return Array.from(new Set(events.map(e => e.event_type))).filter(Boolean);
-  }, [events]);
+  // Zbieranie opcji z dostępnych eventów i ich liczenie z uwzględnieniem aktywnych filtrów
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    events?.forEach(e => {
+      const matchLocation = selectedLocations.length === 0 || selectedLocations.includes(e.location_category);
+      const matchTag = selectedTags.length === 0 || selectedTags.some(t => e.tags?.includes(t));
+      if (matchLocation && matchTag && e.event_type) {
+        counts[e.event_type] = (counts[e.event_type] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [events, selectedLocations, selectedTags]);
 
-  const availableLocations = useMemo(() => {
-    if (!events) return [];
-    return Array.from(new Set(events.map(e => e.location_category))).filter(Boolean);
-  }, [events]);
+  const locationCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    events?.forEach(e => {
+      const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(e.event_type);
+      const matchTag = selectedTags.length === 0 || selectedTags.some(t => e.tags?.includes(t));
+      if (matchCategory && matchTag && e.location_category) {
+        counts[e.location_category] = (counts[e.location_category] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [events, selectedCategories, selectedTags]);
 
-  const availableTags = useMemo(() => {
-    if (!events) return [];
-    const allTags = events.flatMap(e => e.tags);
-    return Array.from(new Set(allTags)).filter(Boolean);
-  }, [events]);
+  const tagCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    events?.forEach(e => {
+      const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(e.event_type);
+      const matchLocation = selectedLocations.length === 0 || selectedLocations.includes(e.location_category);
+      if (matchCategory && matchLocation && e.tags) {
+        e.tags.forEach(tag => {
+          if (tag) counts[tag] = (counts[tag] || 0) + 1;
+        });
+      }
+    });
+    return counts;
+  }, [events, selectedCategories, selectedLocations]);
+
+  const availableCategories = Object.keys(categoryCounts);
+  const availableLocations = Object.keys(locationCounts);
+  const availableTags = Object.keys(tagCounts);
+
+  // Pobieranie wszystkich opcji ze słowników
+  const allCategories = Object.values(dictionaries?.event_types || {});
+  const allLocations = Object.values(dictionaries?.event_location || {});
+  const allTags = Object.values(dictionaries?.tags || {});
+
+  // Sortowanie: najpierw dostępne, potem niedostępne
+  const renderCategories = [
+    ...availableCategories,
+    ...allCategories.filter((c) => !availableCategories.includes(c)),
+  ];
+
+  const renderLocations = [
+    ...availableLocations,
+    ...allLocations.filter((l) => !availableLocations.includes(l)),
+  ];
+
+  const renderTags = [
+    ...availableTags,
+    ...allTags.filter((t) => !availableTags.includes(t)),
+  ];
 
   // Snap points: 70% jako początkowy, 95% jako pełny ekran
   const snapPoints = useMemo(() => ["70%", "95%"], []);
@@ -61,7 +108,6 @@ export function FiltersBottomSheet({
   useEffect(() => {
     if (isOpen) {
       bottomSheetRef.current?.present();
-      // Usunięto timeout opóźniający otwarcie
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     } else {
       bottomSheetRef.current?.dismiss();
@@ -69,10 +115,8 @@ export function FiltersBottomSheet({
     }
   }, [isOpen]);
 
-  // Obsługa przycisku wstecz na Androidzie
   useEffect(() => {
     if (!isOpen) return;
-
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
       () => {
@@ -80,14 +124,13 @@ export function FiltersBottomSheet({
         return true;
       },
     );
-
     return () => backHandler.remove();
   }, [isOpen, onClose]);
 
   const handleSheetChanges = useCallback(
     (index: number) => {
       if (index === -1 && isOpen) {
-        onClose(); // zamyka modal bez zastosowania (jeśli nie kliknięto applyFilters)
+        onClose();
       }
     },
     [onClose, isOpen],
@@ -123,7 +166,6 @@ export function FiltersBottomSheet({
         style={styles.contentContainer}
         contentContainerStyle={styles.contentContainerStyle}
       >
-        {/* Header */}
         <View style={styles.header}>
           <ThemedText
             type="title"
@@ -133,143 +175,158 @@ export function FiltersBottomSheet({
           </ThemedText>
         </View>
         
-        {/* Typ wydarzenia (kategorie z API w języku polskim) */}
-        {availableCategories.length > 0 && (
-        <View style={styles.filterSection}>
-          <ThemedText
-            type="subtitle"
-            style={[styles.sectionTitle, { color: textColor }]}
-          >
-            Typ wydarzenia
-          </ThemedText>
-          <View style={styles.checkboxList}>
-            {availableCategories.map((category) => {
-              const isSelected = selectedCategories.includes(category);
-              return (
-                <TouchableOpacity
-                  key={category}
-                  style={styles.checkboxOption}
-                  onPress={() => {
-                    toggleCategory(category);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View
+        {renderCategories.length > 0 && (
+          <View style={styles.filterSection}>
+            <ThemedText
+              type="subtitle"
+              style={[styles.sectionTitle, { color: textColor }]}
+            >
+              Typ wydarzenia
+            </ThemedText>
+            <View style={styles.checkboxList}>
+              {renderCategories.map((category) => {
+                const isSelected = selectedCategories.includes(category);
+                const count = categoryCounts[category] || 0;
+                const isAvailable = count > 0;
+                
+                return (
+                  <TouchableOpacity
+                    key={category}
+                    style={[styles.checkboxOption, !isAvailable && { opacity: 0.5 }]}
+                    onPress={() => isAvailable && toggleCategory(category)}
+                    activeOpacity={isAvailable ? 0.7 : 1}
+                    disabled={!isAvailable}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        {
+                          backgroundColor: isSelected
+                              ? theme.light.primary
+                              : "transparent",
+                          borderColor: isSelected
+                              ? theme.light.primary
+                              : "#CCCCCC",
+                        },
+                      ]}
+                    >
+                      {isSelected && (
+                        <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                      )}
+                    </View>
+                    <ThemedText
+                      style={[styles.checkboxLabel, { color: textColor }]}
+                    >
+                      {category} ({count})
+                    </ThemedText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {renderLocations.length > 0 && (
+          <View style={styles.filterSection}>
+            <ThemedText
+              type="subtitle"
+              style={[styles.sectionTitle, { color: textColor }]}
+            >
+              Format
+            </ThemedText>
+            <View style={styles.checkboxList}>
+              {renderLocations.map((location) => {
+                const isSelected = selectedLocations.includes(location);
+                const count = locationCounts[location] || 0;
+                const isAvailable = count > 0;
+
+                return (
+                  <TouchableOpacity
+                    key={location}
+                    style={[styles.checkboxOption, !isAvailable && { opacity: 0.5 }]}
+                    onPress={() => isAvailable && toggleLocation(location)}
+                    activeOpacity={isAvailable ? 0.7 : 1}
+                    disabled={!isAvailable}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        {
+                          backgroundColor: isSelected 
+                              ? theme.light.primary 
+                              : "transparent",
+                          borderColor: isSelected 
+                              ? theme.light.primary 
+                              : "#CCCCCC",
+                        },
+                      ]}
+                    >
+                      {isSelected && (
+                        <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                      )}
+                    </View>
+                    <ThemedText
+                      style={[styles.checkboxLabel, { color: textColor }]}
+                    >
+                      {location} ({count})
+                    </ThemedText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {renderTags.length > 0 && (
+          <View style={styles.filterSection}>
+            <ThemedText
+              type="subtitle"
+              style={[styles.sectionTitle, { color: textColor }]}
+            >
+              Tematy
+            </ThemedText>
+            <View style={styles.tagsContainer}>
+              {renderTags.map((tag) => {
+                const isSelected = selectedTags.includes(tag);
+                const count = tagCounts[tag] || 0;
+                const isAvailable = count > 0;
+
+                return (
+                  <TouchableOpacity
+                    key={tag}
+                    onPress={() => isAvailable && toggleTag(tag)}
+                    activeOpacity={isAvailable ? 0.7 : 1}
+                    disabled={!isAvailable}
                     style={[
-                      styles.checkbox,
+                      styles.tag,
+                      !isAvailable && { opacity: 0.5 },
                       {
-                        backgroundColor: isSelected
-                          ? theme.light.primary
-                          : "transparent",
-                        borderColor: isSelected
-                          ? theme.light.primary
-                          : "#CCCCCC",
+                        backgroundColor: isSelected 
+                            ? theme.light.primary 
+                            : "#F5F5F5",
+                        borderColor: isSelected 
+                            ? theme.light.primary 
+                            : "#CCCCCC",
                       },
                     ]}
                   >
-                    {isSelected && (
-                      <MaterialIcons name="check" size={16} color="#FFFFFF" />
-                    )}
-                  </View>
-                  <ThemedText
-                    style={[styles.checkboxLabel, { color: textColor }]}
-                  >
-                    {category}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
+                    <ThemedText
+                      style={[
+                        styles.tagText,
+                        {
+                          color: isSelected ? "#FFFFFF" : "#000000",
+                        },
+                      ]}
+                    >
+                      {tag} ({count})
+                    </ThemedText>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
-        </View>
         )}
 
-        {/* Format (lokalizacje z API w języku polskim) */}
-        {availableLocations.length > 0 && (
-        <View style={styles.filterSection}>
-          <ThemedText
-            type="subtitle"
-            style={[styles.sectionTitle, { color: textColor }]}
-          >
-            Format
-          </ThemedText>
-          <View style={styles.checkboxList}>
-            {availableLocations.map((location) => {
-              const isSelected = selectedLocations.includes(location);
-              return (
-                <TouchableOpacity
-                  key={location}
-                  style={styles.checkboxOption}
-                  onPress={() => toggleLocation(location)}
-                  activeOpacity={0.7}
-                >
-                  <View
-                    style={[
-                      styles.checkbox,
-                      {
-                        backgroundColor: isSelected ? theme.light.primary : "transparent",
-                        borderColor: isSelected ? theme.light.primary : "#CCCCCC",
-                      },
-                    ]}
-                  >
-                    {isSelected && (
-                      <MaterialIcons name="check" size={16} color="#FFFFFF" />
-                    )}
-                  </View>
-                  <ThemedText
-                    style={[styles.checkboxLabel, { color: textColor }]}
-                  >
-                    {location}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-        )}
-
-        {/* Tematy (tagi z API w języku polskim) */}
-        {availableTags.length > 0 && (
-        <View style={styles.filterSection}>
-          <ThemedText
-            type="subtitle"
-            style={[styles.sectionTitle, { color: textColor }]}
-          >
-            Tematy
-          </ThemedText>
-          <View style={styles.tagsContainer}>
-            {availableTags.map((tag) => {
-              const isSelected = selectedTags.includes(tag);
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  onPress={() => toggleTag(tag)}
-                  activeOpacity={0.7}
-                  style={[
-                    styles.tag,
-                    {
-                      backgroundColor: isSelected ? theme.light.primary : "#F5F5F5",
-                      borderColor: isSelected ? theme.light.primary : "#CCCCCC",
-                    },
-                  ]}
-                >
-                  <ThemedText
-                    style={[
-                      styles.tagText,
-                      {
-                        color: isSelected ? "#FFFFFF" : "#000000",
-                      },
-                    ]}
-                  >
-                    {tag}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-        )}
-
-        {/* Akcje / Przyciski */}
         <View style={styles.actionsContainer}>
           <TouchableOpacity
             style={[
@@ -415,5 +472,9 @@ const styles = StyleSheet.create({
   applyButtonText: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  expandButton: {
+    paddingVertical: 8,
+    alignItems: 'flex-start',
   },
 });

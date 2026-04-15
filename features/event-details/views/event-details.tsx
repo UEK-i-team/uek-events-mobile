@@ -52,7 +52,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
     try {
       const formattedDate = formatShareEventDate(event.start_date);
       const formattedTime = formatEventTime(event.start_date);
-      const categoryText = event.event_category ? `**${event.event_category.toLowerCase()}**` : 'wydarzenie';
+      const categoryText = event.event_type ? `**${event.event_type.toLowerCase()}**` : 'wydarzenie';
       
       const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
 
