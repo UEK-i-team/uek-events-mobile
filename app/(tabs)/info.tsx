@@ -1,74 +1,22 @@
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ExternalLink } from "@/shared/components/external-link/external-link";
 import { IconSymbol } from "@/shared/components/icon-symbol/icon-symbol";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { theme } from "@/shared/constants/theme";
+import * as Clipboard from "expo-clipboard";
+import { useContext } from "react";
+import { NotificationContext } from "@/features/notifications/contexts/notification-context";
+
+const EMAIL = "kontakt@uekeventuje.pl";
 
 export default function InfoScreen() {
-  const handleDeleteHalfEvents = async () => {
-    try {
-      const AsyncStorage =
-        require("@react-native-async-storage/async-storage").default;
-      const stored = await AsyncStorage.getItem("@uek_events_viewed");
+  const notificationContext = useContext(NotificationContext);
 
-      if (stored) {
-        const viewedData = JSON.parse(stored);
-        if (viewedData.length > 0) {
-          const halfLength = Math.floor(viewedData.length / 2);
-          const halfViewed = viewedData.slice(0, halfLength);
-          await AsyncStorage.setItem(
-            "@uek_events_viewed",
-            JSON.stringify(halfViewed),
-          );
-        }
-      }
-
-      Alert.alert("Sukces", "Usunięto połowę eventów z cache i viewed events.");
-    } catch (error) {
-      console.error("Błąd podczas usuwania połowy eventów:", error);
-      Alert.alert("Błąd", "Wystąpił problem podczas usuwania połowy eventów.");
-    }
-  };
-
-  const handleClearMemory = () => {
-    Alert.alert(
-      "Wyczyść wszystkie dane aplikacji",
-      "Czy na pewno chcesz usunąć wszystkie lokalne dane aplikacji?\n\nZostaną usunięte:\n• Historia zobaczonych wydarzeń\n• Zapisane ulubione wydarzenia\n• Cache wydarzeń\n\nTa operacja nie może być cofnięta.",
-      [
-        {
-          text: "Anuluj",
-          style: "cancel",
-        },
-        {
-          text: "Wyczyść wszystko",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              // await Promise.all([clearViewed(), clearFavorites()]);
-              Alert.alert(
-                "Sukces",
-                "Wszystkie lokalne dane aplikacji zostały wyczyszczone.",
-              );
-            } catch (error) {
-              console.error("Błąd podczas czyszczenia danych:", error);
-              Alert.alert(
-                "Błąd",
-                "Wystąpił problem podczas czyszczenia danych.",
-              );
-            }
-          },
-        },
-      ],
-    );
+  const copyEmail = async () => {
+    await Clipboard.setStringAsync(EMAIL);
+    notificationContext?.showNotification("success", "Skopiowano do schowka!");
   };
 
   return (
@@ -93,7 +41,7 @@ export default function InfoScreen() {
           </ThemedText>
           <View style={[styles.creatorsSection]}>
             <ThemedText style={[styles.creatorsTitle, { color: "#000000" }]}>
-              CEL APLIKACJI ORAZ TWÓRCY:
+              CEL APLIKACJI
             </ThemedText>
             <ThemedText style={[styles.creatorsText, { color: "#000000" }]}>
               Ile razy przegapiłeś ważny event, bo ogłoszenie zaginęło w
@@ -112,7 +60,7 @@ export default function InfoScreen() {
           </View>
           <View style={styles.linkItem}>
             <ExternalLink
-              href="https://docs.google.com/document/d/1ZtBS_iP8tRmzVGzpZCT3o02OfTYsusL32y1VqHeC4U4/edit?usp=sharing"
+              href="https://docs.google.com/document/d/1a5hBbEeb7S7NytOmOBCKH1SiwleBu7JNx-4U6JYfE48/edit?usp=sharing"
               style={styles.link}
             >
               <ThemedText style={[styles.linkText, { color: "#000000" }]}>
@@ -124,7 +72,7 @@ export default function InfoScreen() {
 
           <View style={styles.linkItem}>
             <ExternalLink
-              href="https://docs.google.com/document/d/1bdcU4efTBGvGav-XYkDxs_IsBnk9bA7qfA32pncD71w/edit?usp=sharing"
+              href="https://docs.google.com/document/d/1xXgFqgD8j96Mu1_4y1BC2MKSPQDcXLYnTZknXu1etNY/edit?usp=sharing"
               style={styles.link}
             >
               <ThemedText style={[styles.linkText, { color: "#000000" }]}>
@@ -135,87 +83,20 @@ export default function InfoScreen() {
           </View>
 
           <View style={styles.linkItem}>
-            <ExternalLink
-              href="https://forms.gle/6mnxYAN183NdLESm7"
-              style={styles.link}
-            >
+            <Pressable style={styles.link} onPress={copyEmail}>
               <ThemedText style={[styles.linkText, { color: "#000000" }]}>
-                Formularz kontaktowy
+                Kontakt: - {EMAIL}
               </ThemedText>
-            </ExternalLink>
-            <IconSymbol name="arrow.up.right" size={20} color="#687076" />
+              <View>
+                <ThemedText
+                  style={[styles.subLinkText, { color: "#4b4b4bff" }]}
+                >
+                  Kliknij aby skopiować
+                </ThemedText>
+              </View>
+            </Pressable>
+            <IconSymbol name="envelope" size={20} color="#000000" />
           </View>
-        </View>
-
-        {/* Sekcja zarządzania danymi */}
-        <View style={styles.section}>
-          <ThemedText
-            type="subtitle"
-            style={[styles.sectionTitle, { color: "#000000" }]}
-          >
-            Zarządzanie danymi
-          </ThemedText>
-
-          {/* TYMCZASOWY PRZYCISK - Usuń połowę eventów */}
-          <TouchableOpacity
-            onPress={handleDeleteHalfEvents}
-            style={[
-              styles.clearButton,
-              {
-                borderColor: "#FFE0B2",
-              },
-            ]}
-            activeOpacity={0.7}
-          >
-            <View style={styles.clearButtonContent}>
-              <MaterialIcons
-                name="remove-circle-outline"
-                size={24}
-                color="#F57C00"
-              />
-              <View style={styles.clearButtonTextContainer}>
-                <ThemedText
-                  style={[styles.clearButtonTitle, { color: "#F57C00" }]}
-                >
-                  [TEST] Usuń połowę eventów
-                </ThemedText>
-                <ThemedText
-                  style={[styles.clearButtonDescription, { color: "#666666" }]}
-                >
-                  Usuń 50% cache i viewed events
-                </ThemedText>
-              </View>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color="#F57C00" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleClearMemory}
-            style={[
-              styles.clearButton,
-              {
-                borderColor: "#FFCDD2",
-              },
-            ]}
-            activeOpacity={0.7}
-          >
-            <View style={styles.clearButtonContent}>
-              <MaterialIcons name="delete-outline" size={24} color="#D32F2F" />
-              <View style={styles.clearButtonTextContainer}>
-                <ThemedText
-                  style={[styles.clearButtonTitle, { color: "#D32F2F" }]}
-                >
-                  Wyczyść wszystkie dane
-                </ThemedText>
-                <ThemedText
-                  style={[styles.clearButtonDescription, { color: "#666666" }]}
-                >
-                  Usuń historię, ulubione i cache
-                </ThemedText>
-              </View>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color="#D32F2F" />
-          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -255,6 +136,9 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 16,
+  },
+  subLinkText: {
+    fontSize: 12,
   },
   creatorsSection: {
     marginTop: 8,
