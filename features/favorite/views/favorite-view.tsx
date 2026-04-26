@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
+import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { IEvent } from "@/shared/types/event";
@@ -70,6 +71,23 @@ export default function FavoriteView() {
           </ThemedText>
           <ThemedText style={styles.emptySubtext}>{errorMessage}</ThemedText>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (status === "offline_no_data") {
+    return (
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: theme.light.mainBackground },
+        ]}
+        edges={["top"]}
+      >
+        <OfflineNoDataPlaceholder
+          title="Brak danych offline"
+          subtitle="Włącz internet, a wydarzenia pojawią się automatycznie."
+        />
       </SafeAreaView>
     );
   }

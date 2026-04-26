@@ -48,6 +48,8 @@ export function EventCard({
   const { dominantColor, resizeMode } =
     useResizeDominantBackgroundColor(imageUrl);
 
+
+    
   const isSmallScreen =
     SCREEN_HEIGHT < 800 ||
     (SCREEN_HEIGHT < 900 && fontScale > 1.15) ||
@@ -66,9 +68,16 @@ export function EventCard({
     toggleFavorite(event.id, !event.isFavorite);
   };
 
-  const imageHeight = isVerySmallScreen
-    ? 180
-    : Math.max(160, Math.min(220, cardHeight * 0.32));
+  let imageHeight = 0;
+
+  if(isVerySmallScreen){
+    imageHeight = 180;
+  } else if(cardHeight > 560){
+    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.40));
+  } else {
+    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.32));
+  }
+
 
   return (
     <View

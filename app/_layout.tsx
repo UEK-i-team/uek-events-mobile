@@ -54,10 +54,10 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DependencyProvider>
-        <EventContextProvider>
-          <ThemeProvider value={DefaultTheme}>
-            <ViewedEventsProvider>
-              <NotificationProvider>
+        <NotificationProvider>
+          <EventContextProvider>
+            <ThemeProvider value={DefaultTheme}>
+              <ViewedEventsProvider>
                 <FiltersProvider>
                   <BottomSheetModalProvider>
                     <AppContent />
@@ -67,10 +67,10 @@ export default function RootLayout() {
                     />
                   </BottomSheetModalProvider>
                 </FiltersProvider>
-              </NotificationProvider>
-            </ViewedEventsProvider>
-          </ThemeProvider>
-        </EventContextProvider>
+              </ViewedEventsProvider>
+            </ThemeProvider>
+          </EventContextProvider>
+        </NotificationProvider>
       </DependencyProvider>
     </GestureHandlerRootView>
   );

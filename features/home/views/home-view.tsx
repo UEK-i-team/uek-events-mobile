@@ -1,5 +1,7 @@
-import { isSameDay, resetTime } from "@/utils/functions/date-utils";
+// TODO: ten plik będzie do refactoru
+import { isSameDay} from "@/utils/functions/date-utils";
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
+import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
@@ -140,6 +142,13 @@ export default function HomeView() {
     );
   };
 
+  const renderOfflineNoDataState = () => (
+    <OfflineNoDataPlaceholder
+      title="Brak danych offline"
+      subtitle="Włącz internet, a wydarzenia pojawią się automatycznie."
+    />
+  );
+
   return (
     <SafeAreaView
       style={[
@@ -159,6 +168,8 @@ export default function HomeView() {
       >
         {status === "loading"
           ? renderLoadingState()
+          : status === "offline_no_data"
+            ? renderOfflineNoDataState()
           : status === "error"
             ? renderErrorState()
             : events?.length === 0

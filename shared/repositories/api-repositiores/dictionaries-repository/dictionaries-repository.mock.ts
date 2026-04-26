@@ -2,7 +2,13 @@ import { IDictionaries } from "@/shared/types/dictionaries";
 import { IDictionariesRepository } from "./dictionaries-repository";
 
 export class DictionariesRepositoryMock implements IDictionariesRepository {
-  public async getDictionaries(): Promise<IDictionaries> {
+  
+
+  public async getDictionariesFromCache(): Promise<IDictionaries | null> {
+    return null;
+  }
+
+  public async fetchAndSyncDictionaries(): Promise<IDictionaries> {
     return {
       source_names: {
         MAIN_PAGE_UEK: "Strona główna UEK",

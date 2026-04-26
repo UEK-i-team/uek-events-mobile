@@ -13,7 +13,8 @@ interface ApiEventsResponse {
 }
 
 export interface IEventsRepository {
-  getEvents(): Promise<IEvent[]>;
+  getEventsFromCache(): Promise<IEvent[] | null>;
+  fetchAndSyncEvents(): Promise<IEvent[]>;
 }
 
 export class EventsRepository implements IEventsRepository {
@@ -24,59 +25,53 @@ export class EventsRepository implements IEventsRepository {
     private readonly eventsCache: EventsCacheService,
   ) {}
 
-  public async getEvents(): Promise<IEvent[]> {
-    try {
-      const lastUpdateDateEvent =
-        await this.eventsCache.getLastUpdateDateEvent();
 
-      const response = await this.http.get<ApiEventsResponse>(this.URL, {
-        params: {
-          last_update_date_event: lastUpdateDateEvent,
-        },
-      });
 
-      if (response.status === 200) {
-        const apiResponse = response.data;
+  public async getEventsFromCache(): Promise<IEvent[] | null> {
+    return this.eventsCache.getEvents();
+  }
 
-        const lastUpdateDateEvent = new Date(
-          response.data.meta_data.last_update_date_event,
+  public async fetchAndSyncEvents(): Promise<IEvent[]> {
+    const lastUpdateDateEvent =
+      await this.eventsCache.getLastUpdateDateEvent();
+
+    const response = await this.http.get<ApiEventsResponse>(this.URL, {
+      params: {
+        last_update_date_event: lastUpdateDateEvent,
+      },
+    });
+
+    if (response.status === 200) {
+      const apiResponse = response.data;
+
+      const lastUpdateDateEvent = new Date(
+        response.data.meta_data.last_update_date_event,
+      );
+
+      const isLastUpdateDateEventValid = !isNaN(
+        lastUpdateDateEvent.getTime(),
+      );
+
+      if (isLastUpdateDateEventValid) {
+        await this.eventsCache.appendEvents(
+          apiResponse.data,
+          lastUpdateDateEvent,
         );
-
-        const isLastUpdateDateEventValid = !isNaN(
-          lastUpdateDateEvent.getTime(),
-        );
-
-        if (isLastUpdateDateEventValid) {
-          await this.eventsCache.appendEvents(
-            apiResponse.data,
-            lastUpdateDateEvent,
-          );
-        }
-
-        // delete events
-        const deletedEvents = response.data.meta_data.deleted_events;
-        if (deletedEvents?.length > 0) {
-          await this.eventsCache.deleteEvents(deletedEvents);
-        }
       }
 
-      if (response.status === 204 || response.status === 200) {
-        const events = await this.eventsCache.getEvents();
-        if (!events) throw new Error("Events not found");
-
-        return events;
-      }
-
-      throw new Error("Something went wrong during events fetching");
-    } catch (error) {
-      try {
-        console.error("Error in events respotiory", error);
-        const events = await this.eventsCache.getEvents();
-        if (!events) throw error;
-        return events;
-      } catch (error) {
-        throw error;
+      const deletedEvents = response.data.meta_data.deleted_events;
+      if (deletedEvents?.length > 0) {
+        await this.eventsCache.deleteEvents(deletedEvents);
       }
     }
+
+    if (response.status === 204 || response.status === 200) {
+      const events = await this.eventsCache.getEvents();
+      if (!events) throw new Error("Events not found");
+
+      return events;
+    }
+
+    throw new Error("Something went wrong during events fetching");
   }
 }

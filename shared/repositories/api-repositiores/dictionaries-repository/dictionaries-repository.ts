@@ -23,7 +23,8 @@ export interface ApiDictionariesResponse {
 }
 
 export interface IDictionariesRepository {
-  getDictionaries(): Promise<IDictionaries>;
+  getDictionariesFromCache(): Promise<IDictionaries | null>;
+  fetchAndSyncDictionaries(): Promise<IDictionaries>;
 }
 
 export class DictionariesRepository implements IDictionariesRepository {
@@ -34,41 +35,39 @@ export class DictionariesRepository implements IDictionariesRepository {
     private readonly dictionariesCacheService: DictionariesCacheService,
   ) {}
 
-  public async getDictionaries(): Promise<IDictionaries> {
-    try {
-      const cachedVersion =
-        await this.dictionariesCacheService.getDictionariesVersion();
+ 
 
-      const params = cachedVersion ? { version: cachedVersion } : undefined;
+  public async getDictionariesFromCache(): Promise<IDictionaries | null> {
+    return this.dictionariesCacheService.getDictionaries();
+  }
 
-      const response = await this.http.get<ApiDictionariesResponse>(this.URL, {
-        params,
-      });
+  public async fetchAndSyncDictionaries(): Promise<IDictionaries> {
+    const cachedVersion =
+      await this.dictionariesCacheService.getDictionariesVersion();
 
+    const params = cachedVersion ? { version: cachedVersion } : undefined;
 
-      if (response.status === 200 && response.data) {
-        const responseData = response.data;
-        
+    const response = await this.http.get<ApiDictionariesResponse>(this.URL, {
+      params,
+    });
 
-        const mappedDictionaries = this.mapDictionaries(responseData.data);
+    if (response.status === 200 && response.data) {
+      const responseData = response.data;
+      const mappedDictionaries = this.mapDictionaries(responseData.data);
 
-        await this.dictionariesCacheService.saveDictionaries(
-          mappedDictionaries,
-          responseData.meta_data.version,
-        );
-      }
-
-      const dictionaries =
-        await this.dictionariesCacheService.getDictionaries()
-
-      if (!dictionaries) {
-        throw new Error("Dictionaries not found");
-      }
-
-      return dictionaries;
-    } catch (error) {
-      throw error;
+      await this.dictionariesCacheService.saveDictionaries(
+        mappedDictionaries,
+        responseData.meta_data.version,
+      );
     }
+
+    const dictionaries = await this.dictionariesCacheService.getDictionaries();
+
+    if (!dictionaries) {
+      throw new Error("Dictionaries not found");
+    }
+
+    return dictionaries;
   }
 
   private mapDictionaries(dictionaries: ApiDictionariesData): IDictionaries {

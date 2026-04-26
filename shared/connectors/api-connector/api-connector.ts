@@ -4,6 +4,6 @@ const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL || "https://api.uek-events.com";
 
 export const apiConnector = new HttpConnector(API_BASE_URL, {
-  maxRetries: 3,
+  maxRetries: 1,
   retryDelay: 1000,
 });

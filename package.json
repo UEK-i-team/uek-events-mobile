@@ -24,6 +24,7 @@
     "@gorhom/bottom-sheet": "^5.2.6",
     "@gorhom/portal": "^1.0.14",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/netinfo": "11.4.1",
     "@react-navigation/bottom-tabs": "^7.4.0",
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.1.8",

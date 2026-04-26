@@ -1,7 +1,12 @@
+import { IEvent } from "@/shared/types/event";
 import { IEventsRepository } from "./events-repository";
 
 export class EventsRepositoryMock implements IEventsRepository {
-  public async getEvents() {
+  public async getEventsFromCache(): Promise<IEvent[] | null> {
+    return null;
+  }
+
+  public async fetchAndSyncEvents() {
     const events =  [
       {
         id: 4,
