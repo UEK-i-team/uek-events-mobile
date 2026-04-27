@@ -31,8 +31,8 @@ export class EventsRepositoryMock implements IEventsRepository {
       {
         id: "5",
         update_date: "2026-03-12T16:10:00Z",
-        start_date: "2026-03-09T17:30:00Z",
-        end_date: "2026-03-09T18:45:00Z",
+        start_date: "2026-04-09T17:30:00Z",
+        end_date: "2026-04-09T18:45:00Z",
         title: "Prawo w biznesie - szkolenie",
         short_desc:
           "Poznaj wpływ regulacji prawnych na Twój pomysł i bezpieczny rozwój firmy.",

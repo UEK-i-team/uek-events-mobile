@@ -54,3 +54,9 @@ export function formatEventTime(isoString: string): string {
   const minutes = date.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
 }
+
+export function isEventPassed(endDate: string | Date): boolean {
+  const eventDate = new Date(endDate);
+  const now = new Date();
+  return eventDate < now;
+}
