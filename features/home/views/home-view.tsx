@@ -1,5 +1,4 @@
 // TODO: ten plik będzie do refactoru
-import { isSameDay} from "@/utils/functions/date-utils";
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
 import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
@@ -11,6 +10,7 @@ import React, {
   useContext,
   useRef,
   useState,
+  useEffect,
 } from "react";
 import {
   ActivityIndicator,
@@ -23,6 +23,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
 import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
+import { isSameDay, resetTime } from "@/utils/functions/date-utils";
+import { safeParseDate } from "@/utils/functions/event-utils";
 
 export default function HomeView() {
   const { flatListRef, headerHeight } = useHomeScreen();
@@ -38,13 +40,51 @@ export default function HomeView() {
     null,
   );
   const [visibleEventId, setVisibleEventId] = useState<number | null>(null);
+  const [hasScrolledInitial, setHasScrolledInitial] = useState(false);
+
+  const nearestFutureEventIndex = React.useMemo(() => {
+    if (!events || events.length === 0) return 0;
+    const now = resetTime(new Date());
+    const index = events.findIndex((e) => {
+      const eStartParsed = safeParseDate(e.start_date);
+      if (!eStartParsed) return false;
+      const eStart = resetTime(eStartParsed);
+      
+      let eEnd = eStart;
+      if (e.end_date && e.end_date !== "null") {
+        const eEndParsed = safeParseDate(e.end_date);
+        if (eEndParsed) {
+           eEnd = resetTime(eEndParsed);
+        }
+      }
+      return eStart >= now || eEnd >= now;
+    });
+    
+    return index !== -1 ? index : events.length - 1;
+  }, [events]);
+
+  useEffect(() => {
+    if (events && events.length > 0 && height > 0 && !hasScrolledInitial && flatListRef.current) {
+      if (nearestFutureEventIndex > 0) {
+        const timer = setTimeout(() => {
+          try {
+            flatListRef.current?.scrollToIndex({ index: nearestFutureEventIndex, animated: false });
+          } catch(e) {}
+          setHasScrolledInitial(true);
+        }, 300);
+        return () => clearTimeout(timer);
+      } else {
+        setHasScrolledInitial(true);
+      }
+    }
+  }, [events, height, hasScrolledInitial, nearestFutureEventIndex, flatListRef]);
 
   const viewabilityConfig = useRef<ViewabilityConfig>({
     viewAreaCoveragePercentThreshold: 50,
     minimumViewTime: 200,
   }).current;
 
-  const renderEventCard = ({ item }: { item: IEvent }) => {
+  const renderEventCard = useCallback(({ item }: { item: IEvent }) => {
     return (
       <EventCard
         event={item}
@@ -52,7 +92,7 @@ export default function HomeView() {
         toggleFavorite={toggleFavoriteEvent}
       />
     );
-  };
+  }, [height, toggleFavoriteEvent]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -174,13 +214,19 @@ export default function HomeView() {
             ? renderErrorState()
             : events?.length === 0
               ? renderEmptyState()
-              : events && (
+              : events && height > 0 && (
                   <FlatList
                     ref={flatListRef}
                     bounces={true}
                     data={events}
                     renderItem={renderEventCard}
                     keyExtractor={(item: IEvent) => item.id.toString()}
+                    getItemLayout={(_, index) => ({
+                      length: height,
+                      offset: height * index,
+                      index,
+                    })}
+                    removeClippedSubviews={false}
                     pagingEnabled
                     showsVerticalScrollIndicator={false}
                     snapToInterval={height}

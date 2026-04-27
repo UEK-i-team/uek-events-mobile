@@ -59,11 +59,14 @@ export class EventsRepository implements IEventsRepository {
         );
       }
 
-      const deletedEvents = response.data.meta_data.deleted_events;
-      if (deletedEvents?.length > 0) {
-        await this.eventsCache.deleteEvents(deletedEvents);
+        // delete events
+        const deletedEvents = response.data.meta_data.deleted_events;
+        if (deletedEvents?.length > 0) {
+          await this.eventsCache.deleteEvents(deletedEvents);
+        }
+        
+        await this.eventsCache.purgeOldEvents();
       }
-    }
 
     if (response.status === 204 || response.status === 200) {
       const events = await this.eventsCache.getEvents();
