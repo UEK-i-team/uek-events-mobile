@@ -12,9 +12,14 @@ export const useResizeDominantBackgroundColor = (imageUrl: string | null) => {
 
   useEffect(() => {
     if (imageUrl) {
+      // Encode URL spaces and specific characters like parentheses that can cause NSURL to return nil on iOS
+      const encodedImageUrl = encodeURI(imageUrl)
+        .replace(/\(/g, '%28')
+        .replace(/\)/g, '%29');
+
       // Determine resize mode based on dimensions
       RNImage.getSize(
-        imageUrl,
+        encodedImageUrl,
         (width, height) => {
           if (width <= 1.3 * height) {
             setResizeMode("cover");
@@ -25,16 +30,18 @@ export const useResizeDominantBackgroundColor = (imageUrl: string | null) => {
         (error) => console.warn("Failed to get image size:", error)
       );
 
-      getColors(imageUrl, {
+      getColors(encodedImageUrl, {
         fallback: theme.light.mainBackground,
         cache: true,
-        key: imageUrl,
+        key: encodedImageUrl,
       })
         .then((colors) => {
+          // Prioritize vivid dominant/primary colors over edge-based background colors 
           const color =
             (colors as any).background ||
             (colors as any).dominant ||
             (colors as any).primary ||
+            (colors as any).average ||
             theme.light.mainBackground;
           setDominantColor(color);
         })
