@@ -100,7 +100,7 @@ export function EventCard({
           },
         ]}
       >
-          <View   style={[styles.imageContainer, { height: imageHeight }]}
+          <View   style={[styles.imageContainer, { height: imageHeight }, {backgroundColor: dominantColor}]}
                 >
           <Image
             source={{
