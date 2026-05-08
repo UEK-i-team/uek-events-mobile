@@ -86,13 +86,18 @@ export const useFiltersBottomSheet = (isOpen: boolean, onClose: () => void) => {
   const snapPoints = useMemo(() => ["70%", "95%"], []);
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
     if (isOpen) {
-      bottomSheetRef.current?.present();
-      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      // Minimalne opóźnienie wymusza poprawną zmianę w trakcie wewnętrznych animacji
+      timeout = setTimeout(() => {
+        bottomSheetRef.current?.present();
+        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      }, 50);
     } else {
       bottomSheetRef.current?.dismiss();
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
+    return () => clearTimeout(timeout);
   }, [isOpen]);
 
   useEffect(() => {
@@ -109,18 +114,24 @@ export const useFiltersBottomSheet = (isOpen: boolean, onClose: () => void) => {
 
   const handleSheetChanges = useCallback(
     (index: number) => {
-      if (index === -1 && isOpen) {
-        onClose();
-      }
+      // index === -1 is usually handled by onDismiss, but we can keep it for safety if we want.
+      // However, relying on onDismiss is better.
     },
-    [onClose, isOpen],
+    [],
   );
+
+  const handleDismiss = useCallback(() => {
+    if (isOpen) {
+      onClose();
+    }
+  }, [isOpen, onClose]);
 
   return {
     bottomSheetRef,
     scrollViewRef,
     snapPoints,
     handleSheetChanges,
+    handleDismiss,
     categoryCounts,
     locationCounts,
     tagCounts,

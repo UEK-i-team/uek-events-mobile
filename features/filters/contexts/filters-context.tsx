@@ -37,7 +37,15 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     setSelectedCategories([...appliedCategories]);
     setSelectedLocations([...appliedLocations]);
     setSelectedTags([...appliedTags]);
-    setIsOpen(true);
+    
+    // Jeśli isOpen jest już true (np. użytkownik kliknął 'filtry' podczas zamykania sheet'a)
+    // Zmieniamy najpierw na false, by wymusić ponowne odpalenie useEffecta z present() po chwili
+    if (isOpen) {
+      setIsOpen(false);
+      setTimeout(() => setIsOpen(true), 0);
+    } else {
+      setIsOpen(true);
+    }
   };
 
   const closeFilters = () => {

@@ -25,6 +25,7 @@ export function FiltersBottomSheet({
     scrollViewRef,
     snapPoints,
     handleSheetChanges,
+    handleDismiss,
     categoryCounts,
     locationCounts,
     tagCounts,
@@ -65,9 +66,10 @@ export function FiltersBottomSheet({
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       onChange={handleSheetChanges}
+      onDismiss={handleDismiss}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={[styles.bottomSheetBackground, { backgroundColor }]}
+      backgroundStyle={{ backgroundColor }}
       handleIndicatorStyle={[
         styles.handleIndicator,
         { backgroundColor: "#687076" },
