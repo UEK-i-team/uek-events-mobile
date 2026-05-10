@@ -183,8 +183,7 @@ export function TimelineScroller({
 
     // Group events by their reset timestamp (O(N) lookup later)
     events.forEach((event) => {
-      const date = new Date(event.start_date);
-      const time = resetTime(date).getTime();
+      const time = resetTime(event.start_date).getTime();
 
       if (!eventsByDate.has(time)) {
         eventsByDate.set(time, []);
@@ -267,15 +266,18 @@ export function TimelineScroller({
     }
   }, [activeDate]);
 
+  const hasScrolledInitial = useRef(false);
+
   // Auto-scroll when the active date changes (from scrolling the list)
   useEffect(() => {
     if (currentDateIndex >= 0 && scrollRef.current && datesDays.length > 0) {
       try {
         scrollRef.current.scrollToIndex({
           index: currentDateIndex,
-          animated: true,
+          animated: hasScrolledInitial.current,
           viewPosition: 0.5,
         });
+        hasScrolledInitial.current = true;
       } catch {
         // ignore
       }
@@ -405,7 +407,7 @@ export function TimelineScroller({
           wait.then(() => {
             scrollRef.current?.scrollToIndex({
               index: info.index,
-              animated: true,
+              animated: hasScrolledInitial.current,
               viewPosition: 0.5,
             });
           });

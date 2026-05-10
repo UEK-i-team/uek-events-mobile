@@ -85,7 +85,7 @@ export const EventCard = React.memo(function EventCard({
         styles.container,
         {
           width: SCREEN_WIDTH,
-          height: cardHeight,
+          height: cardHeight, 
         },
       ]}
     >

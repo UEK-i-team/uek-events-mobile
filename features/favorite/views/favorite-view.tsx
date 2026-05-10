@@ -14,6 +14,7 @@ import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-pl
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { IEvent } from "@/shared/types/event";
+import { safeParseDate } from "@/utils/functions/event-utils";
 
 import { FavoriteEventCard } from "../components/favorite-event-card/favorite-event-card";
 import { styles } from "./favorite-view.styles";
@@ -29,8 +30,11 @@ export default function FavoriteView() {
     const favs = events?.filter((event) => event.isFavorite) || [];
     if (sortMode === "added") {
       return [...favs].sort(
-        (a, b) =>
-          new Date(a.start_date).getTime() - new Date(b.start_date).getTime(),
+        (a, b) => {
+          const timeA = safeParseDate(a.start_date)?.getTime() || 0;
+          const timeB = safeParseDate(b.start_date)?.getTime() || 0;
+          return timeA - timeB;
+        }
       );
     }
     return favs;

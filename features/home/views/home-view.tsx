@@ -1,193 +1,51 @@
-// TODO: ten plik będzie do refactoru
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
 import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { IEvent } from "@/shared/types/event";
-import React, {
-  useCallback,
-  useContext,
-  useRef,
-  useState,
-  useEffect,
-} from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  View,
-  ViewToken,
-  ViewabilityConfig,
-} from "react-native";
+import React, { useCallback, useContext } from "react";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
 import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
-import { isSameDay, resetTime } from "@/utils/functions/date-utils";
 import { safeParseDate } from "@/utils/functions/event-utils";
 
 export default function HomeView() {
-  const { flatListRef, headerHeight } = useHomeScreen();
-
   const { events, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
 
-  const containerRef = useRef<View>(null);
+  const {
+    flatListRef,
+    containerHeight,
+    setContainerHeight,
+    selectedDate,
+    visibleEventId,
+    nearestFutureEventIndex,
+    handleDateSelect,
+    viewabilityConfig,
+    onViewableItemsChanged,
+  } = useHomeScreen({ events });
 
-  const [height, setHeight] = useState(0);
-
-  const [selectedDate, setSelectedDate] = useState<Date | null | undefined>(
-    null,
-  );
-  const [visibleEventId, setVisibleEventId] = useState<number | null>(null);
-  const [hasScrolledInitial, setHasScrolledInitial] = useState(false);
-
-  const nearestFutureEventIndex = React.useMemo(() => {
-    if (!events || events.length === 0) return 0;
-    const now = resetTime(new Date());
-    const index = events.findIndex((e) => {
-      const eStartParsed = safeParseDate(e.start_date);
-      if (!eStartParsed) return false;
-      const eStart = resetTime(eStartParsed);
-      
-      let eEnd = eStart;
-      if (e.end_date && e.end_date !== "null") {
-        const eEndParsed = safeParseDate(e.end_date);
-        if (eEndParsed) {
-           eEnd = resetTime(eEndParsed);
-        }
-      }
-      return eStart >= now || eEnd >= now;
-    });
-    
-    return index !== -1 ? index : events.length - 1;
-  }, [events]);
-
-  useEffect(() => {
-    if (events && events.length > 0 && height > 0 && !hasScrolledInitial && flatListRef.current) {
-      if (nearestFutureEventIndex > 0) {
-        const timer = setTimeout(() => {
-          try {
-            flatListRef.current?.scrollToIndex({ index: nearestFutureEventIndex, animated: false });
-          } catch(e) {}
-          setHasScrolledInitial(true);
-        }, 300);
-        return () => clearTimeout(timer);
-      } else {
-        setHasScrolledInitial(true);
-      }
-    }
-  }, [events, height, hasScrolledInitial, nearestFutureEventIndex, flatListRef]);
-
-  const viewabilityConfig = useRef<ViewabilityConfig>({
-    viewAreaCoveragePercentThreshold: 50,
-    minimumViewTime: 200,
-  }).current;
-
-  const renderEventCard = useCallback(({ item }: { item: IEvent }) => {
-    return (
-      <EventCard
-        event={item}
-        cardHeight={height}
-        toggleFavorite={toggleFavoriteEvent}
-      />
-    );
-  }, [height, toggleFavoriteEvent]);
-
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-
-    if (!events || !flatListRef.current) return;
-
-    const index = events.findIndex((e) =>
-      isSameDay(e.start_date, date),
-    );
-
-    if (index !== -1) {
-      flatListRef.current.scrollToIndex({ index, animated: true });
-    }
-  };
-
-  const onViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems.length > 0) {
-        const visibleItem = viewableItems[0];
-        const event = visibleItem.item as IEvent;
-
-        if (event) {
-          setVisibleEventId(event.id);
-          if (event.start_date) {
-            const date = new Date(event.start_date);
-            setSelectedDate((prev) => {
-              // Only update if date changed essentially (day level)
-              if (!prev || !isSameDay(prev, date)) {
-                return date;
-              }
-              return prev;
-            });
-          }
-        }
-      }
+  const renderEventCard = useCallback(
+    ({ item }: { item: IEvent }) => {
+      return (
+        <EventCard
+          event={item}
+          cardHeight={containerHeight}
+          toggleFavorite={toggleFavoriteEvent}
+        />
+      );
     },
-    [],
+    [containerHeight, toggleFavoriteEvent],
   );
 
-  const renderTimelineScroller = () => {
-    return (
-      <TimelineScroller
-        events={events}
-        selectedDate={selectedDate}
-        onDateSelect={handleDateSelect}
-        visibleEventId={visibleEventId}
-      />
-    );
-  };
-
-  const renderLoadingState = () => (
-    <View style={styles.emptyContainer}>
-      <ActivityIndicator size="large" color="#000000" />
-      <ThemedText
-        style={[styles.emptyText, { color: "#666666", marginTop: 16 }]}
-      >
-        Ładowanie wydarzeń...
-      </ThemedText>
-    </View>
-  );
-
-  const renderErrorState = () => (
-    <View style={styles.emptyContainer}>
-      <ThemedText style={[styles.emptyText, { color: "#d32f2f" }]}>
-        Wystąpił błąd podczas ładowania wydarzeń
-      </ThemedText>
-      <ThemedText
-        style={[
-          styles.emptyText,
-          { color: "#666666", marginTop: 8, fontSize: 14 },
-        ]}
-      >
-        {errorMessage}
-      </ThemedText>
-    </View>
-  );
-
-  const renderEmptyState = () => {
-    const message = "Brak dostępnych wydarzeń";
-
-    return (
-      <View style={styles.emptyContainer}>
-        <ThemedText style={[styles.emptyText, { color: "#666666" }]}>
-          {message}
-        </ThemedText>
-      </View>
-    );
-  };
-
-  const renderOfflineNoDataState = () => (
-    <OfflineNoDataPlaceholder
-      title="Brak danych offline"
-      subtitle="Włącz internet, a wydarzenia pojawią się automatycznie."
-    />
-  );
+  const actualSelectedDate =
+    selectedDate ||
+    (events && events.length > 0
+      ? safeParseDate(events[nearestFutureEventIndex]?.start_date)
+      : null);
 
   return (
     <SafeAreaView
@@ -197,47 +55,91 @@ export default function HomeView() {
       ]}
       edges={["top"]}
     >
-      {renderTimelineScroller()}
+      <TimelineScroller
+        events={events}
+        selectedDate={actualSelectedDate}
+        onDateSelect={handleDateSelect}
+        visibleEventId={visibleEventId}
+      />
       <View
-        ref={containerRef}
         style={styles.eventsContainer}
         onLayout={(event) => {
-          const { height } = event.nativeEvent.layout;
-          setHeight(height);
+          setContainerHeight(event.nativeEvent.layout.height);
         }}
       >
-        {status === "loading"
-          ? renderLoadingState()
-          : status === "offline_no_data"
-            ? renderOfflineNoDataState()
-          : status === "error"
-            ? renderErrorState()
-            : events?.length === 0
-              ? renderEmptyState()
-              : events && height > 0 && (
-                  <FlatList
-                    ref={flatListRef}
-                    bounces={true}
-                    data={events}
-                    renderItem={renderEventCard}
-                    keyExtractor={(item: IEvent) => item.id.toString()}
-                    getItemLayout={(_, index) => ({
-                      length: height,
-                      offset: height * index,
-                      index,
-                    })}
-                    removeClippedSubviews={false}
-                    pagingEnabled
-                    showsVerticalScrollIndicator={false}
-                    snapToInterval={height}
-                    snapToAlignment="start"
-                    decelerationRate="fast"
-                    disableIntervalMomentum={true}
-                    viewabilityConfig={viewabilityConfig}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                  />
-                )}
+        {status === "loading" ? (
+          <HomeLoadingState />
+        ) : status === "offline_no_data" ? (
+          <OfflineNoDataPlaceholder
+            title="Brak danych offline"
+            subtitle="Włącz internet, a wydarzenia pojawią się automatycznie."
+          />
+        ) : status === "error" ? (
+          <HomeErrorState message={errorMessage} />
+        ) : events?.length === 0 ? (
+          <HomeEmptyState />
+        ) : events && containerHeight > 0 ? (
+          <FlatList
+            ref={flatListRef}
+            bounces={true}
+            data={events}
+            renderItem={renderEventCard}
+            keyExtractor={(item: IEvent) => item.id.toString()}
+            getItemLayout={(_, index) => ({
+              length: containerHeight,
+              offset: containerHeight * index,
+              index,
+            })}
+            initialScrollIndex={nearestFutureEventIndex}
+            onScrollToIndexFailed={(info) => {
+              const wait = new Promise((resolve) => setTimeout(resolve, 500));
+              wait.then(() => {
+                flatListRef.current?.scrollToIndex({
+                  index: info.index,
+                  animated: false,
+                });
+              });
+            }}
+            removeClippedSubviews={false}
+            showsVerticalScrollIndicator={false}
+            pagingEnabled={true}
+            decelerationRate="fast"
+            disableIntervalMomentum={true}
+            viewabilityConfig={viewabilityConfig}
+            onViewableItemsChanged={onViewableItemsChanged}
+          />
+        ) : null}
       </View>
     </SafeAreaView>
   );
 }
+
+const HomeLoadingState = () => (
+  <View style={styles.emptyContainer}>
+    <ActivityIndicator size="large" color="#000000" />
+    <ThemedText style={[styles.emptyText, { color: "#666666", marginTop: 16 }]}>
+      Ładowanie wydarzeń...
+    </ThemedText>
+  </View>
+);
+
+const HomeErrorState = ({ message }: { message: string | null }) => (
+  <View style={styles.emptyContainer}>
+    <ThemedText style={[styles.emptyText, { color: "#d32f2f" }]}>
+      Wystąpił błąd podczas ładowania wydarzeń
+    </ThemedText>
+    <ThemedText
+      style={[styles.emptyText, { color: "#666666", marginTop: 8, fontSize: 14 }]}
+    >
+      {message}
+    </ThemedText>
+  </View>
+);
+
+const HomeEmptyState = () => (
+  <View style={styles.emptyContainer}>
+    <ThemedText style={[styles.emptyText, { color: "#666666" }]}>
+      Brak dostępnych wydarzeń
+    </ThemedText>
+  </View>
+);

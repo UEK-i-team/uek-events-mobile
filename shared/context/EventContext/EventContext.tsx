@@ -66,11 +66,11 @@ export const EventContextProvider = ({
     eventsService
       .getAllEvents({
         onLateUpdate: (lateEvents) => {
-          setEvents(lateEvents);
+          setEvents(sortEventsAscending(lateEvents));
         },
       })
       .then((events) => {
-        setEvents(events);
+        setEvents(sortEventsAscending(events));
         setStatus("success");
       })
       .catch((error) => {
@@ -102,11 +102,11 @@ export const EventContextProvider = ({
       eventsService
         .getAllEvents({
           onLateUpdate: (lateEvents) => {
-            setEvents(lateEvents);
+            setEvents(sortEventsAscending(lateEvents));
           },
         })
         .then((freshEvents) => {
-          setEvents(freshEvents);
+          setEvents(sortEventsAscending(freshEvents));
           setStatus("success");
           setErrorMessage(null);
           showNotificationRef.current?.("info", "Załadowano nowe wydarzenia");

@@ -7,7 +7,22 @@ export function safeParseDate(dateStr: string | null | undefined): Date | null {
 
   const parts = dateStr.split(".");
   if (parts.length === 3) {
-    const fallback = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+    const day = parts[0].padStart(2, "0");
+    const month = parts[1].padStart(2, "0");
+    
+    const yearTimeParts = parts[2].trim().split(" ");
+    const year = yearTimeParts[0];
+    let time = "00:00:00";
+    
+    if (yearTimeParts.length > 1) {
+      const timeParts = yearTimeParts[1].split(":");
+      const hours = timeParts[0].padStart(2, "0");
+      const minutes = (timeParts[1] || "00").padStart(2, "0");
+      const seconds = (timeParts[2] || "00").padStart(2, "0");
+      time = `${hours}:${minutes}:${seconds}`;
+    }
+    
+    const fallback = new Date(`${year}-${month}-${day}T${time}`);
     if (!isNaN(fallback.getTime())) return fallback;
   }
   return null;
@@ -38,4 +53,30 @@ export function filterOldEvents(events: IEvent[]): IEvent[] {
 
     return eventDate >= twoWeeksAgo;
   });
+}
+
+export function findNearestFutureEventIndex(
+  events: IEvent[] | null | undefined,
+): number {
+  if (!events || events.length === 0) return 0;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const index = events.findIndex((e) => {
+    const eStartParsed = safeParseDate(e.start_date);
+    if (!eStartParsed) return false;
+    eStartParsed.setHours(0, 0, 0, 0);
+
+    let eEnd = eStartParsed;
+    if (e.end_date && e.end_date !== "null") {
+      const eEndParsed = safeParseDate(e.end_date);
+      if (eEndParsed) {
+        eEndParsed.setHours(0, 0, 0, 0);
+        eEnd = eEndParsed;
+      }
+    }
+    return eStartParsed >= now || eEnd >= now;
+  });
+
+  return index !== -1 ? index : events.length - 1;
 }
