@@ -17,6 +17,7 @@ import { Location } from "../location/location";
 import { styles } from "./event-card.styles";
 
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
+import { EventImageContainer } from "@/shared/components/event-image-container/event-image-container";
 import { theme } from "@/shared/constants/theme";
 import { IEvent } from "@/shared/types/event";
 
@@ -96,20 +97,17 @@ export function EventCard({
           styles.card,
           {
             width: SCREEN_WIDTH - 28,
-            height: cardHeight - 32,
           },
         ]}
       >
-          <View   style={[styles.imageContainer, { height: imageHeight }, {backgroundColor: dominantColor}]}
-                >
-          <Image
-            source={{
-              uri: imageUrl,
-            }}
-            style={styles.image}
-            contentFit={resizeMode}
-            cachePolicy="disk"
-            transition={200}
+        <View style={{ position: 'relative' }}>
+          <EventImageContainer
+            imageUrl={imageUrl}
+            width={SCREEN_WIDTH - 28}
+            height={imageHeight}
+            extractedColor={dominantColor}
+            customWidth={SCREEN_WIDTH - 28}
+            cornerRadius={16}
           />
           <RoundedButton
             icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
@@ -121,7 +119,7 @@ export function EventCard({
             onPress={handleFavoritePress}
             style={{
               position: "absolute",
-              bottom: -30,
+              bottom: -16,
               right: 16,
               borderColor: event.isFavorite
                 ? theme.light.red_regular
