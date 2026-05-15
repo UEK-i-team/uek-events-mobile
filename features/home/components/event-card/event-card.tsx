@@ -97,6 +97,7 @@ export function EventCard({
           styles.card,
           {
             width: SCREEN_WIDTH - 28,
+            height: cardHeight - 32,
           },
         ]}
       >
