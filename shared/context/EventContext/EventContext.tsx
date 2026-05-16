@@ -3,6 +3,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { useDependencies } from "@/shared/di/DependencyProvider";
 import { OfflineNoCacheError } from "@/shared/services/get-events-services/get-events.services";
 import { IEvent } from "@/shared/types/event";
+import { sortEventsAscending, filterOldEvents } from "@/utils/functions/event-utils";
 import { NotificationContext } from "@/features/notifications/contexts/notification-context";
 import { NotificationType } from "@/features/notifications/types";
 import {
@@ -12,7 +13,7 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
 
 export interface IEventContext {
@@ -65,11 +66,11 @@ export const EventContextProvider = ({
     eventsService
       .getAllEvents({
         onLateUpdate: (lateEvents) => {
-          setEvents(lateEvents);
+          setEvents(sortEventsAscending(lateEvents));
         },
       })
       .then((events) => {
-        setEvents(events);
+        setEvents(sortEventsAscending(events));
         setStatus("success");
       })
       .catch((error) => {
@@ -101,11 +102,11 @@ export const EventContextProvider = ({
       eventsService
         .getAllEvents({
           onLateUpdate: (lateEvents) => {
-            setEvents(lateEvents);
+            setEvents(sortEventsAscending(lateEvents));
           },
         })
         .then((freshEvents) => {
-          setEvents(freshEvents);
+          setEvents(sortEventsAscending(freshEvents));
           setStatus("success");
           setErrorMessage(null);
           showNotificationRef.current?.("info", "Załadowano nowe wydarzenia");

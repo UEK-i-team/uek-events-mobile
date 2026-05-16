@@ -1,5 +1,6 @@
 import { CacheService } from "@/shared/storage/cache-service/cache-service";
 import type { IEvent } from "@/shared/types/event";
+import { filterOldEvents } from "@/utils/functions/event-utils";
 
 interface CacheMetadata {
   lastCached: number;
@@ -58,7 +59,21 @@ export class EventsCacheService {
     }
 
     const allEvents = Array.from(eventsMap.values());
-    await this.saveEvents(allEvents, new Date());
+    const lastUpdate = await this.getLastUpdateDateEvent() || new Date();
+    await this.saveEvents(allEvents, lastUpdate);
+  }
+
+  public async purgeOldEvents(): Promise<void> {
+    const existingEvents = await this.getEvents();
+    if (!existingEvents) return;
+
+    const filteredEvents = filterOldEvents(existingEvents);
+    
+    // Only save and write to disk if we actually purged something
+    if (filteredEvents.length < existingEvents.length) {
+      const lastUpdate = await this.getLastUpdateDateEvent() || new Date();
+      await this.saveEvents(filteredEvents, lastUpdate);
+    }
   }
 
   public async getLastUpdateDateEvent(): Promise<Date | null> {

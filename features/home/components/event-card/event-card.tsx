@@ -28,7 +28,7 @@ interface EventCardProps {
 
 const TAG_COLORS = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
 
-export function EventCard({
+export const EventCard = React.memo(function EventCard({
   event,
   cardHeight,
   toggleFavorite,
@@ -85,7 +85,7 @@ export function EventCard({
         styles.container,
         {
           width: SCREEN_WIDTH,
-          height: cardHeight,
+          height: cardHeight, 
         },
       ]}
     >
@@ -179,4 +179,4 @@ export function EventCard({
       </TouchableOpacity>
     </View>
   );
-}
+});
