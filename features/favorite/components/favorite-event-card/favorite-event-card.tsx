@@ -7,11 +7,15 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./favorite-event-card.styles";
-import { formatEventDate, formatEventTime, isEventPassed } from "@/utils/functions/date-utils";
+import { formatEventDate, formatEventTime } from "@/utils/functions/date-utils";
+import { useTheme } from "@/shared/context/ThemeContext";
+import { getTagColor } from "@/shared/constants/theme";
 import { theme, getTagColor } from "@/shared/constants/theme";
 
 const MAX_VISIBLE_TAGS = 2;
 const PASSED_TAG_COLOR = "#BDBDBD";
+
+
 
 interface FavoriteEventCardProps {
   event: IEvent;
@@ -20,6 +24,7 @@ interface FavoriteEventCardProps {
 
 export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const router = useRouter();
+  const { isDarkMode, colors } = useTheme();
 
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
 
@@ -28,7 +33,14 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[
+        styles.card, 
+        { 
+          backgroundColor: colors.light_grey,
+          shadowOpacity: isDarkMode ? 0 : 0.1,
+          elevation: isDarkMode ? 0 : 3,
+        }
+      ]}
       activeOpacity={0.9}
       onPress={() => router.push(`/event/${event.id}`)}
     >
@@ -48,7 +60,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
+          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2} ellipsizeMode="tail">
             {event.title}
           </Text>
 
@@ -57,10 +69,10 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
               <CalendarIcon
                 width={18}
                 height={18}
-                fill="#111111"
-                color="#111111"
+                fill={colors.textSecondary}
+                color={colors.textSecondary}
               />
-              <Text style={styles.dateText}>
+              <Text style={[styles.dateText, { color: colors.textSecondary }]}>
                 {formatEventDate(event.start_date)}
               </Text>
             </View>
@@ -68,10 +80,10 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
               <ClockIcon
                 width={18}
                 height={18}
-                fill="#111111"
-                color="#111111"
+                fill={colors.textSecondary}
+                color={colors.textSecondary}
               />
-              <Text style={styles.dateText}>
+              <Text style={[styles.dateText, { color: colors.textSecondary }]}>
                 {formatEventTime(event.start_date)}
               </Text>
             </View>
@@ -80,36 +92,20 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
       </View>
 
       <View style={styles.tagsRow}>
-        {event.event_type && (
-          <View
-            style={[
-              styles.tag,
-              { backgroundColor: theme.light.dark_grey },
-            ]}
-          >
-            <Text style={[styles.tagText, { color: theme.light.ligth_grey }]}>
-              {event.event_type}
-            </Text>
-          </View>
-        )}
-
-
-        {visibleTags.map((tag) => (
-          <View
-            key={tag}
-            style={[
-              styles.tag,
-              {
-                backgroundColor: eventHasPassed
-                  ? PASSED_TAG_COLOR
-                  : getTagColor(tag)
-              },
-            ]}
-          >
-            <Text style={styles.tagText}>{tag}</Text>
-          </View>
-        ))}
-
+        {allTags.map((tag, index) => {
+          const tagColors = getTagColor(index, isDarkMode);
+          return (
+            <View
+              key={tag}
+              style={[
+                styles.tag,
+                { backgroundColor: tagColors.bg },
+              ]}
+            >
+              <Text style={[styles.tagText, { color: tagColors.text }]}>{tag}</Text>
+            </View>
+          );
+          
         {remainingTagsCount > 0 && (
           <View style={styles.remainingBadge}>
             <Text style={styles.remainingText}>
@@ -117,6 +113,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
             </Text>
           </View>
         )}
+        })}
       </View>
 
       <TouchableOpacity
@@ -127,7 +124,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
         }}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Ionicons name="close" size={24} color="#111111" />
+        <Ionicons name="close" size={24} color={colors.textPrimary} />
       </TouchableOpacity>
     </TouchableOpacity>
   );

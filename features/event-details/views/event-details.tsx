@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { styles } from "./event-details.styles";
 import { useContext } from "react";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
+import { useTheme } from "@/shared/context/ThemeContext";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import HeartOutlineIcon from "@/assets/icons/heart-icon-outline.svg";
 import HeartFilledIcon from "@/assets/icons/heart-icon-filled.svg";
@@ -36,6 +37,7 @@ export interface EventDetailsViewProps {
 
 export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const router = useRouter();
+  const { isDarkMode, colors } = useTheme();
   const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
 
   const event = getEventById(Number(eventId));
@@ -69,7 +71,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.mainBackground }]} edges={["top", "left", "right"]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -99,7 +101,8 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
           <View style={styles.positionButtons}>
             <RoundedButton
               icon={ShareIcon}
-              backgroundColor={theme.light.primary}
+              backgroundColor={colors.primary}
+              iconColor={colors.dark_grey}
               onPress={onShare}
             />
             <RoundedButton
@@ -110,7 +113,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
                   : theme.light.dark_grey
               }
               backgroundColor={
-                event.isFavorite ? theme.light.red_light : "white"
+                event.isFavorite ? theme.light.red_light : theme.light.mainBackground
               }
               size="medium"
               onPress={() => toggleFavoriteEvent(event.id, !event.isFavorite)}
@@ -132,13 +135,14 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
               icon={ArrowBackIcon}
               size={"small"}
               backgroundColor={theme.light.mainBackground}
+              iconColor={theme.light.dark_grey}
               onPress={() => router.back()}
             />
           </View>
         </View>
         <View style={styles.detailsContainer}>
-          <Text style={styles.title}>{event.title}</Text>
-          <Text style={styles.shortDesc}>{event.short_desc}</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{event.title}</Text>
+          <Text style={[styles.shortDesc, { color: colors.textPrimary }]}>{event.short_desc}</Text>
           <View style={styles.dateAndTimeRowContainer}>
             <InfoRow icon={CalendarIcon} text={startDateFormatted} />
             <InfoRow icon={ScheduleIcon} text={startTimeFormatted} />
@@ -154,13 +158,13 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             />
           </View>
 
-          <Text style={styles.sectionTitle}>Tematy</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Tematy</Text>
 
           <View style={styles.bulletListContainer}>
             {event.topics.map((topic, index) => (
               <View style={styles.bulletListItem} key={index}>
-                <View style={styles.bulletPoint} />
-                <Text style={styles.bulletText}>{topic}</Text>
+                <View style={[styles.bulletPoint, { backgroundColor: colors.textPrimary }]} />
+                <Text style={[styles.bulletText, { color: colors.textPrimary }]}>{topic}</Text>
               </View>
             ))}
           </View>
@@ -197,11 +201,11 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
 
       <View style={styles.stickyBottomContainer}>
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, { backgroundColor: colors.primary }]}
           activeOpacity={0.8}
           onPress={() => Linking.openURL(event.origin_url)}
         >
-          <Text style={styles.actionButtonText}>
+          <Text style={[styles.actionButtonText, { color: colors.dark_grey }]}>
             Zobacz szczegóły wydarzenia
           </Text>
         </TouchableOpacity>

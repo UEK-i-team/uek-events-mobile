@@ -1,5 +1,5 @@
 import LocationIcon from "@/assets/icons/location.svg";
-import { theme } from "@/shared/constants/theme";
+import { useTheme } from "@/shared/context/ThemeContext";
 import React from "react";
 import { StyleProp, Text, View, ViewStyle } from "react-native";
 import { styles } from "./location.styles";
@@ -15,15 +15,16 @@ export function Location({
   registrationType,
   style,
 }: LocationProps) {
+  const { colors } = useTheme();
   return (
     <View style={[styles.container, style]}>
       <LocationIcon
         width={22}
         height={22}
-        fill={theme.light.dark_grey}
-        color={theme.light.dark_grey}
+        fill={colors.textSecondary}
+        color={colors.textSecondary}
       />
-      <Text style={styles.text}>
+      <Text style={[styles.text, { color: colors.textSecondary }]}>
         {locationCategory} - {registrationType}
       </Text>
     </View>

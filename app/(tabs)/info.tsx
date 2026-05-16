@@ -1,18 +1,19 @@
-import { Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, View, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ExternalLink } from "@/shared/components/external-link/external-link";
 import { IconSymbol } from "@/shared/components/icon-symbol/icon-symbol";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
-import { theme } from "@/shared/constants/theme";
 import * as Clipboard from "expo-clipboard";
 import { useContext } from "react";
 import { NotificationContext } from "@/features/notifications/contexts/notification-context";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 const EMAIL = "kontakt@uekeventuje.pl";
 
 export default function InfoScreen() {
   const notificationContext = useContext(NotificationContext);
+  const { isDarkMode, toggleTheme, colors } = useTheme();
 
   const copyEmail = async () => {
     await Clipboard.setStringAsync(EMAIL);
@@ -23,7 +24,7 @@ export default function InfoScreen() {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: theme.light.mainBackground },
+        { backgroundColor: colors.mainBackground },
       ]}
       edges={["top"]}
     >
@@ -35,26 +36,47 @@ export default function InfoScreen() {
         <View style={styles.section}>
           <ThemedText
             type="subtitle"
-            style={[styles.sectionTitle, { color: "#000000" }]}
+            style={[styles.sectionTitle, { color: colors.textPrimary }]}
+          >
+            Ustawienia
+          </ThemedText>
+          
+          <View style={styles.linkItem}>
+            <ThemedText style={{ color: colors.textPrimary, fontSize: 16 }}>
+              Dark Mode
+            </ThemedText>
+            <Switch
+              value={isDarkMode}
+              onValueChange={toggleTheme}
+              trackColor={{ false: "#767577", true: colors.primary }}
+              thumbColor={"#f4f3f4"}
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText
+            type="subtitle"
+            style={[styles.sectionTitle, { color: colors.textPrimary }]}
           >
             O aplikacji
           </ThemedText>
           <View style={[styles.creatorsSection]}>
-            <ThemedText style={[styles.creatorsTitle, { color: "#000000" }]}>
+            <ThemedText style={[styles.creatorsTitle, { color: colors.textPrimary }]}>
               CEL APLIKACJI
             </ThemedText>
-            <ThemedText style={[styles.creatorsText, { color: "#000000" }]}>
+            <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
               Ile razy przegapiłeś ważny event, bo ogłoszenie zaginęło w
               mailach? My też mieliśmy dość. Dlatego stworzyliśmy aplikację,
               która zbiera wszystkie wydarzenia, konkursy i oferty w jednym
               miejscu.
             </ThemedText>
             <ThemedText
-              style={[styles.creatorsText, { color: "#000000" }]}
+              style={[styles.creatorsText, { color: colors.textPrimary }]}
             ></ThemedText>
-            <ThemedText style={[styles.creatorsText, { color: "#000000" }]}>
+            <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
               {
-                "Jesteśmy studentami UEK, którzy mają dokładnie ten sam problem i chcemy go rozwiązać. \n\nAplikacja stwrzona \nprzez studentów, dla studentów. 🚀"
+                "Jesteśmy studentami UEK, którzy mają dokładnie ten sam problem \ni chcemy go rozwiązać. \n\nAplikacja stwrzona \nprzez studentów, dla studentów. 🚀"
               }
             </ThemedText>
           </View>
@@ -63,11 +85,11 @@ export default function InfoScreen() {
               href="https://docs.google.com/document/d/1a5hBbEeb7S7NytOmOBCKH1SiwleBu7JNx-4U6JYfE48/edit?usp=sharing"
               style={styles.link}
             >
-              <ThemedText style={[styles.linkText, { color: "#000000" }]}>
+              <ThemedText style={[styles.linkText, { color: colors.textPrimary }]}>
                 Polityka prywatności
               </ThemedText>
             </ExternalLink>
-            <IconSymbol name="arrow.up.right" size={20} color="#687076" />
+            <IconSymbol name="arrow.up.right" size={20} color={colors.textSecondary} />
           </View>
 
           <View style={styles.linkItem}>
@@ -75,27 +97,27 @@ export default function InfoScreen() {
               href="https://docs.google.com/document/d/1xXgFqgD8j96Mu1_4y1BC2MKSPQDcXLYnTZknXu1etNY/edit?usp=sharing"
               style={styles.link}
             >
-              <ThemedText style={[styles.linkText, { color: "#000000" }]}>
+              <ThemedText style={[styles.linkText, { color: colors.textPrimary }]}>
                 Regulamin
               </ThemedText>
             </ExternalLink>
-            <IconSymbol name="arrow.up.right" size={20} color="#687076" />
+            <IconSymbol name="arrow.up.right" size={20} color={colors.textSecondary} />
           </View>
 
           <View style={styles.linkItem}>
             <Pressable style={styles.link} onPress={copyEmail}>
-              <ThemedText style={[styles.linkText, { color: "#000000" }]}>
+              <ThemedText style={[styles.linkText, { color: colors.textPrimary }]}>
                 Kontakt: - {EMAIL}
               </ThemedText>
               <View>
                 <ThemedText
-                  style={[styles.subLinkText, { color: "#4b4b4bff" }]}
+                  style={[styles.subLinkText, { color: colors.textSecondary }]}
                 >
                   Kliknij aby skopiować
                 </ThemedText>
               </View>
             </Pressable>
-            <IconSymbol name="envelope" size={20} color="#000000" />
+            <IconSymbol name="envelope" size={20} color={colors.textPrimary} />
           </View>
         </View>
       </ScrollView>

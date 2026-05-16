@@ -13,6 +13,7 @@ import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
+import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
 import { safeParseDate } from "@/utils/functions/event-utils";
 
@@ -25,6 +26,7 @@ export default function FavoriteView() {
   const { events, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
   const [sortMode, setSortMode] = useState<SortMode>("liked");
+  const { isDarkMode, colors } = useTheme();
 
   const favoriteEvents = useMemo(() => {
     const favs = events?.filter((event) => event.isFavorite) || [];
@@ -49,12 +51,12 @@ export default function FavoriteView() {
       <SafeAreaView
         style={[
           styles.container,
-          { backgroundColor: theme.light.mainBackground },
+          { backgroundColor: colors.mainBackground },
         ]}
         edges={["top"]}
       >
         <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#000000" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       </SafeAreaView>
     );
@@ -65,15 +67,15 @@ export default function FavoriteView() {
       <SafeAreaView
         style={[
           styles.container,
-          { backgroundColor: theme.light.mainBackground },
+          { backgroundColor: colors.mainBackground },
         ]}
         edges={["top"]}
       >
         <View style={styles.emptyContainer}>
-          <ThemedText style={[styles.emptyTitle, { color: "#d32f2f" }]}>
+          <ThemedText style={[styles.emptyTitle, { color: colors.red_regular }]}>
             Błąd ładowania ulubionych
           </ThemedText>
-          <ThemedText style={styles.emptySubtext}>{errorMessage}</ThemedText>
+          <ThemedText style={[styles.emptySubtext, { color: colors.textSecondary }]}>{errorMessage}</ThemedText>
         </View>
       </SafeAreaView>
     );
@@ -84,7 +86,7 @@ export default function FavoriteView() {
       <SafeAreaView
         style={[
           styles.container,
-          { backgroundColor: theme.light.mainBackground },
+          { backgroundColor: colors.mainBackground },
         ]}
         edges={["top"]}
       >
@@ -100,7 +102,7 @@ export default function FavoriteView() {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: theme.light.mainBackground },
+        { backgroundColor: colors.mainBackground },
       ]}
       edges={["top"]}
     >
@@ -109,10 +111,10 @@ export default function FavoriteView() {
           <Ionicons
             name="bookmark-outline"
             size={40}
-            color={theme.light.dark_grey}
+            color={colors.dark_grey}
           />
-          <ThemedText style={styles.emptyTitle}>Brak ulubionych</ThemedText>
-          <ThemedText style={styles.emptySubtext}>
+          <ThemedText style={[styles.emptyTitle, { color: colors.textPrimary }]}>Brak ulubionych</ThemedText>
+          <ThemedText style={[styles.emptySubtext, { color: colors.textSecondary }]}>
             Wydarzenia, które polubisz, pojawią się tutaj
           </ThemedText>
         </View>
@@ -122,18 +124,24 @@ export default function FavoriteView() {
             <TouchableOpacity
               style={[
                 styles.tab,
-                { flex: 1, minWidth: 0 },
-                sortMode === "liked" ? styles.tabActive : styles.tabInactive,
+                { 
+                  flex: 1, 
+                  minWidth: 0,
+                  backgroundColor: colors.light_grey,
+                  borderColor: sortMode === "liked" ? colors.primary : (isDarkMode ? "transparent" : "rgba(0,0,0,0.13)"),
+                  borderWidth: sortMode === "liked" ? 2 : 1,
+                },
               ]}
               onPress={() => setSortMode("liked")}
               activeOpacity={0.8}
             >
               <Text
-                style={
+                style={[
                   sortMode === "liked"
                     ? styles.tabTextActive
-                    : styles.tabTextInactive
-                }
+                    : styles.tabTextInactive,
+                  { color: sortMode === "liked" ? colors.primary : colors.textPrimary }
+                ]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 maxFontSizeMultiplier={1.2}
@@ -145,18 +153,24 @@ export default function FavoriteView() {
             <TouchableOpacity
               style={[
                 styles.tab,
-                { flex: 1, minWidth: 0 },
-                sortMode === "added" ? styles.tabActive : styles.tabInactive,
+                { 
+                  flex: 1, 
+                  minWidth: 0,
+                  backgroundColor: colors.light_grey,
+                  borderColor: sortMode === "added" ? colors.primary : (isDarkMode ? "transparent" : "rgba(0,0,0,0.13)"),
+                  borderWidth: sortMode === "added" ? 2 : 1,
+                },
               ]}
               onPress={() => setSortMode("added")}
               activeOpacity={0.8}
             >
               <Text
-                style={
+                style={[
                   sortMode === "added"
                     ? styles.tabTextActive
-                    : styles.tabTextInactive
-                }
+                    : styles.tabTextInactive,
+                  { color: sortMode === "added" ? colors.primary : colors.textPrimary }
+                ]}
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 maxFontSizeMultiplier={1.2}

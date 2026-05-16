@@ -84,10 +84,12 @@ export const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "center",
+    justifyContent: "flex-start",
     columnGap: 14,
     rowGap: 15,
     marginTop: 16,
     marginBottom: 16,
+    paddingHorizontal: 16,
     overflow: "hidden",
   },
 

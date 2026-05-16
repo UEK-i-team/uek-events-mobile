@@ -11,6 +11,8 @@ import {
   useWindowDimensions,
 } from "react-native";
 
+import { useTheme } from "@/shared/context/ThemeContext";
+
 import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { IEvent } from "@/shared/types/event";
@@ -36,6 +38,7 @@ export const EventCard = React.memo(function EventCard({
   cardHeight,
   toggleFavorite,
 }: EventCardProps) {
+  const { isDarkMode, colors } = useTheme();
   const {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT,
@@ -103,12 +106,15 @@ export const EventCard = React.memo(function EventCard({
         style={[
           styles.card,
           {
-            width: SCREEN_WIDTH,
-            height: cardHeight,
+            width: SCREEN_WIDTH - 28,
+            height: cardHeight - 32,
+            backgroundColor: colors.surface,
+            elevation: isDarkMode ? 0 : 5,
+            shadowOpacity: isDarkMode ? 0 : 0.1,
           },
         ]}
       >
-        <View style={[styles.imageContainer, { height: imageHeight }]}>
+        <View style={[styles.imageContainer, { height: imageHeight }, {backgroundColor: dominantColor}]}>
           <View style={[styles.image, eventHasPassed && styles.passedImage]}>
             <EventImageContainer
               imageUrl={imageUrl}
@@ -138,9 +144,9 @@ export const EventCard = React.memo(function EventCard({
           <RoundedButton
             icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
             iconColor={
-              event.isFavorite ? theme.light.red_regular : theme.light.dark_grey
+              event.isFavorite ? colors.red_regular : colors.dark_grey
             }
-            backgroundColor={event.isFavorite ? theme.light.red_light : "white"}
+            backgroundColor={event.isFavorite ? colors.red_light : "white"}
             size="medium"
             onPress={handleFavoritePress}
             style={{
@@ -148,8 +154,8 @@ export const EventCard = React.memo(function EventCard({
               bottom: -16,
               right: 16,
               borderColor: event.isFavorite
-                ? theme.light.red_regular
-                : theme.light.mainBackground,
+                ? colors.red_regular
+                : colors.surface,
               borderWidth: 1,
             }}
           />
@@ -160,6 +166,7 @@ export const EventCard = React.memo(function EventCard({
             style={[
               styles.title,
               isSmallScreen && { fontSize: 24, marginTop: 4 },
+              { color: colors.textPrimary }
             ]}
             maxFontSizeMultiplier={1.2}
           >
@@ -170,6 +177,7 @@ export const EventCard = React.memo(function EventCard({
               style={[
                 styles.description,
                 isSmallScreen && { fontSize: 16, marginTop: 4 },
+                { color: colors.textSecondary }
               ]}
               numberOfLines={isVerySmallScreen ? 1 : 2}
               maxFontSizeMultiplier={1.2}

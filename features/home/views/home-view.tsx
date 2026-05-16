@@ -13,10 +13,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
 import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
-import { safeParseDate } from "@/utils/functions/event-utils";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 export default function HomeView() {
-  const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
+  const { flatListRef, headerHeight } = useHomeScreen();
+  const { colors } = useTheme();
+
+  const { events, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
   const { appliedCategories, appliedLocations, appliedTags } = useAppliedFilters();
 
@@ -65,30 +68,116 @@ export default function HomeView() {
     onViewableItemsChanged,
   } = useHomeScreen({ events });
 
-  const renderEventCard = useCallback(
-    ({ item }: { item: IEvent }) => {
-      return (
-        <EventCard
-          event={item}
-          cardHeight={containerHeight}
-          toggleFavorite={toggleFavoriteEvent}
-        />
-      );
+  const renderEventCard = ({ item }: { item: IEvent }) => {
+    return (
+      <EventCard
+        event={item}
+        cardHeight={height}
+        toggleFavorite={toggleFavoriteEvent}
+      />
+    );
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+
+    if (!events || !flatListRef.current) return;
+
+    const index = events.findIndex((e) =>
+      isSameDay(e.start_date, date),
+    );
+
+    if (index !== -1) {
+      flatListRef.current.scrollToIndex({ index, animated: true });
+    }
+  };
+
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0) {
+        const visibleItem = viewableItems[0];
+        const event = visibleItem.item as IEvent;
+
+        if (event) {
+          setVisibleEventId(event.id);
+          if (event.start_date) {
+            const date = new Date(event.start_date);
+            setSelectedDate((prev) => {
+              // Only update if date changed essentially (day level)
+              if (!prev || !isSameDay(prev, date)) {
+                return date;
+              }
+              return prev;
+            });
+          }
+        }
+      }
     },
-    [containerHeight, toggleFavoriteEvent],
+    [],
   );
 
-  const actualSelectedDate =
-    selectedDate ||
-    (events && events.length > 0
-      ? safeParseDate(events[nearestFutureEventIndex]?.start_date)
-      : null);
+  const renderTimelineScroller = () => {
+    return (
+      <TimelineScroller
+        events={events}
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        visibleEventId={visibleEventId}
+      />
+    );
+  };
+
+  const renderLoadingState = () => (
+    <View style={styles.emptyContainer}>
+      <ActivityIndicator size="large" color={colors.primary} />
+      <ThemedText
+        style={[styles.emptyText, { color: colors.textSecondary, marginTop: 16 }]}
+      >
+        Ładowanie wydarzeń...
+      </ThemedText>
+    </View>
+  );
+
+  const renderErrorState = () => (
+    <View style={styles.emptyContainer}>
+      <ThemedText style={[styles.emptyText, { color: colors.red_regular }]}>
+        Wystąpił błąd podczas ładowania wydarzeń
+      </ThemedText>
+      <ThemedText
+        style={[
+          styles.emptyText,
+          { color: colors.textSecondary, marginTop: 8, fontSize: 14 },
+        ]}
+      >
+        {errorMessage}
+      </ThemedText>
+    </View>
+  );
+
+  const renderEmptyState = () => {
+    const message = "Brak dostępnych wydarzeń";
+
+    return (
+      <View style={styles.emptyContainer}>
+        <ThemedText style={[styles.emptyText, { color: colors.textSecondary }]}>
+          {message}
+        </ThemedText>
+      </View>
+    );
+  };
+
+  const renderOfflineNoDataState = () => (
+    <OfflineNoDataPlaceholder
+      title="Brak danych offline"
+      subtitle="Włącz internet, a wydarzenia pojawią się automatycznie."
+    />
+  );
 
   return (
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: theme.light.mainBackground },
+        { backgroundColor: colors.mainBackground },
       ]}
       edges={["top"]}
     >

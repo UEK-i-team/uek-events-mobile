@@ -57,6 +57,7 @@ container: {
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    backgroundColor: '#E9E9E9',
     borderWidth:1,
     borderColor: '#111111',
   },
@@ -67,7 +68,7 @@ container: {
     backgroundColor: '#EAEAEA',
   },
   dateBoxInactiveDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#EAEAEA',
   },
   dateBoxEmpty: {
     width: 36,

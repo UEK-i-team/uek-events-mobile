@@ -4,9 +4,6 @@ import { theme } from "@/shared/constants/theme";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.light.mainBackground,
-    // alignItems: "center",
-    // justifyContent: "center",
   },
   imageContainer: {
     paddingHorizontal: 14,
@@ -57,6 +54,18 @@ export const styles = StyleSheet.create({
     fontWeight: "300",
     textAlign: "center",
   },
+  sampleImageBadge: {
+    position: "absolute",
+    bottom: 12,
+    left: 26,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+  sampleImageBadgeText: {
+    fontSize: 10,
+    fontWeight: "400",
+  },
   positionButtons: {
     position: "absolute",
     bottom: -20,
@@ -67,7 +76,7 @@ export const styles = StyleSheet.create({
   positionBackButton: {
     position: "absolute",
     top: 26,
-    left: 40,
+    left: 26,
   },
   detailsContainer: {
     paddingHorizontal: 24,
@@ -81,13 +90,14 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 300,
     marginTop: 8,
+    lineHeight: 22,
   },
   dateAndTimeRowContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
-    marginTop: 20,
+    gap: 14,
+    marginTop: 24,
   },
   locationRowContainerAndOrganizerRowContainer: {
     flexDirection: "row",
@@ -96,10 +106,9 @@ export const styles = StyleSheet.create({
     marginTop: 14,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "600",
-    color: theme.light.dark_grey,
-    marginTop: 30,
+    marginTop: 34,
     marginBottom: 16,
   },
   bulletListContainer: {
@@ -111,16 +120,14 @@ export const styles = StyleSheet.create({
     paddingRight: 16,
   },
   bulletPoint: {
-    width: 10,
-    height: 10,
+    width: 6,
+    height: 6,
     borderRadius: 3,
-    backgroundColor: theme.light.dark_grey,
-    marginTop: 7,
-    marginRight: 8,
+    marginTop: 8,
+    marginRight: 12,
   },
   bulletText: {
-    fontSize: 16,
-    color: theme.light.dark_grey,
+    fontSize: 15,
     fontWeight: "300",
     lineHeight: 22,
   },
@@ -150,23 +157,24 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: "transparent",
   },
-actionButton: {
+  actionButton: {
     backgroundColor: theme.light.primary,
     paddingVertical: 14,
     paddingHorizontal: 12,
     borderRadius: 16,
     alignItems: "center",
+    
     justifyContent: "center",
     minHeight: 56,
     width: '100%',
 },
     actionButtonText: {
     color: theme.light.dark_grey,
-    fontSize: 18,
-    fontWeight: "400",
-    textAlign: "center",
-    lineHeight: 22,
-},
+    fontSize: 16,
+    fontWeight: "500",
+    textAlign: "center",       
+    lineHeight: 22,          
+  },
   scrollContent: {
     paddingBottom: 140,
   },

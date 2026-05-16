@@ -12,7 +12,7 @@ import Animated, {
 import { useFilters } from "@/features/filters/contexts/filters-context";
 import { HapticTab } from "@/shared/components/haptic-tab/haptic-tab";
 import { SvgIcon } from "@/shared/components/svg-icon/svg-icon";
-import { theme } from "@/shared/constants/theme";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 // import icons
 import FilterIconOutline from "@/assets/icons/filter-icon-outline.svg";
@@ -66,15 +66,17 @@ function FiltersTabButton(props: BottomTabBarButtonProps) {
 }
 
 export default function TabLayout() {
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.light.dark_grey,
-        tabBarInactiveTintColor: theme.light.dark_grey,
+        tabBarActiveTintColor: colors.textPrimary,
+        tabBarInactiveTintColor: colors.textSecondary,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: theme.light.mainBackground,
+          backgroundColor: colors.surface,
+          borderTopWidth: 0,
         },
         tabBarLabelStyle: {
           fontWeight: "300",

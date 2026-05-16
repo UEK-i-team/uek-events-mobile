@@ -1,24 +1,57 @@
-export type Theme = "light" | "dark";
+export type ThemeType = "light" | "dark" | "system";
+
+export interface AppThemeColors {
+  primary: string;
+  mainBackground: string;
+  surface: string; // modale, karty, dolny pasek
+  light_grey: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted?: string;
+  border?: string;
+  icon?: string;
+  dark_grey: string;
+  backgroundDeep?: string;
+  red_light?: string;
+  red_regular?: string;
+}
+
+export interface AppTheme {
+  colors: AppThemeColors;
+  isDark: boolean;
+}
+
+export const lightThemeColors: AppThemeColors = {
+  primary: "#FF6A2A",
+  mainBackground: "#E1DDD9",
+  surface: "#E1DDD9", // lub inny jasny z designu do kart
+  textPrimary: "#111111",
+  textSecondary: "#666666",
+  textMuted: "#666666",///
+  light_grey: "#E8E8E8",
+  dark_grey: "#111111",
+  backgroundDeep: "#D9D9D9", // mainBackgroundDarker z poprzedniej wersji
+  red_light: "#FFE7E7",
+  red_regular: "#FF5252",
+};
+
+export const darkThemeColors: AppThemeColors = {
+  primary: "#FF6A2A",
+  mainBackground: "#302E2E",
+  surface: "#302E2E", // 
+  textPrimary: "#FFFFFF",
+  textSecondary: "#E9E9E9", // Można też ewentualnie zmienić na #EEEEEE
+  textMuted: "#AAAAAA",
+  dark_grey: "#111111", // zachowane wstecznie
+  light_grey: "#5C5A5A",
+  backgroundDeep: "#000000",
+  red_light: "#F4F3F2", // #4A1A1A opcjonalnie pod dark mode, adaptacja reds for standard UI
+  red_regular: "#FF5252",
+};
 
 export const theme = {
-light: {
-  primary: "#FF6A2A",
-mainBackground: "#E1DDD9",
-ligth_grey: "#F4F3F2",
-dark_grey: "#111111",
-textMuted: "#666666",
-mainBackgroundDarker: '#D9D9D9',
-mainBackgroundLighter: '#E9E8E8',
-red_light: '#FFE7E7',
-red_regular: '#FF5252'
-},
-dark: {
-primary: "#FF6A2A",
-mainBackground: "#E1DDD9",
-ligth_grey: "#F4F3F2",
-dark_grey: "#111111",
-textMuted: "#666666",
-},
+  light: lightThemeColors,
+  dark: darkThemeColors,
 };
 
 // To delete soon

@@ -17,6 +17,7 @@ import {
   NativeScrollEvent,
 } from "react-native";
 import { styles } from "./timeline-scroller.styles";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 const getCurrentDate = () => new Date();
 
@@ -39,6 +40,7 @@ interface DayProps {
   itemWidth: number;
   visibleEventId: number | null;
   isDark: boolean;
+  colors: any;
 }
 
 const getDotConfig = (events: IEvent[], visibleId: number | null) => {
@@ -81,6 +83,7 @@ const Day = memo(function Day({
   itemWidth,
   visibleEventId,
   isDark,
+  colors
 }: DayProps) {
   const dayNumber = item.date.getDate();
   const hasEvents = item.events.length > 0;
@@ -95,7 +98,10 @@ const Day = memo(function Day({
       <View style={[styles.dayContainer, { width: itemWidth }]}>
         <View style={styles.dateBoxEmpty}>
           <ThemedText
-            style={isDark ? styles.dayTextEmptyDark : styles.dayTextEmptyLight}
+            style={[
+              isDark ? styles.dayTextEmptyDark : styles.dayTextEmptyLight, 
+              { color: isDark ? colors.textPrimary : colors.textSecondary }
+            ]}
           >
             {dayNumber}
           </ThemedText>
@@ -115,20 +121,16 @@ const Day = memo(function Day({
         style={[
           styles.dateBox,
           isDaySelected
-            ? styles.dateBoxActive
-            : isDark
-              ? styles.dateBoxInactiveDark
-              : styles.dateBoxInactiveLight,
+            ? [styles.dateBoxActive, { backgroundColor: colors.primary }]
+            : [isDark ? styles.dateBoxInactiveDark : styles.dateBoxInactiveLight],
         ]}
       >
         <ThemedText
           style={[
             styles.dayText,
             isDaySelected
-              ? styles.dayTextActive
-              : isDark
-                ? styles.dayTextInactiveDark
-                : styles.dayTextInactiveLight,
+              ? { color: colors.dark_grey }
+              : { color: colors.dark_grey },
           ]}
         >
           {dayNumber}
@@ -141,10 +143,8 @@ const Day = memo(function Day({
             style={[
               styles.dot,
               dot.isActive
-                ? styles.dotActive
-                : isDark
-                  ? styles.dotInactiveDark
-                  : styles.dotInactiveLight,
+                ? [styles.dotActive, { backgroundColor: colors.primary }]
+                : { backgroundColor: colors.textSecondary },
               dot.isActive && styles.dotActiveWide,
             ]}
           />
@@ -161,8 +161,7 @@ export function TimelineScroller({
   visibleEventId,
 }: TimelineScrollerProps) {
   const { fontScale, width: windowWidth } = useWindowDimensions();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { isDarkMode, colors } = useTheme();
   const scrollRef = useRef<FlatList>(null);
 
   // State to track the currently most visible month in the scroll view
@@ -380,9 +379,7 @@ export function TimelineScroller({
                     style={[
                       styles.monthTextSide,
                       isMain && styles.monthTextActive,
-                      isDark
-                        ? styles.monthTextSideDark
-                        : styles.monthTextSideLight,
+                      { color: colors.textPrimary }
                     ]}
                   >
                     {m.label}
@@ -433,7 +430,8 @@ export function TimelineScroller({
               isDaySelected={isDaySelected}
               itemWidth={ITEM_WIDTH_PX}
               visibleEventId={visibleEventId}
-              isDark={isDark}
+              isDark={isDarkMode}
+              colors={colors}
             />
           );
         }}

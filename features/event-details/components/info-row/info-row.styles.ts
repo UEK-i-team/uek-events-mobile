@@ -6,9 +6,9 @@ export const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     borderRadius: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 12, 
     backgroundColor: theme.light.mainBackgroundLighter,
@@ -22,13 +22,11 @@ export const styles = StyleSheet.create({
   },
   label: {
     fontSize: 10,
-    color: theme.light.dark_grey,
     marginBottom: 2,
     fontWeight: "300",
   },
   text: {
     fontSize: 16,
-    color: theme.light.dark_grey,
     fontWeight: "300",
   },
 });

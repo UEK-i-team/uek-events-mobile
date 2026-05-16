@@ -24,7 +24,7 @@ import {
 } from "@/features/daily-events";
 import { EventContext, EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
-import { theme } from "@/shared/constants/theme";
+import { AppThemeColors, theme } from "@/shared/constants/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -61,6 +61,7 @@ function SplashController() {
 
   return null;
 }
+import { ThemeProvider as AppThemeProvider, useTheme } from "@/shared/context/ThemeContext";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -69,6 +70,8 @@ export const unstable_settings = {
 function AppContent() {
   useDailyEventsGate();
   const { isOpen, closeFilters } = useFilters();
+  const { isDarkMode, colors } = useTheme();
+  
   const router = useRouter();
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
 
@@ -121,27 +124,35 @@ function AppContent() {
   );
 }
 
+function ThemedApp() {
+  const { isDarkMode, colors } = useTheme();
+  
+  return (
+    <ViewedEventsProvider>
+      <FiltersProvider>
+        <BottomSheetModalProvider>
+          <AppContent />
+          <StatusBar
+            style={isDarkMode ? "light" : "dark"}
+            backgroundColor={colors.mainBackground}
+          />
+        </BottomSheetModalProvider>
+      </FiltersProvider>
+    </ViewedEventsProvider>
+  );
+}
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DependencyProvider>
         <NotificationProvider>
           <EventContextProvider>
-            <NewEventsProvider>
-              <ThemeProvider value={DefaultTheme}>
-                <ViewedEventsProvider>
-                  <FiltersProvider>
-                    <BottomSheetModalProvider>
-                      <AppContent />
-                      <StatusBar
-                        style="dark"
-                        backgroundColor={theme.light.mainBackground}
-                      />
-                    </BottomSheetModalProvider>
-                  </FiltersProvider>
-                </ViewedEventsProvider>
-              </ThemeProvider>
-            </NewEventsProvider>
+            <ThemeProvider value={DefaultTheme}>
+              <AppThemeProvider>
+                <ThemedApp />
+              </AppThemeProvider>
+            </ThemeProvider>
           </EventContextProvider>
         </NotificationProvider>
       </DependencyProvider>
