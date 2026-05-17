@@ -38,7 +38,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         monochromeImage: "./assets/images/android-icon-monochrome.png",
       },
       notification: {
-        color: "#E6F4FE"
+        icon: "./assets/images/android-icon-monochrome.png",
+        color: "#F8E4D1"
       },
     },
     web: {
@@ -50,7 +51,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         "expo-notifications",
         {
-          color: "#E6F4FE",
+          icon: "./assets/images/android-icon-monochrome.png",
+          color: "#F8E4D1",
         },
       ],
       [

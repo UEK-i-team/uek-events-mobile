@@ -58,6 +58,9 @@ export function formatEventDate(isoString: string): string {
 }
 
 export function formatEventTime(isoString: string): string {
+  if (typeof isoString === "string" && isoString.includes("T")) {
+    return isoString.split("T")[1].slice(0, 5);
+  }
   const date = toDate(isoString);
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");

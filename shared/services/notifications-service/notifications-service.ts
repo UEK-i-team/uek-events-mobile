@@ -56,7 +56,7 @@ export class NotificationsService {
     if (IS_TESTING) {
       triggerDate.setTime(Date.now() + 5000);
     }
-    // -------------------------------
+    // -------------------------------  
 
     const now = new Date();
     if (triggerDate.getTime() <= now.getTime()) {
