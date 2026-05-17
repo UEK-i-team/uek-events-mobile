@@ -13,6 +13,8 @@ import { EventsCacheService } from "@/shared/storage/events-cache-service/events
 
 import { EventsService } from "@/shared/services/get-events-services/get-events.services";
 
+import { NotificationsService } from "@/shared/services/notifications-service/notifications-service";
+
 import { DictionariesRepository } from "../repositories/api-repositiores/dictionaries-repository/dictionaries-repository";
 import { DictionariesRepositoryMock } from "../repositories/api-repositiores/dictionaries-repository/dictionaries-repository.mock";
 import { EventsRepositoryMock } from "../repositories/api-repositiores/events-repository/events-repository.mock";
@@ -53,10 +55,13 @@ const eventsService = new EventsService(
   favoriteEventsRepository,
 );
 
+const notificationsService = new NotificationsService();
+
 // React part
 interface AppDependencies {
   eventsService: EventsService;
   favoriteEventsRepository: FavoriteEventsRepository;
+  notificationsService: NotificationsService;
 }
 
 const DependencyContext = createContext<AppDependencies | null>(null);
@@ -70,6 +75,7 @@ export const DependencyProvider = ({ children }: ProviderProps) => {
     () => ({
       eventsService,
       favoriteEventsRepository,
+      notificationsService,
     }),
     [],
   );

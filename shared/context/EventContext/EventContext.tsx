@@ -38,7 +38,7 @@ export const EventContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { eventsService, favoriteEventsRepository } = useDependencies();
+  const { eventsService, favoriteEventsRepository, notificationsService } = useDependencies();
   const notificationContext = useContext(NotificationContext);
 
   const [events, setEvents] = useState<IEvent[] | null>(null);
@@ -131,6 +131,8 @@ export const EventContextProvider = ({
 
   const toggleFavoriteEvent = useCallback(
     async (eventId: number, isFavorite: boolean) => {
+      const eventToSchedule = events?.find((e) => e.id === eventId);
+      
       setEvents((prev) =>
         prev
           ? prev.map((e) => (e.id === eventId ? { ...e, isFavorite } : e))
@@ -140,8 +142,12 @@ export const EventContextProvider = ({
       try {
         if (isFavorite) {
           await favoriteEventsRepository.addFavoriteEvent(eventId);
+          if (eventToSchedule) {
+            await notificationsService.scheduleEventReminder(eventToSchedule);
+          }
         } else {
           await favoriteEventsRepository.removeFavoriteEvent(eventId);
+          await notificationsService.cancelEventReminder(eventId);
         }
       } catch (e) {
         setEvents((prev) =>
@@ -154,7 +160,7 @@ export const EventContextProvider = ({
         console.error("Failed to toggle favorite:", e);
       }
     },
-    [setEvents, favoriteEventsRepository],
+    [setEvents, favoriteEventsRepository, events, notificationsService],
   );
 
   const contextValue = useMemo(
