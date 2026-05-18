@@ -22,7 +22,9 @@ export const useResizeDominantBackgroundColor = (imageUrl: string | null) => {
             setResizeMode("contain");
           }
         },
-        (error) => console.warn("Failed to get image size:", error)
+        (error) => {
+          // here you have to handle error handling for image size error
+        }
       );
 
       getColors(imageUrl, {
@@ -39,7 +41,7 @@ export const useResizeDominantBackgroundColor = (imageUrl: string | null) => {
           setDominantColor(color);
         })
         .catch((err) => {
-          console.warn("Failed to extract color for card:", err);
+          // silently handle color extraction error
         });
     }
   }, [imageUrl]);
