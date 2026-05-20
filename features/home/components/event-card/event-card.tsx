@@ -22,11 +22,8 @@ import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
 import { Location } from "../location/location";
 import { styles } from "./event-card.styles";
-
-import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { EventImageContainer } from "@/shared/components/event-image-container/event-image-container";
-import { theme } from "@/shared/constants/theme";
-import { IEvent } from "@/shared/types/event";
+
 
 interface EventCardProps {
   event: IEvent;
@@ -90,18 +87,6 @@ export const EventCard = React.memo(function EventCard({
   }
 
 
-
-  const eventHasPassed = isEventPassed(event.end_date);
-  let imageHeight = 0;
-
-  if(isVerySmallScreen){
-    imageHeight = 180;
-  } else if(cardHeight > 560){
-    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.40));
-  } else {
-    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.32));
-  }
-
   return (
     <View
       style={[
@@ -123,7 +108,9 @@ export const EventCard = React.memo(function EventCard({
           },
         ]}
       >
-        <View style={{ position: 'relative' }}>
+        <View style={[styles.imageContainer, { height: imageHeight }]}>
+        <View style={[styles.image, eventHasPassed && styles.passedImage]}>
+        <View style={{ position: 'relative' }}/>
           <EventImageContainer
             imageUrl={imageUrl}
             width={SCREEN_WIDTH - 28}
@@ -132,18 +119,6 @@ export const EventCard = React.memo(function EventCard({
             customWidth={SCREEN_WIDTH - 28}
             cornerRadius={16}
           />
-        <View
-          style={[styles.imageContainer, { height: imageHeight }]}
-        >
-          
-          <View>
-            <Image
-              source={{ uri: event.image_url }}
-              style={[styles.image, eventHasPassed && styles.passedImage]}
-              contentFit="cover"
-              cachePolicy="disk"
-              transition={200}
-            />
             {eventHasPassed && (
               // <View
               //   style={styles.passedOverlay}
