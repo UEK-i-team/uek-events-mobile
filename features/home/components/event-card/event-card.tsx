@@ -4,6 +4,7 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Pressable,
   Text,
   TouchableOpacity,
   View,
@@ -11,15 +12,18 @@ import {
 } from "react-native";
 
 import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
+import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
+import { IEvent } from "@/shared/types/event";
+
+
+import { theme } from "@/shared/constants/theme";
+import { isEventPassed } from "@/utils/functions/date-utils";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
 import { Location } from "../location/location";
 import { styles } from "./event-card.styles";
-
-import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { EventImageContainer } from "@/shared/components/event-image-container/event-image-container";
-import { theme } from "@/shared/constants/theme";
-import { IEvent } from "@/shared/types/event";
+
 
 interface EventCardProps {
   event: IEvent;
@@ -28,6 +32,7 @@ interface EventCardProps {
 }
 
 const TAG_COLORS = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
+const TAG_COLORS_PAST_EVENTS = ["#BDBDBD"];
 
 export const EventCard = React.memo(function EventCard({
   event,
@@ -69,6 +74,8 @@ export const EventCard = React.memo(function EventCard({
     toggleFavorite(event.id, !event.isFavorite);
   };
 
+
+  const eventHasPassed = isEventPassed(event.end_date);
   let imageHeight = 0;
 
   if(isVerySmallScreen){
@@ -96,12 +103,14 @@ export const EventCard = React.memo(function EventCard({
         style={[
           styles.card,
           {
-            width: SCREEN_WIDTH - 28,
-            height: cardHeight - 32,
+            width: SCREEN_WIDTH,
+            height: cardHeight,
           },
         ]}
       >
-        <View style={{ position: 'relative' }}>
+        <View style={[styles.imageContainer, { height: imageHeight }]}>
+        <View style={[styles.image, eventHasPassed && styles.passedImage]}>
+        <View style={{ position: 'relative' }}/>
           <EventImageContainer
             imageUrl={imageUrl}
             width={SCREEN_WIDTH - 28}
@@ -110,6 +119,22 @@ export const EventCard = React.memo(function EventCard({
             customWidth={SCREEN_WIDTH - 28}
             cornerRadius={16}
           />
+            {eventHasPassed && (
+              // <View
+              //   style={styles.passedOverlay}
+              // />
+              <>
+                <View style={styles.passedOverlayGray} />
+                <View style={styles.passedOverlayDark} />
+              </>
+            )}
+          </View>
+          {eventHasPassed && (
+            <View style={styles.passedEventMarker}>
+              <Text style={styles.passedText}>Wydarzenie zakończone</Text>
+            </View>
+          )}
+        
           <RoundedButton
             icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
             iconColor={
@@ -169,8 +194,9 @@ export const EventCard = React.memo(function EventCard({
               <Badge
                 key={tag + index}
                 name={tag}
-                color={TAG_COLORS[index] || TAG_COLORS[0]}
+                color={eventHasPassed ? TAG_COLORS_PAST_EVENTS[0] : (TAG_COLORS[index % TAG_COLORS.length] || TAG_COLORS[0])}
                 textColor={theme.light.dark_grey}
+                
               />
             ))}
           </View>

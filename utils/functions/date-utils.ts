@@ -106,3 +106,8 @@ export function formatEventDateWithMonth(isoString: string): string {
   const month = MONTHS_POLISH_GENITIVE[dateObj.getMonth()];
   return `${day} ${month}`;
 }
+export function isEventPassed(endDate: string | Date): boolean {
+  const eventDate = new Date(endDate);
+  const now = new Date();
+  return eventDate < now;
+}
