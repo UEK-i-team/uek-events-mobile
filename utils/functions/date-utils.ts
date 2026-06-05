@@ -109,8 +109,35 @@ export function formatEventDateWithMonth(isoString: string): string {
   const month = MONTHS_POLISH_GENITIVE[dateObj.getMonth()];
   return `${day} ${month}`;
 }
-export function isEventPassed(endDate: string | Date): boolean {
-  const eventDate = new Date(endDate);
-  const now = new Date();
-  return eventDate < now;
+export function isEventPassed(
+  endDate: string | Date | null | undefined,
+  startDate?: string | Date | null,
+): boolean {
+  let comparisonDate: Date | null = null;
+
+  if (endDate && endDate !== "null") {
+    comparisonDate = toDate(endDate);
+  }
+
+  if ((!comparisonDate || isNaN(comparisonDate.getTime())) && startDate && startDate !== "null") {
+    comparisonDate = toDate(startDate);
+  }
+
+  if (!comparisonDate || isNaN(comparisonDate.getTime())) return false;
+
+  return comparisonDate < new Date();
+}
+
+export function isMultiDayEvent(
+  startDate: string | null | undefined,
+  endDate: string | null | undefined,
+): boolean {
+  if (!startDate || startDate === "null") return false;
+  if (!endDate || endDate === "null") return false;
+
+  const start = safeParseDate(startDate);
+  const end = safeParseDate(endDate);
+  if (!start || !end) return false;
+
+  return !isSameDay(start, end);
 }

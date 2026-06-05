@@ -17,7 +17,7 @@ import { IEvent } from "@/shared/types/event";
 
 
 import { theme } from "@/shared/constants/theme";
-import { isEventPassed } from "@/utils/functions/date-utils";
+import { isEventPassed, isMultiDayEvent } from "@/utils/functions/date-utils";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
 import { Location } from "../location/location";
@@ -75,7 +75,8 @@ export const EventCard = React.memo(function EventCard({
   };
 
 
-  const eventHasPassed = isEventPassed(event.end_date);
+  const eventHasPassed = isEventPassed(event.end_date, event.start_date);
+  const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);
   let imageHeight = 0;
 
   if(isVerySmallScreen){
@@ -129,11 +130,15 @@ export const EventCard = React.memo(function EventCard({
               </>
             )}
           </View>
-          {eventHasPassed && (
+          {eventHasPassed ? (
             <View style={styles.passedEventMarker}>
               <Text style={styles.passedText}>Wydarzenie zakończone</Text>
             </View>
-          )}
+          ) : isMultiDay ? (
+            <View style={styles.multiDayEventMarker}>
+              <Text style={styles.passedText}>Wydarzenie wielodniowe</Text>
+            </View>
+          ) : null}
         
           <RoundedButton
             icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}

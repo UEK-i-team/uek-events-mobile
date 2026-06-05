@@ -66,16 +66,7 @@ export function findNearestFutureEventIndex(
     const eStartParsed = safeParseDate(e.start_date);
     if (!eStartParsed) return false;
     eStartParsed.setHours(0, 0, 0, 0);
-
-    let eEnd = eStartParsed;
-    if (e.end_date && e.end_date !== "null") {
-      const eEndParsed = safeParseDate(e.end_date);
-      if (eEndParsed) {
-        eEndParsed.setHours(0, 0, 0, 0);
-        eEnd = eEndParsed;
-      }
-    }
-    return eStartParsed >= now || eEnd >= now;
+    return eStartParsed >= now;
   });
 
   return index !== -1 ? index : events.length - 1;

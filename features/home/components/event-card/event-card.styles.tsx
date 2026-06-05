@@ -90,6 +90,15 @@ passedOverlayDark: {
     paddingVertical: 12,
     borderRadius: 39,
   },
+  multiDayEventMarker: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    backgroundColor: theme.light.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 39,
+  },
   passedText: {
     color: "white",
     fontSize: 14,

@@ -94,7 +94,9 @@ export class EventsService implements IEventsService {
         console.error("Late bundle fetch failed", err);
       });
 
-    return this.mapBundle(cachedBundle);
+
+    const result = this.mapBundle(cachedBundle);
+    return result
   }
 
   private async loadCachedBundle(): Promise<EventsBundle> {
