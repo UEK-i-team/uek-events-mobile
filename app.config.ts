@@ -37,7 +37,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundImage: "./assets/images/android-icon-background.png",
         monochromeImage: "./assets/images/android-icon-monochrome.png",
       },
-      predictiveBackGestureEnabled: false,
+      notification: {
+        icon: "./assets/images/android-icon-monochrome.png",
+        color: "#F8E4D1"
+      },
     },
     web: {
       output: "static",
@@ -45,6 +48,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       "expo-router",
+      [
+        "expo-notifications",
+        {
+          icon: "./assets/images/android-icon-monochrome.png",
+          color: "#F8E4D1",
+        },
+      ],
       [
         "expo-splash-screen",
         {
