@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
 import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
@@ -113,7 +114,7 @@ export default function HomeView() {
             subtitle="Włącz internet, a wydarzenia pojawią się automatycznie."
           />
         ) : status === "error" ? (
-          <HomeErrorState message={errorMessage} />
+          <HomeErrorState message={errorMessage ?? null} />
         ) : events?.length === 0 ? (
           <HomeEmptyState isFiltered={allEvents ? allEvents.length > 0 : false} />
         ) : events && containerHeight > 0 ? (

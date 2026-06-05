@@ -70,9 +70,9 @@ export class EventsRepository implements IEventsRepository {
 
     if (response.status === 204 || response.status === 200) {
       const events = await this.eventsCache.getEvents();
-      if (!events) throw new Error("Events not found");
-
-      return events;
+      // A valid response with no cached events means there are simply no
+      // events available (empty list) - this is not an error.
+      return events ?? [];
     }
 
     throw new Error("Something went wrong during events fetching");
