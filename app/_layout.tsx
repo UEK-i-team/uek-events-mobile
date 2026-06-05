@@ -1,9 +1,10 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack, useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
-import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { useContext, useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
@@ -17,9 +18,46 @@ import {
   NotificationToastContainer,
 } from "@/features/notifications";
 import { ViewedEventsProvider } from "@/features/viewed";
-import { EventContextProvider } from "@/shared/context/EventContext/EventContext";
+import { DailyEventsGate } from "@/features/daily-events";
+import { EventContext, EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
 import { theme } from "@/shared/constants/theme";
+
+SplashScreen.preventAutoHideAsync().catch(() => {});
+
+const SPLASH_MIN_DURATION_MS = 600;
+const SPLASH_MAX_DURATION_MS = 2500;
+
+function SplashController() {
+  const { status } = useContext(EventContext);
+  const startRef = useRef(Date.now());
+  const hiddenRef = useRef(false);
+
+  useEffect(() => {
+    const hide = () => {
+      if (hiddenRef.current) return;
+      hiddenRef.current = true;
+      SplashScreen.hideAsync().catch(() => {});
+    };
+
+    const isReady =
+      status === "success" ||
+      status === "error" ||
+      status === "offline_no_data";
+
+    if (isReady) {
+      const elapsed = Date.now() - startRef.current;
+      const wait = Math.max(0, SPLASH_MIN_DURATION_MS - elapsed);
+      const timer = setTimeout(hide, wait);
+      return () => clearTimeout(timer);
+    }
+
+    const timer = setTimeout(hide, SPLASH_MAX_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [status]);
+
+  return null;
+}
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -62,9 +100,20 @@ function AppContent() {
             freezeOnBlur: false,
           }}
         />
+        <Stack.Screen
+          name="daily-events"
+          options={{
+            headerShown: false,
+            presentation: "card",
+            gestureEnabled: false,
+            animation: "fade_from_bottom",
+          }}
+        />
       </Stack>
       <FiltersBottomSheet isOpen={isOpen} onClose={closeFilters} />
       <NotificationToastContainer />
+      <DailyEventsGate />
+      <SplashController />
     </>
   );
 }

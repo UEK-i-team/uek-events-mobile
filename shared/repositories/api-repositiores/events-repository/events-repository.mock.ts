@@ -11,8 +11,8 @@ export class EventsRepositoryMock implements IEventsRepository {
       {
         id: 4,
         update_date: "2026-03-12T16:00:00Z",
-        start_date: "2026-01-12T18:00:00Z",
-        end_date: "2026-01-12T20:00:00Z",
+        start_date: "2026-06-05T18:00:00Z",
+        end_date: "2026-06-05T20:00:00Z",
         title: "Webinar biznesowy z Jacobs",
         short_desc:
           "Naucz się skutecznej komunikacji biznesowej na darmowym webinarze firmy Jacobs.",
@@ -36,8 +36,8 @@ export class EventsRepositoryMock implements IEventsRepository {
       {
         id: 5,
         update_date: "2026-03-12T16:10:00Z",
-        start_date: "2026-04-09T17:30:00Z",
-        end_date: "2026-04-09T18:45:00Z",
+        start_date: "2026-06-05T18:00:00Z",
+        end_date: "2026-06-05T20:00:00Z",
         title: "Prawo w biznesie - szkolenie",
         short_desc:
           "Poznaj wpływ regulacji prawnych na Twój pomysł i bezpieczny rozwój firmy.",
@@ -62,8 +62,8 @@ export class EventsRepositoryMock implements IEventsRepository {
       {
         id: 6,
         update_date: "2026-03-12T16:11:00Z",
-        start_date: "2026-03-09T17:30:00Z",
-        end_date: "2026-03-09T18:45:00Z",
+        start_date: "2026-06-05T18:00:00Z",
+        end_date: "2026-06-05T20:00:00Z",
         title: "Szkolenie: Prawo w biznesie",
         short_desc:
           "Zrozum wpływ prawa na rozwój firmy. Szkolenie z radcą prawnym.",
