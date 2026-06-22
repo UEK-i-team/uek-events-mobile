@@ -68,20 +68,20 @@ export const useFiltersBottomSheet = (isOpen: boolean, onClose: () => void) => {
   const allLocations = useMemo(() => Object.values(dictionaries?.event_location || {}), [dictionaries?.event_location]);
   const allTags = useMemo(() => Object.values(dictionaries?.tags || {}), [dictionaries?.tags]);
 
-  const renderCategories = useMemo(() => [
+  const renderCategories = useMemo(() => Array.from(new Set([
     ...availableCategories,
     ...allCategories.filter((c) => !availableCategories.includes(c)),
-  ], [availableCategories, allCategories]);
+  ])), [availableCategories, allCategories]);
 
-  const renderLocations = useMemo(() => [
+  const renderLocations = useMemo(() => Array.from(new Set([
     ...availableLocations,
     ...allLocations.filter((l) => !availableLocations.includes(l)),
-  ], [availableLocations, allLocations]);
+  ])), [availableLocations, allLocations]);
 
-  const renderTags = useMemo(() => [
+  const renderTags = useMemo(() => Array.from(new Set([
     ...availableTags,
     ...allTags.filter((t) => !availableTags.includes(t)),
-  ], [availableTags, allTags]);
+  ])), [availableTags, allTags]);
 
   const snapPoints = useMemo(() => ["70%", "95%"], []);
 
