@@ -1,5 +1,7 @@
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -25,6 +27,23 @@ export const unstable_settings = {
 
 function AppContent() {
   const { isOpen, closeFilters } = useFilters();
+  const router = useRouter();
+  const lastNotificationResponse = Notifications.useLastNotificationResponse();
+
+  useEffect(() => {
+    if (
+      lastNotificationResponse &&
+      lastNotificationResponse.actionIdentifier ===
+        Notifications.DEFAULT_ACTION_IDENTIFIER
+    ) {
+      const eventId =
+        lastNotificationResponse.notification.request.content.data.eventId;
+      if (eventId) {
+        router.push(`/event/${eventId}`);
+      }
+    }
+  }, [lastNotificationResponse, router]);
+
   return (
     <>
       <Stack>
