@@ -23,6 +23,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 30,
+    position: "relative",
   },
   title: {
     color: theme.light.dark_grey,
@@ -80,6 +81,7 @@ passedOverlayDark: {
   right: 0,
   bottom: 0,
   borderRadius: 30,
+  height: "100%",
 },
   passedEventMarker: {
     position: "absolute",

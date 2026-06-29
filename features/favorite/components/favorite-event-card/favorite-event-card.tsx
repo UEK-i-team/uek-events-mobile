@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./favorite-event-card.styles";
-import { formatEventDate, formatEventTime } from "@/utils/functions/date-utils";
+import { formatEventDate, formatEventTime, isEventPassed } from "@/utils/functions/date-utils";
 
 
 
@@ -20,6 +20,9 @@ const TAG_COLORS = [
   "#FCE4EC",
 ];
 
+const TAG_COLORS_PAST_EVENTS = ["#BDBDBD"];
+
+
 
 
 interface FavoriteEventCardProps {
@@ -30,6 +33,7 @@ interface FavoriteEventCardProps {
 export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const router = useRouter();
   const allTags = [event.event_type, ...event.tags].filter(Boolean);
+  const eventHasPassed = isEventPassed(event.end_date, event.start_date);
 
   return (
     <TouchableOpacity
@@ -38,11 +42,19 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
       onPress={() => router.push(`/event/${event.id}`)}
     >
       <View style={styles.topPartContainer}>
-        <Image
-          source={{ uri: event.image_url }}
-          style={styles.image}
-          contentFit="cover"
-        />
+        <View style={[styles.imageWrapper, eventHasPassed && styles.passedImage]}>
+          <Image
+            source={{ uri: event.image_url }}
+            style={styles.image}
+            contentFit="cover"
+          />
+          {eventHasPassed && (
+            <>
+              <View style={styles.passedOverlayGray} />
+              <View style={styles.passedOverlayDark} />
+            </>
+          )}
+        </View>
 
         <View style={styles.content}>
           <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
@@ -82,7 +94,11 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
             key={tag}
             style={[
               styles.tag,
-              { backgroundColor: TAG_COLORS[index % TAG_COLORS.length] },
+              {
+                backgroundColor: eventHasPassed
+                  ? TAG_COLORS_PAST_EVENTS[0]
+                  : TAG_COLORS[index % TAG_COLORS.length],
+              },
             ]}
           >
             <Text style={styles.tagText}>{tag}</Text>
