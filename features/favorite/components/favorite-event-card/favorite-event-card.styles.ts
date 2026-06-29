@@ -14,13 +14,38 @@ export const styles = StyleSheet.create({
     elevation: 2,
     overflow: "hidden",
   },
-  image: {
+  imageWrapper: {
     width: 150,
     height: 120,
     borderRadius: 26,
     marginTop: 4,
     marginLeft: 4,
     alignSelf: "flex-start",
+    overflow: "hidden",
+    position: "relative",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  passedImage: {
+    opacity: 0.82,
+  },
+  passedOverlayGray: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(110, 110, 110, 0.5)",
+  },
+  passedOverlayDark: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
   },
   content: {
     flex: 1,

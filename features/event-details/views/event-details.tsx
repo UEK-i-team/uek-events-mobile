@@ -27,6 +27,7 @@ import {
   formatEventTime,
   formatShareEventDate,
   formatEventDateWithMonth,
+  isEventPassed,
 } from "@/utils/functions/date-utils";
 
 export interface EventDetailsViewProps {
@@ -44,6 +45,8 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   }
 
   const colorsArray = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
+  const passedTagColor = "#BDBDBD";
+  const eventHasPassed = isEventPassed(event.end_date, event.start_date);
 
   const startDateFormatted = formatEventDateWithMonth(event.start_date);
   const startTimeFormatted = formatEventTime(event.start_date);
@@ -72,13 +75,26 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: event.image_url }}
-            style={styles.image}
-            contentFit="cover"
-            cachePolicy="disk"
-            transition={200}
-          />
+          <View style={[styles.imageWrapper, eventHasPassed && styles.passedImage]}>
+            <Image
+              source={{ uri: event.image_url }}
+              style={styles.image}
+              contentFit="cover"
+              cachePolicy="disk"
+              transition={200}
+            />
+            {eventHasPassed && (
+              <>
+                <View style={styles.passedOverlayGray} />
+                <View style={styles.passedOverlayDark} />
+              </>
+            )}
+          </View>
+          {eventHasPassed && (
+            <View style={styles.passedEventMarker}>
+              <Text style={styles.passedText}>Wydarzenie zakończone</Text>
+            </View>
+          )}
           <View style={styles.positionButtons}>
             <RoundedButton
               icon={ShareIcon}
@@ -152,11 +168,22 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             <View
               style={[
                 styles.tagChip,
-                { backgroundColor: theme.light.dark_grey },
+                {
+                  backgroundColor: eventHasPassed
+                    ? passedTagColor
+                    : theme.light.dark_grey,
+                },
               ]}
             >
               <Text
-                style={[styles.tagChipText, { color: theme.light.ligth_grey }]}
+                style={[
+                  styles.tagChipText,
+                  {
+                    color: eventHasPassed
+                      ? theme.light.dark_grey
+                      : theme.light.ligth_grey,
+                  },
+                ]}
               >
                 {event.event_type}
               </Text>
@@ -167,7 +194,11 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
               <View
                 style={[
                   styles.tagChip,
-                  { backgroundColor: colorsArray[index % colorsArray.length] },
+                  {
+                    backgroundColor: eventHasPassed
+                      ? passedTagColor
+                      : colorsArray[index % colorsArray.length],
+                  },
                 ]}
                 key={index}
               >

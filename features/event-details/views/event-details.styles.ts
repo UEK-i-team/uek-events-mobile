@@ -12,10 +12,50 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     position: "relative",
   },
-  image: {
+  imageWrapper: {
     width: "100%",
     height: 240,
     borderRadius: 30,
+    overflow: "hidden",
+    position: "relative",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  passedImage: {
+    opacity: 0.82,
+  },
+  passedOverlayGray: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(110, 110, 110, 0.5)",
+  },
+  passedOverlayDark: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  passedEventMarker: {
+    position: "absolute",
+    top: 26,
+    right: 24,
+    backgroundColor: "#424242",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 39,
+  },
+  passedText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "300",
+    textAlign: "center",
   },
   positionButtons: {
     position: "absolute",

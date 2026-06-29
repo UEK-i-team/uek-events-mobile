@@ -87,6 +87,7 @@ export const EventCard = React.memo(function EventCard({
     imageHeight = Math.max(160, Math.min(220, cardHeight * 0.32));
   }
 
+  const imageWidth = SCREEN_WIDTH - 32;
 
   return (
     <View
@@ -94,7 +95,7 @@ export const EventCard = React.memo(function EventCard({
         styles.container,
         {
           width: SCREEN_WIDTH,
-          height: cardHeight, 
+          height: cardHeight,
         },
       ]}
     >
@@ -110,16 +111,15 @@ export const EventCard = React.memo(function EventCard({
         ]}
       >
         <View style={[styles.imageContainer, { height: imageHeight }]}>
-        <View style={[styles.image, eventHasPassed && styles.passedImage]}>
-        <View style={{ position: 'relative' }}/>
-          <EventImageContainer
-            imageUrl={imageUrl}
-            width={SCREEN_WIDTH - 28}
-            height={imageHeight}
-            extractedColor={dominantColor}
-            customWidth={SCREEN_WIDTH - 28}
-            cornerRadius={16}
-          />
+          <View style={[styles.image, eventHasPassed && styles.passedImage]}> 
+            <EventImageContainer
+              imageUrl={imageUrl}
+              width={imageWidth}
+              height={imageHeight}
+              extractedColor={dominantColor}
+              customWidth={imageWidth}
+              cornerRadius={30}
+            />
             {eventHasPassed && (
               // <View
               //   style={styles.passedOverlay}
