@@ -4,7 +4,9 @@ import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { IEvent } from "@/shared/types/event";
-import React, { useCallback, useContext } from "react";
+import { useAppliedFilters } from "@/features/filters/contexts";
+import { eventTagTranslations } from "@/shared/types/event-enums";
+import React, { useCallback, useContext, useMemo } from "react";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
@@ -13,8 +15,42 @@ import { TimelineScroller } from "../components/timeline-scroller/timeline-scrol
 import { safeParseDate } from "@/utils/functions/event-utils";
 
 export default function HomeView() {
-  const { events, status, errorMessage, toggleFavoriteEvent } =
+  const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
+  const { appliedCategories, appliedLocations, appliedTags } = useAppliedFilters();
+
+  const events = useMemo(() => {
+    if (!allEvents) return allEvents;
+
+    return allEvents.filter((event) => {
+      if (
+        appliedCategories.length > 0 &&
+        !appliedCategories.includes(event.event_type as any)
+      ) {
+        return false;
+      }
+
+      if (
+        appliedLocations.length > 0 &&
+        !appliedLocations.includes(event.location_category as any) &&
+        !(appliedLocations.includes("ON_UEK_CAMPUS" as any) && event.location_category === "CAM")
+      ) {
+        return false;
+      }
+
+      if (appliedTags.length > 0) {
+        const hasAnyTag = appliedTags.some((tag) =>
+          event.tags?.includes(tag) ||
+          event.tags?.includes(eventTagTranslations[tag as keyof typeof eventTagTranslations])
+        );
+        if (!hasAnyTag) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allEvents, appliedCategories, appliedLocations, appliedTags]);
 
   const {
     flatListRef,
@@ -55,12 +91,14 @@ export default function HomeView() {
       ]}
       edges={["top"]}
     >
-      <TimelineScroller
-        events={events}
-        selectedDate={actualSelectedDate}
-        onDateSelect={handleDateSelect}
-        visibleEventId={visibleEventId}
-      />
+      {events && events.length > 0 && (
+        <TimelineScroller
+          events={events}
+          selectedDate={actualSelectedDate}
+          onDateSelect={handleDateSelect}
+          visibleEventId={visibleEventId}
+        />
+      )}
       <View
         style={styles.eventsContainer}
         onLayout={(event) => {
@@ -77,7 +115,7 @@ export default function HomeView() {
         ) : status === "error" ? (
           <HomeErrorState message={errorMessage} />
         ) : events?.length === 0 ? (
-          <HomeEmptyState />
+          <HomeEmptyState isFiltered={allEvents ? allEvents.length > 0 : false} />
         ) : events && containerHeight > 0 ? (
           <FlatList
             ref={flatListRef}
@@ -136,10 +174,19 @@ const HomeErrorState = ({ message }: { message: string | null }) => (
   </View>
 );
 
-const HomeEmptyState = () => (
+const HomeEmptyState = ({ isFiltered }: { isFiltered?: boolean }) => (
   <View style={styles.emptyContainer}>
+    <ThemedText 
+      adjustsFontSizeToFit 
+      numberOfLines={1} 
+      style={{ fontSize: 120, lineHeight: 130, marginBottom: 24, fontWeight: "bold", color: "#999999", textAlign: "center" }}
+    >
+      :(
+    </ThemedText>
     <ThemedText style={[styles.emptyText, { color: "#666666" }]}>
-      Brak dostępnych wydarzeń
+      {isFiltered 
+        ? "Nie znaleziono żadnych wydarzeń z wybranymi filtrami"
+        : "Brak dostępnych wydarzeń"}
     </ThemedText>
   </View>
 );
