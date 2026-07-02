@@ -92,7 +92,7 @@ export const styles = StyleSheet.create({
   tagChip: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   tagChipText: {
     fontSize: 14,
