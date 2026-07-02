@@ -16,6 +16,8 @@ export const styles = StyleSheet.create({
     width: "100%",
     height: 240,
     borderRadius: 30,
+    borderWidth: 1,
+    bordeeColor: '#11111',
   },
   positionButtons: {
     position: "absolute",
@@ -93,6 +95,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 16,
+    borderWidth: 1,
+    bordeeColor: '#11111',
   },
   tagChipText: {
     fontSize: 14,
