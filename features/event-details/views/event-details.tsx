@@ -21,7 +21,7 @@ import ArrowBackIcon from "@/assets/icons/arrow-left-300.svg";
 import ShareIcon from "@/assets/icons/share-300.svg";
 import LocationIcon from "@/assets/icons/location.svg";
 import PersonIcon from "@/assets/icons/person-200.svg";
-import { theme } from "@/shared/constants/theme";
+import { theme, getTagColor } from "@/shared/constants/theme"; // <-- Importujemy getTagColor
 import { InfoRow } from "@/features/event-details/components/info-row/info-row";
 import {
   formatEventTime,
@@ -43,8 +43,6 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
     return <Text>Event not found</Text>;
   }
 
-  const colorsArray = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
-
   const startDateFormatted = formatEventDateWithMonth(event.start_date);
   const startTimeFormatted = formatEventTime(event.start_date);
 
@@ -53,7 +51,6 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
       const formattedDate = formatShareEventDate(event.start_date);
       const formattedTime = formatEventTime(event.start_date);
       const categoryText = event.event_category ? `**${event.event_category.toLowerCase()}**` : 'wydarzenie';
-      
       const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
 
       await Share.share({
@@ -137,48 +134,40 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             />
           </View>
 
-          <Text style={styles.sectionTitle}>Tematy</Text>
+         <Text style={styles.sectionTitle}>Tematy</Text>
 
-          <View style={styles.bulletListContainer}>
-            {event.topics.map((topic, index) => (
+        <View style={styles.bulletListContainer}>
+          {event.topics.map((topic, index) => (
               <View style={styles.bulletListItem} key={index}>
-                <View style={styles.bulletPoint} />
-                <Text style={styles.bulletText}>{topic}</Text>
-              </View>
-            ))}
-          </View>
+              <View style={styles.bulletPoint} />
+              <Text style={styles.bulletText}>{topic}</Text>
+           </View>
+               ))}
+           </View>
 
-          <View style={[styles.tagsContainer, { marginTop: 30 }]}>
-            <View
-              style={[
-                styles.tagChip,
-                { backgroundColor: theme.light.dark_grey },
-              ]}
-            >
-              <Text
-                style={[styles.tagChipText, { color: theme.light.ligth_grey }]}
-              >
-                {event.event_type}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.tagsContainer, { marginTop: 14 }]}>
-            {event.tags.map((tag, index) => (
-              <View
-                style={[
-                  styles.tagChip,
-                  { backgroundColor: colorsArray[index % colorsArray.length] },
-                ]}
-                key={index}
-              >
-                <Text
-                  style={[styles.tagChipText, { color: theme.light.dark_grey }]}
-                >
-                  {tag}
-                </Text>
+           <View style={styles.tagsContainer}>
+             {[event.event_type, ...event.tags].filter(Boolean).map((tag, index) => {
+                 const isMainType = tag === event.event_type;
+                  return (
+                     <View
+                      key={index}
+                      style={[
+                      styles.tagChip,
+                      { backgroundColor: getTagColor(tag) },
+                        ]}
+                      >
+                      <Text
+                        style={[
+                        styles.tagChipText,
+                        { color: isMainType ? "#F4F3F2" : "#111111" },
+                          ]}
+                        >
+                         {tag}
+                       </Text>
+                     </View>
+                   );
+                  })}
               </View>
-            ))}
-          </View>
         </View>
       </ScrollView>
 
