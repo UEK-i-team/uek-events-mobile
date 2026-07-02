@@ -4,7 +4,7 @@ export const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 16,
     alignSelf: "flex-start",
   },
   text: {
