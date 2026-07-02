@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 16,
     gap: 12,
-    backgroundColor: theme.light.mainBackgroundDarker,
+    backgroundColor:'#EAE9E9',
   },
   textContainer: {
     flex: 1,
