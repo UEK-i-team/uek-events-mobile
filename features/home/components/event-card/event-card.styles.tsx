@@ -40,23 +40,11 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 14,
+    marginTop: 18,
   },
   infoContainer: {
     paddingHorizontal: 10,
   },
-  // passedOverlay: {
-  //   position: "absolute",
-  //   top: 0,
-  //   left: 0,
-  //   right: 0,
-  //   bottom: 0,
-  //   backgroundColor: "#333",
-  //   justifyContent: "center",
-  //   alignItems: "center",
-  //   borderRadius: 30,
-  //   opacity: 0.6,
-  // },
 
 passedImage: {
   opacity: 0.82,
