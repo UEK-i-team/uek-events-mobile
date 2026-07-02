@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 16,
     gap: 12,
-    backgroundColor:'#EAE9E9',
+    backgroundColor: '#E9E8E8',
   },
   textContainer: {
     flex: 1,
