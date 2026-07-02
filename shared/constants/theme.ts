@@ -55,15 +55,48 @@ export const Fonts = {
     fontWeight: "bold" as const,
   },
 };
+const MAIN_CATEGORIES_MAP: Record<string, string> = {
+"kariera": "#111111",
+"warsztaty": "#111111",
+"biznes": "#5FAFA2",            // Jasny turkusowy
+"technologia": "#8CA2D6",       // Przyjemny niebieski
+"nauka": "#9CC2A6",             // Żółty
+"prawo": "#C97B88",
+"finanse": "#88C9FC",             // Różowy
+"rozwój osobisty": "#F4CA55",             // żółty
+"it": "#E760BF",
 
-export function getTagColor(index: number) {
-  const TAG_COLORS = [
-    { bg: "#E3F2FD", text: "#1976D2" },
-    { bg: "#E8F5E9", text: "#388E3C" },
-    { bg: "#FFF3E0", text: "#F57C00" },
-    { bg: "#F3E5F5", text: "#7B1FA2" },
-    { bg: "#FCE4EC", text: "#C2185B" },
-    { bg: "#E0F2F1", text: "#00796B" },
-  ];
-  return TAG_COLORS[index % TAG_COLORS.length];
+};
+
+const SUB_TAGS_PALETTE = [
+"#ffbec6",
+"#ffa299",
+"#ff896a",
+"#FFA13D", // Jasny kremowy pomarańcz
+"#bc5490",
+"#fe535e",
+"#8CA2D6", // Przygaszony błękitny / lawendowy (lewy telefon)
+"#D98336", // Stonowany, ciepły rudy/ochra (środkowy telefon)
+"#7FA699", // Matowy, skandynawski morski (prawy telefon)
+"#B5A4CB", // Przybrudzony jasny fiolet
+"#CFA896"  // Ciepły, ziemisty beż/pastel
+];
+
+export function getTagColor(tagName: string, eventHasPassed?: boolean): string {
+  if (eventHasPassed) return "#BDBDBD";
+
+  const normalized = (tagName || "").toLowerCase().trim();
+
+  if (MAIN_CATEGORIES_MAP[normalized]) {
+    return MAIN_CATEGORIES_MAP[normalized];
+  }
+
+
+  let hash = 0;
+  for (let i = 0; i < normalized.length; i++) {
+    hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const paletteIndex = Math.abs(hash % SUB_TAGS_PALETTE.length);
+  return SUB_TAGS_PALETTE[paletteIndex];
 }
