@@ -4,7 +4,6 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  Pressable,
   Text,
   TouchableOpacity,
   View,
@@ -14,8 +13,7 @@ import {
 import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { IEvent } from "@/shared/types/event";
-
-import { theme, getTagColor } from "@/shared/constants/theme"; // <-- Importujemy getTagColor
+import { theme, getTagColor } from "@/shared/constants/theme";
 import { isEventPassed, isMultiDayEvent } from "@/utils/functions/date-utils";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
@@ -29,7 +27,7 @@ interface EventCardProps {
   toggleFavorite: (eventId: number, isFavorite: boolean) => void;
 }
 
-const MAX_VISIBLE_TAGS = 5;
+const MAX_VISIBLE_TAGS = 4;
 
 export const EventCard = React.memo(function EventCard({
   event,
@@ -43,13 +41,11 @@ export const EventCard = React.memo(function EventCard({
   } = useWindowDimensions();
   const router = useRouter();
 
-  // Extract date and image url
   const imageUrl =
     event.image_url ||
     "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
 
-  const { dominantColor, resizeMode } =
-    useResizeDominantBackgroundColor(imageUrl);
+  const { dominantColor } = useResizeDominantBackgroundColor(imageUrl);
 
   const isSmallScreen =
     SCREEN_HEIGHT < 800 ||
@@ -73,9 +69,9 @@ export const EventCard = React.memo(function EventCard({
   const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);
   let imageHeight = 0;
 
-  if(isVerySmallScreen){
+  if (isVerySmallScreen) {
     imageHeight = 180;
-  } else if(cardHeight > 560){
+  } else if (cardHeight > 560) {
     imageHeight = Math.max(160, Math.min(220, cardHeight * 0.40));
   } else {
     imageHeight = Math.max(160, Math.min(220, cardHeight * 0.32));
@@ -85,25 +81,11 @@ export const EventCard = React.memo(function EventCard({
   const remainingTagsCount = (event.tags || []).length - MAX_VISIBLE_TAGS;
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          width: SCREEN_WIDTH,
-          height: cardHeight,
-        },
-      ]}
-    >
+    <View style={[styles.container, { width: SCREEN_WIDTH, height: cardHeight }]}>
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={handleCardPress}
-        style={[
-          styles.card,
-          {
-            width: SCREEN_WIDTH,
-            height: cardHeight,
-          },
-        ]}
+        style={[styles.card, { width: SCREEN_WIDTH, height: cardHeight }]}
       >
         <View style={[styles.imageContainer, { height: imageHeight }]}>
           <View style={[styles.image, eventHasPassed && styles.passedImage]}>
@@ -135,9 +117,7 @@ export const EventCard = React.memo(function EventCard({
 
           <RoundedButton
             icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
-            iconColor={
-              event.isFavorite ? theme.light.red_regular : "#111111"
-            }
+            iconColor={event.isFavorite ? theme.light.red_regular : "#111111"}
             backgroundColor={event.isFavorite ? theme.light.red_light : "white"}
             size="medium"
             onPress={handleFavoritePress}
@@ -145,20 +125,16 @@ export const EventCard = React.memo(function EventCard({
               position: "absolute",
               bottom: -16,
               right: 16,
-              borderColor: event.isFavorite
-                ? theme.light.red_regular
-                : "#E1DDD9",
+              borderColor: event.isFavorite ? theme.light.red_regular : "#E1DDD9",
               borderWidth: 1,
             }}
           />
         </View>
+
         <View style={styles.infoContainer}>
           <DateAndTime dateISO={event.start_date} style={{ marginTop: 22 }} />
           <Text
-            style={[
-              styles.title,
-              isSmallScreen && { fontSize: 24, marginTop: 4 },
-            ]}
+            style={[styles.title, isSmallScreen && { fontSize: 24, marginTop: 4 }]}
             maxFontSizeMultiplier={1.2}
           >
             {event.title}
@@ -166,50 +142,48 @@ export const EventCard = React.memo(function EventCard({
 
           {!isVerySmallScreen && (
             <Text
-              style={[
-                styles.description,
-                isSmallScreen && { fontSize: 16, marginTop: 4 },
-              ]}
+              style={[styles.description, isSmallScreen && { fontSize: 16, marginTop: 4 }]}
               numberOfLines={isVerySmallScreen ? 1 : 2}
               maxFontSizeMultiplier={1.2}
             >
               {event.short_desc}
             </Text>
           )}
+
           <Location
             locationCategory={event.location_category}
             registrationType={event.registration_type}
             style={{ marginTop: 18 }}
           />
 
-          <View style={[styles.tagsContainer, { marginTop: 18 }]}>
-            {event.event_type && (
-              <Badge
-                key={event.event_type}
-                name={event.event_type}
-                color={eventHasPassed ? "#BDBDBD" : "#111111"}
-                textColor="#F4F3F2"
-              />
-            )}
-            {visibleTags.map((tag, index) => (
-              <Badge
-                key={tag + index}
-                name={tag}
-                color={getTagColor(tag, eventHasPassed)}
-                textColor="#111111"
-              />
-            ))}
+           <View style={styles.tagsContainer}>
+             {event.event_type && (
+               <Badge
+                 key={event.event_type}
+                 name={event.event_type}
+                 color="#111111"
+                 textColor="#F4F3F2"
+               />
+             )}
+             {visibleTags.map((tag, index) => (
+               <Badge
+                 key={tag + index}
+                 name={tag}
+                 color={getTagColor(tag, eventHasPassed)}
+                 textColor="#111111"
+               />
+             ))}
 
-            {remainingTagsCount > 0 && (
-              <Badge
-                key="remaining-count-badge"
-                name={`+${remainingTagsCount}`}
-                color="#EAEAEA"
-                textColor="#111111"
-                style={{ borderWidth: 1, borderColor: "#D1D1D6" }}
-              />
-            )}
-          </View>
+             {remainingTagsCount > 0 && (
+               <Badge
+                 key="remaining-count-badge"
+                 name={`+${remainingTagsCount}`}
+                 color="#EAEAEA"
+                 textColor="#111111"
+                 style={{ borderWidth: 1, borderColor: "#11111" }}
+               />
+             )}
+           </View>
         </View>
       </TouchableOpacity>
     </View>
