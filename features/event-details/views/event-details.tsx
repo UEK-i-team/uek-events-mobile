@@ -145,29 +145,27 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
                ))}
            </View>
 
-           <View style={styles.tagsContainer}>
-             {[event.event_type, ...event.tags].filter(Boolean).map((tag, index) => {
-                 const isMainType = tag === event.event_type;
-                  return (
-                     <View
-                      key={index}
-                      style={[
-                      styles.tagChip,
-                      { backgroundColor: getTagColor(tag) },
-                        ]}
-                      >
-                      <Text
-                        style={[
-                        styles.tagChipText,
-                        { color: isMainType ? "#F4F3F2" : "#111111" },
-                          ]}
-                        >
-                         {tag}
-                       </Text>
-                     </View>
-                   );
-                  })}
-              </View>
+            <View style={styles.tagsContainer}>
+
+              {event.event_type && (
+                <View style={[styles.tagChip, { backgroundColor: "#111111" }]}>
+                  <Text style={[styles.tagChipText, { color: "#F4F3F2" }]}>
+                    {event.event_type}
+                  </Text>
+                </View>
+              )}
+
+              {event.tags.map((tag, index) => (
+                <View
+                  key={index}
+                  style={[styles.tagChip, { backgroundColor: getTagColor(tag) }]}
+                >
+                  <Text style={[styles.tagChipText, { color: "#111111" }]}>
+                    {tag}
+                  </Text>
+                </View>
+              ))}
+            </View>
         </View>
       </ScrollView>
 
