@@ -10,6 +10,7 @@ import { styles } from "./favorite-event-card.styles";
 import { formatEventDate, formatEventTime } from "@/utils/functions/date-utils";
 import { theme, getTagColor } from "@/shared/constants/theme";
 
+
 const MAX_VISIBLE_TAGS = 2;
 
 interface FavoriteEventCardProps {
@@ -22,7 +23,6 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const allTags = [event.event_type, ...event.tags].filter(Boolean);
   const visibleTags = (event.tags || []).slice(0, MAX_VISIBLE_TAGS);
   const remainingTagsCount = (event.tags || []).length - MAX_VISIBLE_TAGS;
-
   return (
     <TouchableOpacity
       style={styles.card}
@@ -36,10 +36,10 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
           contentFit="cover"
         />
 
-      <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
+        <View style={styles.content}>
+          <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
             {event.title}
-        </Text>
+          </Text>
 
           <View style={styles.dateRow}>
             <View style={styles.dateSection}>
