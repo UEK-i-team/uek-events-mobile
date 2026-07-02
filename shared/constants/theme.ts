@@ -8,6 +8,7 @@ export const theme = {
     dark_grey: "#111111",
     textMuted: "#666666",
     mainBackgroundDarker: '#D9D9D9',
+    mainBackgroundLighter: '#E9E8E8',
     red_light: '#FFE7E7',
     red_regular: '#FF5252'
   },
@@ -55,31 +56,30 @@ export const Fonts = {
     fontWeight: "bold" as const,
   },
 };
+
 const MAIN_CATEGORIES_MAP: Record<string, string> = {
-"kariera": "#111111",
-"warsztaty": "#111111",
-"biznes": "#5FAFA2",            // Jasny turkusowy
-"technologia": "#8CA2D6",       // Przyjemny niebieski
-"nauka": "#9CC2A6",             // Żółty
-"prawo": "#C97B88",
-"finanse": "#88C9FC",             // Różowy
-"rozwój osobisty": "#F4CA55",             // żółty
-"it": "#E760BF",
+"biznes": "#9BD9F2",
+"technologia": "#DAB1E3",
+"nauka": "#A0D9AF",
+"finanse": "#88C9FC",
+"rozwój osobisty": "#FBD057",
+"it": "#CAAEE8",
+"badania naukowe": "#CCD9A0",
+"marketing": "#CFA896"
 
 };
 
 const SUB_TAGS_PALETTE = [
-"#ffbec6",
+"#5FAFA2",
 "#ffa299",
 "#ff896a",
-"#FFA13D", // Jasny kremowy pomarańcz
+"#FFA13D",
 "#bc5490",
-"#fe535e",
-"#8CA2D6", // Przygaszony błękitny / lawendowy (lewy telefon)
-"#D98336", // Stonowany, ciepły rudy/ochra (środkowy telefon)
-"#7FA699", // Matowy, skandynawski morski (prawy telefon)
+"#C99EA5",
+"#8CA2D6", //stonowany niebieski, można uzyć do jakiegos finansowego
+"#D98336", // Stonowany, ciepły rudy/ochra
+"#7FA699", // Matowy, skandynawski morski
 "#B5A4CB", // Przybrudzony jasny fiolet
-"#CFA896"  // Ciepły, ziemisty beż/pastel
 ];
 
 export function getTagColor(tagName: string, eventHasPassed?: boolean): string {
