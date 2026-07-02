@@ -57,40 +57,45 @@ export const styles = StyleSheet.create({
   tagsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
     columnGap: 14,
     rowGap: 15,
     marginTop: 16,
     marginBottom: 16,
     overflow: "hidden",
   },
+
+  remainingBadge: {
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  justifyContent: "center",
+  alignItems: "center",
+  alignSelf: "center",
+  borderWidth: 1,
+  bordeeColor: '#11111',
+  borderRadius: 16,
+  },
+
+  remainingText: {
+  fontSize: 12,
+  fontWeight: '700',
+  color: '#666666',
+  lineHeight: 16,
+  },
+
   tag: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 16,
+    borderWidth: 1,
+    bordeeColor: '#11111',
   },
   tagText: {
     fontSize: 14,
     fontWeight: "300",
     color: "#111111",
   },
-
-  remainingBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-  },
-
-  remainingText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#666666',
-    lineHeight: 16,
-  },
-
   closeButton: {
     position: "absolute",
     top: 14,
