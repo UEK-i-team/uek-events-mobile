@@ -44,6 +44,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
     return <Text>Event not found</Text>;
   }
 
+  // Kolory z nowego update'u projektu
   const colorsArray = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
   const passedTagColor = "#BDBDBD";
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
@@ -56,7 +57,6 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
       const formattedDate = formatShareEventDate(event.start_date);
       const formattedTime = formatEventTime(event.start_date);
       const categoryText = event.event_category ? `**${event.event_category.toLowerCase()}**` : 'wydarzenie';
-      
       const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
 
       await Share.share({
@@ -75,6 +75,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.imageContainer}>
+          {/* Nowy wrapper obrazka z update'u */}
           <View style={[styles.imageWrapper, eventHasPassed && styles.passedImage]}>
             <Image
               source={{ uri: event.image_url }}
@@ -164,34 +165,18 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             ))}
           </View>
 
-          <View style={[styles.tagsContainer, { marginTop: 30 }]}>
-            <View
-              style={[
-                styles.tagChip,
-                {
-                  backgroundColor: eventHasPassed
-                    ? passedTagColor
-                    : theme.light.dark_grey,
-                },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.tagChipText,
-                  {
-                    color: eventHasPassed
-                      ? theme.light.dark_grey
-                      : theme.light.ligth_grey,
-                  },
-                ]}
-              >
-                {event.event_type}
-              </Text>
-            </View>
-          </View>
-          <View style={[styles.tagsContainer, { marginTop: 14 }]}>
+           <View style={styles.tagsContainer}>
+            {event.event_type && (
+              <View style={[styles.tagChip, { backgroundColor: "#111111" }]}>
+                <Text style={[styles.tagChipText, { color: "#F4F3F2" }]}>
+                  {event.event_type}
+                </Text>
+              </View>
+            )}
+
             {event.tags.map((tag, index) => (
               <View
+                key={index}
                 style={[
                   styles.tagChip,
                   {
@@ -200,11 +185,8 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
                       : colorsArray[index % colorsArray.length],
                   },
                 ]}
-                key={index}
               >
-                <Text
-                  style={[styles.tagChipText, { color: theme.light.dark_grey }]}
-                >
+                <Text style={[styles.tagChipText, { color: theme.light.dark_grey }]}>
                   {tag}
                 </Text>
               </View>
