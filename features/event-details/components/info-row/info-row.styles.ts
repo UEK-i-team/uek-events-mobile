@@ -12,6 +12,9 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 12,
     backgroundColor: theme.light.mainBackgroundDarker,
+    backgroundColor: theme.light.mainBackgroundLighter,
+    borderWidth: 1,
+    bordeeColor: '#11111',
   },
   textContainer: {
     flex: 1,
@@ -30,3 +33,4 @@ export const styles = StyleSheet.create({
     fontWeight: "300",
   },
 });
+
