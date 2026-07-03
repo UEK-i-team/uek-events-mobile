@@ -9,8 +9,8 @@ export const styles = StyleSheet.create({
     marginBottom: 13,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
     elevation: 2,
     overflow: "hidden",
   },
@@ -79,9 +79,10 @@ export const styles = StyleSheet.create({
     color: "#111111",
     flexShrink: 1,
   },
-  tagsRow: {
+   tagsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
+    alignItems: "center",
     justifyContent: "center",
     columnGap: 14,
     rowGap: 15,
@@ -89,10 +90,27 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: "hidden",
   },
+
+  remainingBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+
+  remainingText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#666666',
+    lineHeight: 16,
+  },
   tag: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    bordeeColor: '#11111',
   },
   tagText: {
     fontSize: 14,
