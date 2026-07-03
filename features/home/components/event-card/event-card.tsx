@@ -200,7 +200,6 @@ export const EventCard = React.memo(function EventCard({
                 textColor="#111111"
               />
             ))}
-
             {remainingTagsCount > 0 && (
               <Badge
                 key="remaining-count-badge"
