@@ -128,11 +128,14 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    marginTop: 30
   },
   tagChip: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
+    borderWidth: 1,
+    bordeeColor: '#11111',
   },
   tagChipText: {
     fontSize: 14,
@@ -149,20 +152,20 @@ export const styles = StyleSheet.create({
   },
 actionButton: {
     backgroundColor: theme.light.primary,
-    paddingVertical: 14,        
-    paddingHorizontal: 12,     
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     borderRadius: 16,
     alignItems: "center",
-    justifyContent: "center",  
-    minHeight: 56,             
-    width: '100%',             
+    justifyContent: "center",
+    minHeight: 56,
+    width: '100%',
 },
     actionButtonText: {
     color: theme.light.dark_grey,
     fontSize: 18,
     fontWeight: "400",
-    textAlign: "center",       
-    lineHeight: 22,          
+    textAlign: "center",
+    lineHeight: 22,
 },
   scrollContent: {
     paddingBottom: 140,
