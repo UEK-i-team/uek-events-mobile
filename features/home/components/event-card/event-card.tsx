@@ -14,9 +14,7 @@ import {
 import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { IEvent } from "@/shared/types/event";
-
-
-import { theme } from "@/shared/constants/theme";
+import { theme, getTagColor } from "@/shared/constants/theme";
 import { isEventPassed, isMultiDayEvent } from "@/utils/functions/date-utils";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
@@ -31,8 +29,7 @@ interface EventCardProps {
   toggleFavorite: (eventId: number, isFavorite: boolean) => void;
 }
 
-const TAG_COLORS = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
-const TAG_COLORS_PAST_EVENTS = ["#BDBDBD"];
+const MAX_VISIBLE_TAGS = 4;
 
 export const EventCard = React.memo(function EventCard({
   event,
@@ -54,8 +51,6 @@ export const EventCard = React.memo(function EventCard({
   const { dominantColor, resizeMode } =
     useResizeDominantBackgroundColor(imageUrl);
 
-
-    
   const isSmallScreen =
     SCREEN_HEIGHT < 800 ||
     (SCREEN_HEIGHT < 900 && fontScale > 1.15) ||
@@ -74,7 +69,6 @@ export const EventCard = React.memo(function EventCard({
     toggleFavorite(event.id, !event.isFavorite);
   };
 
-
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
   const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);
   let imageHeight = 0;
@@ -88,6 +82,10 @@ export const EventCard = React.memo(function EventCard({
   }
 
   const imageWidth = SCREEN_WIDTH - 32;
+
+  // POPRAWKA PUNKTU 1: Przywrócenie brakujących zmiennych dla tagów
+  const visibleTags = (event.tags || []).slice(0, MAX_VISIBLE_TAGS);
+  const remainingTagsCount = (event.tags || []).length - MAX_VISIBLE_TAGS;
 
   return (
     <View
@@ -111,7 +109,7 @@ export const EventCard = React.memo(function EventCard({
         ]}
       >
         <View style={[styles.imageContainer, { height: imageHeight }]}>
-          <View style={[styles.image, eventHasPassed && styles.passedImage]}> 
+          <View style={[styles.image, eventHasPassed && styles.passedImage]}>
             <EventImageContainer
               imageUrl={imageUrl}
               width={imageWidth}
@@ -121,9 +119,6 @@ export const EventCard = React.memo(function EventCard({
               cornerRadius={30}
             />
             {eventHasPassed && (
-              // <View
-              //   style={styles.passedOverlay}
-              // />
               <>
                 <View style={styles.passedOverlayGray} />
                 <View style={styles.passedOverlayDark} />
@@ -139,7 +134,7 @@ export const EventCard = React.memo(function EventCard({
               <Text style={styles.passedText}>Wydarzenie wielodniowe</Text>
             </View>
           ) : null}
-        
+
           <RoundedButton
             icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
             iconColor={
@@ -170,7 +165,6 @@ export const EventCard = React.memo(function EventCard({
           >
             {event.title}
           </Text>
-          {/* Ukrywamy opis lub zmniejszamy ilość linii na bardzo małych oknach */}
           {!isVerySmallScreen && (
             <Text
               style={[
@@ -188,22 +182,33 @@ export const EventCard = React.memo(function EventCard({
             registrationType={event.registration_type}
             style={{ marginTop: 18 }}
           />
-          <Badge
-            key={event.event_type}
-            name={event.event_type}
-            color={theme.light.dark_grey}
-            style={{ marginTop: 18 }}
-          />
           <View style={styles.tagsContainer}>
-            {event.tags.map((tag, index) => (
+            {event.event_type && (
+              <Badge
+                key={event.event_type}
+                name={event.event_type}
+                color="#111111"
+                textColor="#F4F3F2"
+              />
+            )}
+
+            {visibleTags.map((tag, index) => (
               <Badge
                 key={tag + index}
                 name={tag}
-                color={eventHasPassed ? TAG_COLORS_PAST_EVENTS[0] : (TAG_COLORS[index % TAG_COLORS.length] || TAG_COLORS[0])}
-                textColor={theme.light.dark_grey}
-                
+                color={getTagColor(tag, eventHasPassed)}
+                textColor="#111111"
               />
             ))}
+            {remainingTagsCount > 0 && (
+              <Badge
+                key="remaining-count-badge"
+                name={`+${remainingTagsCount}`}
+                color="#EAEAEA"
+                textColor="#111111"
+                style={{ borderWidth: 1, borderColor: "#111111" }}
+              />
+            )}
           </View>
         </View>
       </TouchableOpacity>

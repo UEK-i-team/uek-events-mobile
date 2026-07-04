@@ -8,22 +8,10 @@ import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./favorite-event-card.styles";
 import { formatEventDate, formatEventTime, isEventPassed } from "@/utils/functions/date-utils";
+import { theme, getTagColor } from "@/shared/constants/theme";
 
-
-
-const TAG_COLORS = [
-  "#B4DEFF",
-  "#FAE5FF",
-  "#C3F1EC",
-  "#FFF3E0",
-  "#E8F5E9",
-  "#FCE4EC",
-];
-
-const TAG_COLORS_PAST_EVENTS = ["#BDBDBD"];
-
-
-
+const MAX_VISIBLE_TAGS = 2;
+const PASSED_TAG_COLOR = "#BDBDBD";
 
 interface FavoriteEventCardProps {
   event: IEvent;
@@ -32,8 +20,11 @@ interface FavoriteEventCardProps {
 
 export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const router = useRouter();
-  const allTags = [event.event_type, ...event.tags].filter(Boolean);
+
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
+
+  const visibleTags = (event.tags || []).slice(0, MAX_VISIBLE_TAGS);
+  const remainingTagsCount = (event.tags || []).length - MAX_VISIBLE_TAGS;
 
   return (
     <TouchableOpacity
@@ -89,21 +80,43 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
       </View>
 
       <View style={styles.tagsRow}>
-        {allTags.map((tag, index) => (
+        {event.event_type && (
+          <View
+            style={[
+              styles.tag,
+              { backgroundColor: theme.light.dark_grey },
+            ]}
+          >
+            <Text style={[styles.tagText, { color: theme.light.ligth_grey }]}>
+              {event.event_type}
+            </Text>
+          </View>
+        )}
+
+
+        {visibleTags.map((tag) => (
           <View
             key={tag}
             style={[
               styles.tag,
               {
                 backgroundColor: eventHasPassed
-                  ? TAG_COLORS_PAST_EVENTS[0]
-                  : TAG_COLORS[index % TAG_COLORS.length],
+                  ? PASSED_TAG_COLOR
+                  : getTagColor(tag)
               },
             ]}
           >
             <Text style={styles.tagText}>{tag}</Text>
           </View>
         ))}
+
+        {remainingTagsCount > 0 && (
+          <View style={styles.remainingBadge}>
+            <Text style={styles.remainingText}>
+              +{remainingTagsCount}
+            </Text>
+          </View>
+        )}
       </View>
 
       <TouchableOpacity
