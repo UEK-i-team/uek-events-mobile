@@ -135,7 +135,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    bordeeColor: '#11111',
+    borderColor: '#11111',
   },
   tagChipText: {
     fontSize: 14,
