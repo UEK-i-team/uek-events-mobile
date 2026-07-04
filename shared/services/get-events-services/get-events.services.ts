@@ -124,7 +124,10 @@ export class EventsService implements IEventsService {
   }
 
   private mapBundle(bundle: EventsBundle): IEvent[] {
-    if (!bundle.events?.length || !bundle.dictionaries) {
+    // Missing events (null) or missing dictionaries means the data could not be
+    // loaded/structured correctly - that is a real error. An empty events array
+    // is a valid response (no events available) and must not throw.
+    if (!bundle.events || !bundle.dictionaries) {
       throw new Error("Brak pełnych danych do mapowania wydarzeń");
     }
 

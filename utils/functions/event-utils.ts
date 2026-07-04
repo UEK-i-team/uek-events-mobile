@@ -55,6 +55,20 @@ export function filterOldEvents(events: IEvent[]): IEvent[] {
   });
 }
 
+export function getEventsStartingToday(events: IEvent[]): IEvent[] {
+  const today = new Date();
+
+  return events.filter((event) => {
+    const start = safeParseDate(event.start_date);
+    if (!start) return false;
+    return (
+      start.getFullYear() === today.getFullYear() &&
+      start.getMonth() === today.getMonth() &&
+      start.getDate() === today.getDate()
+    );
+  });
+}
+
 export function findNearestFutureEventIndex(
   events: IEvent[] | null | undefined,
 ): number {

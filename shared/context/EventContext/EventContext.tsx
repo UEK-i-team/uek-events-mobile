@@ -3,7 +3,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { useDependencies } from "@/shared/di/DependencyProvider";
 import { OfflineNoCacheError } from "@/shared/services/get-events-services/get-events.services";
 import { IEvent } from "@/shared/types/event";
-import { sortEventsAscending, filterOldEvents } from "@/utils/functions/event-utils";
+import { sortEventsAscending } from "@/utils/functions/event-utils";
 import { NotificationContext } from "@/features/notifications/contexts/notification-context";
 import { NotificationType } from "@/features/notifications/types";
 import {
