@@ -110,7 +110,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 16,
     borderWidth: 1,
-    bordeeColor: '#11111',
+    borderColor: '#11111',
   },
   tagText: {
     fontSize: 14,
