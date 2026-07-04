@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -16,15 +16,14 @@ import {
   withTiming,
 } from "react-native-reanimated";
 
-import { EventContext } from "@/shared/context/EventContext/EventContext";
-import { getEventsStartingToday } from "@/utils/functions/event-utils";
+import { useNewEvents } from "../../contexts/new-events-context";
 
 const SIDE_PEEK = 26;
 const CARD_SPACING = 16;
 
 export function useDailyEventsShowcase() {
   const router = useRouter();
-  const { events } = useContext(EventContext);
+  const { newEvents } = useNewEvents();
   const { width, height } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
   const hasNavigatedRef = useRef(false);
@@ -56,11 +55,6 @@ export function useDailyEventsShowcase() {
   const itemSize = cardWidth + CARD_SPACING;
   const sidePadding = (width - itemSize) / 2;
   const imageHeight = Math.round(Math.min(height * 0.3, 280));
-
-  const todaysEvents = useMemo(
-    () => (events ? getEventsStartingToday(events) : []),
-    [events],
-  );
 
   const scrollHandler = useAnimatedScrollHandler((event) => {
     scrollX.value = event.contentOffset.x;
@@ -116,7 +110,7 @@ export function useDailyEventsShowcase() {
   }, []);
 
   return {
-    todaysEvents,
+    todaysEvents: newEvents,
     activeIndex,
     cardWidth,
     itemSize,

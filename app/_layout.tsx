@@ -18,7 +18,10 @@ import {
   NotificationToastContainer,
 } from "@/features/notifications";
 import { ViewedEventsProvider } from "@/features/viewed";
-import { DailyEventsGate } from "@/features/daily-events";
+import {
+  NewEventsProvider,
+  useDailyEventsGate,
+} from "@/features/daily-events";
 import { EventContext, EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
 import { theme } from "@/shared/constants/theme";
@@ -64,6 +67,7 @@ export const unstable_settings = {
 };
 
 function AppContent() {
+  useDailyEventsGate();
   const { isOpen, closeFilters } = useFilters();
   const router = useRouter();
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
@@ -112,7 +116,6 @@ function AppContent() {
       </Stack>
       <FiltersBottomSheet isOpen={isOpen} onClose={closeFilters} />
       <NotificationToastContainer />
-      <DailyEventsGate />
       <SplashController />
     </>
   );
@@ -124,19 +127,21 @@ export default function RootLayout() {
       <DependencyProvider>
         <NotificationProvider>
           <EventContextProvider>
-            <ThemeProvider value={DefaultTheme}>
-              <ViewedEventsProvider>
-                <FiltersProvider>
-                  <BottomSheetModalProvider>
-                    <AppContent />
-                    <StatusBar
-                      style="dark"
-                      backgroundColor={theme.light.mainBackground}
-                    />
-                  </BottomSheetModalProvider>
-                </FiltersProvider>
-              </ViewedEventsProvider>
-            </ThemeProvider>
+            <NewEventsProvider>
+              <ThemeProvider value={DefaultTheme}>
+                <ViewedEventsProvider>
+                  <FiltersProvider>
+                    <BottomSheetModalProvider>
+                      <AppContent />
+                      <StatusBar
+                        style="dark"
+                        backgroundColor={theme.light.mainBackground}
+                      />
+                    </BottomSheetModalProvider>
+                  </FiltersProvider>
+                </ViewedEventsProvider>
+              </ThemeProvider>
+            </NewEventsProvider>
           </EventContextProvider>
         </NotificationProvider>
       </DependencyProvider>

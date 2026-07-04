@@ -11,6 +11,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { pluralizePolish } from "@/utils/functions/plural-utils";
+
 import { useDailyEventsShowcase } from "./use-daily-events-showcase";
 import { DailyEventSlide } from "../daily-event-slide/daily-event-slide";
 import { styles } from "./daily-events-showcase.styles";
@@ -40,7 +42,7 @@ function PulseBadge() {
         style={styles.badge}
       >
         <View style={styles.badgeDot} />
-        <Text style={styles.badgeText}>DZIŚ</Text>
+        <Text style={styles.badgeText}>NOWE</Text>
       </LinearGradient>
     </Animated.View>
   );
@@ -80,7 +82,7 @@ export function DailyEventsShowcase() {
               pointerEvents="none"
             >
               <View style={styles.headerRow}>
-                <Text style={styles.headerTitle}> 🚀 Plan na dzisiaj</Text>
+                <Text style={styles.headerTitle}> 🚀 Nowe wydarzenia</Text>
                 <PulseBadge />
               </View>
               <LinearGradient
@@ -90,9 +92,11 @@ export function DailyEventsShowcase() {
                 style={styles.accentLine}
               />
               <Text style={styles.headerSubtitle}>
-                {todaysEvents.length === 1
-                  ? "1 wydarzenie odbywa się dziś"
-                  : `${todaysEvents.length} wydarzenia odbywają się dziś`}
+                {`${todaysEvents.length} ${pluralizePolish(todaysEvents.length, {
+                  singular: "nowe wydarzenie",
+                  few: "nowe wydarzenia",
+                  many: "nowych wydarzeń",
+                })}`}
               </Text>
             </SafeAreaView>
           </Animated.View>
