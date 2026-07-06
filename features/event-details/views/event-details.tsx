@@ -21,8 +21,8 @@ import ArrowBackIcon from "@/assets/icons/arrow-left-300.svg";
 import ShareIcon from "@/assets/icons/share-300.svg";
 import LocationIcon from "@/assets/icons/location.svg";
 import PersonIcon from "@/assets/icons/person-200.svg";
-import { theme } from "@/shared/constants/theme";
 import { InfoRow } from "@/features/event-details/components/info-row/info-row";
+import { useTheme } from "@/shared/context/ThemeContext";
 import {
   formatEventTime,
   formatShareEventDate,
@@ -37,6 +37,7 @@ export interface EventDetailsViewProps {
 export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const router = useRouter();
   const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
+  const { colors } = useTheme();
 
   const event = getEventById(Number(eventId));
 
@@ -46,7 +47,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
 
   // Kolory z nowego update'u projektu
   const colorsArray = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
-  const passedTagColor = "#BDBDBD";
+  const passedTagColor = colors.light_grey;
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
 
   const startDateFormatted = formatEventDateWithMonth(event.start_date);
@@ -56,7 +57,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
     try {
       const formattedDate = formatShareEventDate(event.start_date);
       const formattedTime = formatEventTime(event.start_date);
-      const categoryText = event.event_category ? `**${event.event_category.toLowerCase()}**` : 'wydarzenie';
+      const categoryText = event.event_type ? `**${event.event_type.toLowerCase()}**` : 'wydarzenie';
       const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
 
       await Share.share({
@@ -69,7 +70,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.mainBackground }]} edges={["top", "left", "right"]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -99,29 +100,29 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
           <View style={styles.positionButtons}>
             <RoundedButton
               icon={ShareIcon}
-              backgroundColor={theme.light.primary}
+              backgroundColor={colors.primary}
               onPress={onShare}
             />
             <RoundedButton
               icon={event.isFavorite ? HeartFilledIcon : HeartOutlineIcon}
               iconColor={
                 event.isFavorite
-                  ? theme.light.red_regular
-                  : theme.light.dark_grey
+                  ? colors.red_regular
+                  : colors.dark_grey
               }
               backgroundColor={
-                event.isFavorite ? theme.light.red_light : "white"
+                event.isFavorite ? colors.red_light : colors.surface
               }
               size="medium"
               onPress={() => toggleFavoriteEvent(event.id, !event.isFavorite)}
               style={
                 event.isFavorite
                   ? {
-                      borderColor: theme.light.red_regular,
+                      borderColor: colors.red_regular,
                       borderWidth: 1,
                     }
                   : {
-                      borderColor: theme.light.mainBackground,
+                      borderColor: colors.mainBackground,
                       borderWidth: 1,
                     }
               }
@@ -131,14 +132,14 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             <RoundedButton
               icon={ArrowBackIcon}
               size={"small"}
-              backgroundColor={theme.light.mainBackground}
+              backgroundColor={colors.surface}
               onPress={() => router.back()}
             />
           </View>
         </View>
         <View style={styles.detailsContainer}>
-          <Text style={styles.title}>{event.title}</Text>
-          <Text style={styles.shortDesc}>{event.short_desc}</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>{event.title}</Text>
+          <Text style={[styles.shortDesc, { color: colors.textPrimary }]}>{event.short_desc}</Text>
           <View style={styles.dateAndTimeRowContainer}>
             <InfoRow icon={CalendarIcon} text={startDateFormatted} />
             <InfoRow icon={ScheduleIcon} text={startTimeFormatted} />
@@ -154,21 +155,21 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             />
           </View>
 
-          <Text style={styles.sectionTitle}>Tematy</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Tematy</Text>
 
           <View style={styles.bulletListContainer}>
             {event.topics.map((topic, index) => (
               <View style={styles.bulletListItem} key={index}>
-                <View style={styles.bulletPoint} />
-                <Text style={styles.bulletText}>{topic}</Text>
+                <View style={[styles.bulletPoint, { backgroundColor: colors.textPrimary }]} />
+                <Text style={[styles.bulletText, { color: colors.textPrimary }]}>{topic}</Text>
               </View>
             ))}
           </View>
 
            <View style={styles.tagsContainer}>
             {event.event_type && (
-              <View style={[styles.tagChip, { backgroundColor: "#111111" }]}>
-                <Text style={[styles.tagChipText, { color: "#F4F3F2" }]}>
+              <View style={[styles.tagChip, { backgroundColor: colors.dark_grey }]}>
+                <Text style={[styles.tagChipText, { color: colors.light_grey }]}>
                   {event.event_type}
                 </Text>
               </View>
@@ -186,7 +187,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
                   },
                 ]}
               >
-                <Text style={[styles.tagChipText, { color: theme.light.dark_grey }]}>
+                <Text style={[styles.tagChipText, { color: colors.dark_grey }]}>
                   {tag}
                 </Text>
               </View>
@@ -197,11 +198,11 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
 
       <View style={styles.stickyBottomContainer}>
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, { backgroundColor: colors.primary }]}
           activeOpacity={0.8}
           onPress={() => Linking.openURL(event.origin_url)}
         >
-          <Text style={styles.actionButtonText}>
+          <Text style={[styles.actionButtonText, { color: colors.dark_grey }]}>
             Zobacz szczegóły wydarzenia
           </Text>
         </TouchableOpacity>

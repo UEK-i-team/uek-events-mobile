@@ -1,24 +1,71 @@
-export type Theme = "light" | "dark";
+export type ThemeType = "light" | "dark" | "system";
+export type Theme = ThemeType;
+
+export interface AppThemeColors {
+  primary: string;
+  mainBackground: string;
+  mainBackgroundDarker: string;
+  mainBackgroundLighter: string;
+  surface: string;
+  light_grey: string;
+  ligth_grey: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  border: string;
+  icon: string;
+  dark_grey: string;
+  backgroundDeep: string;
+  red_light: string;
+  red_regular: string;
+}
+
+export interface AppTheme {
+  colors: AppThemeColors;
+  isDark: boolean;
+}
+
+export const lightThemeColors: AppThemeColors = {
+  primary: "#FF6A2A",
+  mainBackground: "#E1DDD9",
+  mainBackgroundDarker: "#D9D9D9",
+  mainBackgroundLighter: "#E9E8E8",
+  surface: "#E1DDD9",
+  light_grey: "#F4F3F2",
+  ligth_grey: "#F4F3F2",
+  textPrimary: "#111111",
+  textSecondary: "#666666",
+  textMuted: "#666666",
+  border: "#111111",
+  icon: "#111111",
+  dark_grey: "#111111",
+  backgroundDeep: "#D9D9D9",
+  red_light: "#FFE7E7",
+  red_regular: "#FF5252",
+};
+
+export const darkThemeColors: AppThemeColors = {
+  primary: "#FF6A2A",
+  mainBackground: "#302E2E",
+  mainBackgroundDarker: "#000000",
+  mainBackgroundLighter: "#3A3838",
+  surface: "#302E2E",
+  light_grey: "#5C5A5A",
+  ligth_grey: "#5C5A5A",
+  textPrimary: "#FFFFFF",
+  textSecondary: "#E9E9E9",
+  textMuted: "#AAAAAA",
+  border: "#5C5A5A",
+  icon: "#E9E9E9",
+  dark_grey: "#111111",
+  backgroundDeep: "#000000",
+  red_light: "#F4F3F2",
+  red_regular: "#FF5252",
+};
 
 export const theme = {
-light: {
-  primary: "#FF6A2A",
-mainBackground: "#E1DDD9",
-ligth_grey: "#F4F3F2",
-dark_grey: "#111111",
-textMuted: "#666666",
-mainBackgroundDarker: '#D9D9D9',
-mainBackgroundLighter: '#E9E8E8',
-red_light: '#FFE7E7',
-red_regular: '#FF5252'
-},
-dark: {
-primary: "#FF6A2A",
-mainBackground: "#E1DDD9",
-ligth_grey: "#F4F3F2",
-dark_grey: "#111111",
-textMuted: "#666666",
-},
+  light: lightThemeColors,
+  dark: darkThemeColors,
 };
 
 // To delete soon

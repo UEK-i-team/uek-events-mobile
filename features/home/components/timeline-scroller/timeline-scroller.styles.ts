@@ -71,7 +71,7 @@ container: {
   },
   dateBoxEmpty: {
     width: 36,
-    Height: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
+    height: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
     paddingBottom: 14, // Push the text up to match the visual center of the 48px box
     borderRadius: 10,
     justifyContent: 'center',
