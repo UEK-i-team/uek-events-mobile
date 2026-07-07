@@ -1,6 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { IEvent } from "@/shared/types/event";
 import { safeParseDate } from "@/utils/functions/event-utils";
+import { formatEventTime } from "@/utils/functions/date-utils";
 import { Platform } from "react-native";
 
 Notifications.setNotificationHandler({
@@ -67,7 +68,7 @@ export class NotificationsService {
       await Notifications.scheduleNotificationAsync({
         content: {
           title: "Przypomnienie o wydarzeniu",
-          body: `Jutro o ${event.start_date.split("T")[1]?.slice(0, 5) || "nieznanej porze"} odbędzie się wydarzenie: ${event.title}.`,
+          body: `Jutro o ${formatEventTime(event.start_date) || "nieznanej porze"} odbędzie się wydarzenie: ${event.title}.`,
           data: { eventId: event.id },
         },
         trigger: {
