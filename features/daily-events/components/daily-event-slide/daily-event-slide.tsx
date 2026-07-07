@@ -5,10 +5,12 @@ import { Pressable, Text, View } from "react-native";
 import Animated, { SharedValue } from "react-native-reanimated";
 
 import { IEvent } from "@/shared/types/event";
+import { getTagColor } from "@/shared/constants/theme";
 import {
   formatEventTime,
   formatEventDateWithMonth,
 } from "@/utils/functions/date-utils";
+import { Badge } from "@/features/home/components/badge/badge";
 
 import { formatCountdown } from "../../hooks/use-countdown";
 import { useDailyEventSlide } from "./use-daily-event-slide";
@@ -132,14 +134,12 @@ export const DailyEventSlide = React.memo(function DailyEventSlide({
             {event.tags?.length > 0 && (
               <View style={styles.tagsContainer}>
                 {event.tags.slice(0, 3).map((tag, tagIndex) => (
-                  <View
+                  <Badge
                     key={tag + tagIndex}
-                    style={[styles.tag, { backgroundColor: pillBg }]}
-                  >
-                    <Text style={[styles.tagText, { color: textColor }]}>
-                      {tag}
-                    </Text>
-                  </View>
+                    name={tag}
+                    color={getTagColor(tag)}
+                    textColor="#111111"
+                  />
                 ))}
               </View>
             )}
