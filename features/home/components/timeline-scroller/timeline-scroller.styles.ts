@@ -67,7 +67,7 @@ container: {
     backgroundColor: '#EAEAEA',
   },
   dateBoxInactiveDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#E9E9E9',
   },
   dateBoxEmpty: {
     width: 36,
@@ -89,7 +89,7 @@ container: {
     color: '#687076',
   },
   dayTextInactiveDark: {
-    color: '#9BA1A6',
+    color: '#111111',
   },
   dayTextEmptyLight: {
     fontSize: 15,
