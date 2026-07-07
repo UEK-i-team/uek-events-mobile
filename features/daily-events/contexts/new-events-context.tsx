@@ -17,9 +17,6 @@ const knownEventIdsStorage = new AsyncStorageService<number[]>(
 
 const MAX_MONTHS_AHEAD = 2;
 
-// TEMP: wymusza pokazanie modala z nowymi wydarzeniami przy każdym wejściu do aplikacji (do prac nad designem)
-const FORCE_SHOW_NEW_EVENTS = true;
-
 function isWithinShowcaseWindow(event: IEvent): boolean {
   const startDate = safeParseDate(event.start_date);
   if (!startDate) return false;
@@ -61,15 +58,7 @@ export function NewEventsProvider({ children }: { children: React.ReactNode }) {
 
     hasEvaluatedRef.current = true;
 
-    if (FORCE_SHOW_NEW_EVENTS) {
-      const showcaseEvents = events.filter(isEligibleForShowcase);
-      setNewEvents(
-        showcaseEvents.length > 0
-          ? showcaseEvents
-          : events.filter((event) => !hasEventEnded(event)),
-      );
-      return;
-    }
+   
 
     const evaluate = async () => {
       const currentIds = events.map((event) => event.id);
