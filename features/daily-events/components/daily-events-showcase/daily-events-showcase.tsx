@@ -82,7 +82,7 @@ export function DailyEventsShowcase() {
               pointerEvents="none"
             >
               <View style={styles.headerRow}>
-                <Text style={styles.headerTitle}> 🚀 Nowe wydarzenia</Text>
+                <Text style={styles.headerTitle}>Nowe wydarzenia</Text>
                 <PulseBadge />
               </View>
               <LinearGradient

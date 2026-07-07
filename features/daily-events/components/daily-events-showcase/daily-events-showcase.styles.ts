@@ -13,6 +13,8 @@ export const styles = StyleSheet.create({
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
     gap: 12,
   },
   headerTitle: {

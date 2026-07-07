@@ -9,10 +9,38 @@ import React, {
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { AsyncStorageService } from "@/shared/storage/async-storage-service/async-storage-service";
 import { IEvent } from "@/shared/types/event";
+import { safeParseDate } from "@/utils/functions/event-utils";
 
 const knownEventIdsStorage = new AsyncStorageService<number[]>(
   "daily-showcase-known-event-ids",
 );
+
+const MAX_MONTHS_AHEAD = 2;
+
+// TEMP: wymusza pokazanie modala z nowymi wydarzeniami przy każdym wejściu do aplikacji (do prac nad designem)
+const FORCE_SHOW_NEW_EVENTS = true;
+
+function isWithinShowcaseWindow(event: IEvent): boolean {
+  const startDate = safeParseDate(event.start_date);
+  if (!startDate) return false;
+
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() + MAX_MONTHS_AHEAD);
+
+  return startDate <= cutoff;
+}
+
+function hasEventEnded(event: IEvent): boolean {
+  const endDate =
+    safeParseDate(event.end_date) ?? safeParseDate(event.start_date);
+  if (!endDate) return false;
+
+  return endDate.getTime() < Date.now();
+}
+
+function isEligibleForShowcase(event: IEvent): boolean {
+  return isWithinShowcaseWindow(event) && !hasEventEnded(event);
+}
 
 interface NewEventsContextType {
   newEvents: IEvent[];
@@ -33,6 +61,16 @@ export function NewEventsProvider({ children }: { children: React.ReactNode }) {
 
     hasEvaluatedRef.current = true;
 
+    if (FORCE_SHOW_NEW_EVENTS) {
+      const showcaseEvents = events.filter(isEligibleForShowcase);
+      setNewEvents(
+        showcaseEvents.length > 0
+          ? showcaseEvents
+          : events.filter((event) => !hasEventEnded(event)),
+      );
+      return;
+    }
+
     const evaluate = async () => {
       const currentIds = events.map((event) => event.id);
       const knownIds = await knownEventIdsStorage.get();
@@ -43,7 +81,9 @@ export function NewEventsProvider({ children }: { children: React.ReactNode }) {
       }
 
       const knownSet = new Set(knownIds);
-      const freshEvents = events.filter((event) => !knownSet.has(event.id));
+      const freshEvents = events.filter(
+        (event) => !knownSet.has(event.id) && isEligibleForShowcase(event),
+      );
 
       await knownEventIdsStorage.set(currentIds);
 

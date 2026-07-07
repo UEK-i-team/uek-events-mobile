@@ -8,11 +8,16 @@ export interface Countdown {
   minutes: number;
   seconds: number;
   isPast: boolean;
+  isEnded: boolean;
   isValid: boolean;
 }
 
-export function useCountdown(targetDate: string | null | undefined): Countdown {
+export function useCountdown(
+  targetDate: string | null | undefined,
+  endDate?: string | null | undefined,
+): Countdown {
   const target = useMemo(() => safeParseDate(targetDate), [targetDate]);
+  const end = useMemo(() => safeParseDate(endDate), [endDate]);
   const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
@@ -33,10 +38,12 @@ export function useCountdown(targetDate: string | null | undefined): Countdown {
         minutes: 0,
         seconds: 0,
         isPast: false,
+        isEnded: false,
         isValid: false,
       };
     }
 
+    const isEnded = end ? now >= end.getTime() : false;
     const diff = target.getTime() - now;
 
     if (diff <= 0) {
@@ -46,6 +53,7 @@ export function useCountdown(targetDate: string | null | undefined): Countdown {
         minutes: 0,
         seconds: 0,
         isPast: true,
+        isEnded,
         isValid: true,
       };
     }
@@ -56,8 +64,16 @@ export function useCountdown(targetDate: string | null | undefined): Countdown {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    return { days, hours, minutes, seconds, isPast: false, isValid: true };
-  }, [target, now]);
+    return {
+      days,
+      hours,
+      minutes,
+      seconds,
+      isPast: false,
+      isEnded: false,
+      isValid: true,
+    };
+  }, [target, end, now]);
 }
 
 function pad(value: number): string {
