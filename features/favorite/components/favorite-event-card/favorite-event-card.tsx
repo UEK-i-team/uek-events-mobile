@@ -113,7 +113,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
 
         {remainingTagsCount > 0 && (
           <View style={styles.remainingBadge}>
-            <Text style={styles.remainingText}>
+            <Text style={[styles.remainingText, { color: colors.textPrimary }]}>
               +{remainingTagsCount}
             </Text>
           </View>

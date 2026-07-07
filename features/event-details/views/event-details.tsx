@@ -37,7 +37,7 @@ export interface EventDetailsViewProps {
 export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const router = useRouter();
   const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
 
   const event = getEventById(Number(eventId));
 
@@ -132,6 +132,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             <RoundedButton
               icon={ArrowBackIcon}
               size={"small"}
+              iconColor={isDarkMode ? colors.textPrimary : colors.dark_grey}
               backgroundColor={colors.surface}
               onPress={() => router.back()}
             />

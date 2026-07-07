@@ -1,10 +1,8 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
 import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  Pressable,
   Text,
   TouchableOpacity,
   View,
@@ -14,7 +12,7 @@ import {
 import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { IEvent } from "@/shared/types/event";
-import { theme, getTagColor } from "@/shared/constants/theme";
+import { getTagColor } from "@/shared/constants/theme";
 import { isEventPassed, isMultiDayEvent } from "@/utils/functions/date-utils";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
