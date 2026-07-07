@@ -34,7 +34,7 @@ export function useDailyEventSlide({
   const router = useRouter();
   const imageUrl = event.image_url || FALLBACK_IMAGE;
   const { dominantColor } = useDailyEventColor(imageUrl);
-  const countdown = useCountdown(event.start_date);
+  const countdown = useCountdown(event.start_date, event.end_date);
 
   const gradientStart = dominantColor;
   const gradientMiddle = darkenHexColor(dominantColor, 0.4);

@@ -94,7 +94,11 @@ export const DailyEventSlide = React.memo(function DailyEventSlide({
                   {countdown.isPast ? "Status" : "Rozpocznie się za"}
                 </Text>
                 <Text style={[styles.countdownValue, { color: textColor }]}>
-                  {countdown.isPast ? "Trwa" : formatCountdown(countdown)}
+                  {countdown.isEnded
+                    ? "Wydarzenie zakończone"
+                    : countdown.isPast
+                      ? "Trwa"
+                      : formatCountdown(countdown)}
                 </Text>
               </View>
             )}

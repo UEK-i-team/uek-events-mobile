@@ -17,6 +17,9 @@ const knownEventIdsStorage = new AsyncStorageService<number[]>(
 
 const MAX_MONTHS_AHEAD = 2;
 
+// TEMP: wymusza pokazanie modala z nowymi wydarzeniami przy każdym wejściu do aplikacji (do prac nad designem)
+const FORCE_SHOW_NEW_EVENTS = true;
+
 function isWithinShowcaseWindow(event: IEvent): boolean {
   const startDate = safeParseDate(event.start_date);
   if (!startDate) return false;
@@ -25,6 +28,18 @@ function isWithinShowcaseWindow(event: IEvent): boolean {
   cutoff.setMonth(cutoff.getMonth() + MAX_MONTHS_AHEAD);
 
   return startDate <= cutoff;
+}
+
+function hasEventEnded(event: IEvent): boolean {
+  const endDate =
+    safeParseDate(event.end_date) ?? safeParseDate(event.start_date);
+  if (!endDate) return false;
+
+  return endDate.getTime() < Date.now();
+}
+
+function isEligibleForShowcase(event: IEvent): boolean {
+  return isWithinShowcaseWindow(event) && !hasEventEnded(event);
 }
 
 interface NewEventsContextType {
@@ -46,6 +61,16 @@ export function NewEventsProvider({ children }: { children: React.ReactNode }) {
 
     hasEvaluatedRef.current = true;
 
+    if (FORCE_SHOW_NEW_EVENTS) {
+      const showcaseEvents = events.filter(isEligibleForShowcase);
+      setNewEvents(
+        showcaseEvents.length > 0
+          ? showcaseEvents
+          : events.filter((event) => !hasEventEnded(event)),
+      );
+      return;
+    }
+
     const evaluate = async () => {
       const currentIds = events.map((event) => event.id);
       const knownIds = await knownEventIdsStorage.get();
@@ -57,7 +82,7 @@ export function NewEventsProvider({ children }: { children: React.ReactNode }) {
 
       const knownSet = new Set(knownIds);
       const freshEvents = events.filter(
-        (event) => !knownSet.has(event.id) && isWithinShowcaseWindow(event),
+        (event) => !knownSet.has(event.id) && isEligibleForShowcase(event),
       );
 
       await knownEventIdsStorage.set(currentIds);
