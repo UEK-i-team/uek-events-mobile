@@ -9,10 +9,23 @@ import React, {
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { AsyncStorageService } from "@/shared/storage/async-storage-service/async-storage-service";
 import { IEvent } from "@/shared/types/event";
+import { safeParseDate } from "@/utils/functions/event-utils";
 
 const knownEventIdsStorage = new AsyncStorageService<number[]>(
   "daily-showcase-known-event-ids",
 );
+
+const MAX_MONTHS_AHEAD = 2;
+
+function isWithinShowcaseWindow(event: IEvent): boolean {
+  const startDate = safeParseDate(event.start_date);
+  if (!startDate) return false;
+
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() + MAX_MONTHS_AHEAD);
+
+  return startDate <= cutoff;
+}
 
 interface NewEventsContextType {
   newEvents: IEvent[];
@@ -43,7 +56,9 @@ export function NewEventsProvider({ children }: { children: React.ReactNode }) {
       }
 
       const knownSet = new Set(knownIds);
-      const freshEvents = events.filter((event) => !knownSet.has(event.id));
+      const freshEvents = events.filter(
+        (event) => !knownSet.has(event.id) && isWithinShowcaseWindow(event),
+      );
 
       await knownEventIdsStorage.set(currentIds);
 
