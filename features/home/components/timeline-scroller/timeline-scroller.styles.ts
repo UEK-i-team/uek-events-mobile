@@ -67,11 +67,11 @@ container: {
     backgroundColor: '#EAEAEA',
   },
   dateBoxInactiveDark: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: '#E9E9E9',
   },
   dateBoxEmpty: {
     width: 36,
-    Height: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
+    height: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
     paddingBottom: 14, // Push the text up to match the visual center of the 48px box
     borderRadius: 10,
     justifyContent: 'center',
@@ -89,7 +89,7 @@ container: {
     color: '#687076',
   },
   dayTextInactiveDark: {
-    color: '#9BA1A6',
+    color: '#111111',
   },
   dayTextEmptyLight: {
     fontSize: 15,

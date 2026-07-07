@@ -1,4 +1,4 @@
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { DefaultTheme, ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
 import { Stack, useRouter } from "expo-router";
 import * as Notifications from "expo-notifications";
 import * as SplashScreen from "expo-splash-screen";
@@ -24,7 +24,7 @@ import {
 } from "@/features/daily-events";
 import { EventContext, EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
-import { theme } from "@/shared/constants/theme";
+import { ThemeProvider as AppThemeProvider, useTheme } from "@/shared/context/ThemeContext";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -121,6 +121,24 @@ function AppContent() {
   );
 }
 
+function ThemedApp() {
+  const { isDarkMode, colors } = useTheme();
+
+  return (
+    <ViewedEventsProvider>
+      <FiltersProvider>
+        <BottomSheetModalProvider>
+          <AppContent />
+          <StatusBar
+            style={isDarkMode ? "light" : "dark"}
+            backgroundColor={colors.mainBackground}
+          />
+        </BottomSheetModalProvider>
+      </FiltersProvider>
+    </ViewedEventsProvider>
+  );
+}
+
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -128,19 +146,11 @@ export default function RootLayout() {
         <NotificationProvider>
           <EventContextProvider>
             <NewEventsProvider>
-              <ThemeProvider value={DefaultTheme}>
-                <ViewedEventsProvider>
-                  <FiltersProvider>
-                    <BottomSheetModalProvider>
-                      <AppContent />
-                      <StatusBar
-                        style="dark"
-                        backgroundColor={theme.light.mainBackground}
-                      />
-                    </BottomSheetModalProvider>
-                  </FiltersProvider>
-                </ViewedEventsProvider>
-              </ThemeProvider>
+              <NavigationThemeProvider value={DefaultTheme}>
+                <AppThemeProvider>
+                  <ThemedApp />
+                </AppThemeProvider>
+              </NavigationThemeProvider>
             </NewEventsProvider>
           </EventContextProvider>
         </NotificationProvider>

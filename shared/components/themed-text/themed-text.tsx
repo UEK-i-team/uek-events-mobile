@@ -1,4 +1,5 @@
 import { Text, type TextProps } from "react-native";
+import { useTheme } from "@/shared/context/ThemeContext";
 import { styles } from "./themed-text.styles";
 
 export type ThemedTextProps = TextProps & {
@@ -14,10 +15,13 @@ export function ThemedText({
   type = "default",
   ...rest
 }: ThemedTextProps) {
+  const { colors, isDarkMode } = useTheme();
+  const color = isDarkMode ? darkColor ?? colors.textPrimary : lightColor ?? colors.textPrimary;
+
   return (
     <Text
       style={[
-        { color: "#000" },
+        { color },
         type === "default" ? styles.default : undefined,
         type === "title" ? styles.title : undefined,
         type === "defaultSemiBold" ? styles.defaultSemiBold : undefined,

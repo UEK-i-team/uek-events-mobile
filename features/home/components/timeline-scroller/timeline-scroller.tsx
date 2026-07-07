@@ -10,13 +10,13 @@ import {
   Animated,
   FlatList,
   Pressable,
-  useColorScheme,
   useWindowDimensions,
   View,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from "react-native";
 import { styles } from "./timeline-scroller.styles";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 const getCurrentDate = () => new Date();
 
@@ -161,8 +161,7 @@ export function TimelineScroller({
   visibleEventId,
 }: TimelineScrollerProps) {
   const { fontScale, width: windowWidth } = useWindowDimensions();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
+  const { isDarkMode } = useTheme();
   const scrollRef = useRef<FlatList>(null);
 
   // State to track the currently most visible month in the scroll view
@@ -380,7 +379,7 @@ export function TimelineScroller({
                     style={[
                       styles.monthTextSide,
                       isMain && styles.monthTextActive,
-                      isDark
+                      isDarkMode
                         ? styles.monthTextSideDark
                         : styles.monthTextSideLight,
                     ]}
@@ -433,7 +432,7 @@ export function TimelineScroller({
               isDaySelected={isDaySelected}
               itemWidth={ITEM_WIDTH_PX}
               visibleEventId={visibleEventId}
-              isDark={isDark}
+              isDark={isDarkMode}
             />
           );
         }}

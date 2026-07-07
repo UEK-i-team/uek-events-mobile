@@ -8,10 +8,10 @@ import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { styles } from "./favorite-event-card.styles";
 import { formatEventDate, formatEventTime, isEventPassed } from "@/utils/functions/date-utils";
-import { theme, getTagColor } from "@/shared/constants/theme";
+import { getTagColor } from "@/shared/constants/theme";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 const MAX_VISIBLE_TAGS = 2;
-const PASSED_TAG_COLOR = "#BDBDBD";
 
 interface FavoriteEventCardProps {
   event: IEvent;
@@ -20,6 +20,7 @@ interface FavoriteEventCardProps {
 
 export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const router = useRouter();
+  const { colors } = useTheme();
 
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
 
@@ -28,7 +29,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, { backgroundColor: colors.light_grey }]}
       activeOpacity={0.9}
       onPress={() => router.push(`/event/${event.id}`)}
     >
@@ -48,7 +49,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
+          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2} ellipsizeMode="tail">
             {event.title}
           </Text>
 
@@ -57,10 +58,10 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
               <CalendarIcon
                 width={18}
                 height={18}
-                fill="#111111"
-                color="#111111"
+                fill={colors.textSecondary}
+                color={colors.textSecondary}
               />
-              <Text style={styles.dateText}>
+              <Text style={[styles.dateText, { color: colors.textSecondary }]}>
                 {formatEventDate(event.start_date)}
               </Text>
             </View>
@@ -68,10 +69,10 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
               <ClockIcon
                 width={18}
                 height={18}
-                fill="#111111"
-                color="#111111"
+                fill={colors.textSecondary}
+                color={colors.textSecondary}
               />
-              <Text style={styles.dateText}>
+              <Text style={[styles.dateText, { color: colors.textSecondary }]}>
                 {formatEventTime(event.start_date)}
               </Text>
             </View>
@@ -84,10 +85,10 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
           <View
             style={[
               styles.tag,
-              { backgroundColor: theme.light.dark_grey },
+              { backgroundColor: colors.dark_grey },
             ]}
           >
-            <Text style={[styles.tagText, { color: theme.light.ligth_grey }]}>
+            <Text style={[styles.tagText, { color: colors.light_grey }]}>
               {event.event_type}
             </Text>
           </View>
@@ -101,18 +102,18 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
               styles.tag,
               {
                 backgroundColor: eventHasPassed
-                  ? PASSED_TAG_COLOR
+                      ? colors.light_grey
                   : getTagColor(tag)
               },
             ]}
           >
-            <Text style={styles.tagText}>{tag}</Text>
+            <Text style={[styles.tagText, { color: colors.dark_grey }]}>{tag}</Text>
           </View>
         ))}
 
         {remainingTagsCount > 0 && (
           <View style={styles.remainingBadge}>
-            <Text style={styles.remainingText}>
+            <Text style={[styles.remainingText, { color: colors.textPrimary }]}>
               +{remainingTagsCount}
             </Text>
           </View>

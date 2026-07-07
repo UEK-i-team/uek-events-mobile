@@ -18,6 +18,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { BackHandler, StyleSheet, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 interface FiltersBottomSheetProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ interface FiltersBottomSheetProps {
 export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps) {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const scrollRef = useRef<any>(null);
+  const { colors } = useTheme();
 
   const isClosingRef = useRef(false);
   const sheetIndexRef = useRef<number>(-1);
@@ -111,8 +113,8 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       onChange={handleChange}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
-      backgroundStyle={styles.bg}
-      handleIndicatorStyle={styles.handle}
+      backgroundStyle={[styles.bg, { backgroundColor: colors.surface }]}
+      handleIndicatorStyle={[styles.handle, { backgroundColor: colors.textSecondary }]}
     >
       <BottomSheetScrollView ref={scrollRef} contentContainerStyle={styles.content}>
         <ThemedText style={styles.title}>Filtry</ThemedText>
@@ -155,9 +157,13 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
                 <TouchableOpacity
                   key={tag}
                   onPress={() => toggleTag(tag)}
-                  style={[styles.tag, selected && styles.tagActive]}
+                  style={[
+                    styles.tag,
+                    { borderColor: colors.textSecondary },
+                    selected && [styles.tagActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+                  ]}
                 >
-                  <ThemedText style={{ color: selected ? "#fff" : "#000" }}>
+                  <ThemedText style={{ color: selected ? "#fff" : colors.textPrimary }}>
                     {eventTagTranslations[tag]}
                   </ThemedText>
                 </TouchableOpacity>
@@ -166,8 +172,8 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
           </View>
         </Section>
 
-        <TouchableOpacity style={styles.clear} onPress={clearFilters}>
-          <ThemedText>Wyczyść</ThemedText>
+        <TouchableOpacity style={[styles.clear, { borderColor: colors.textSecondary }]} onPress={clearFilters}>
+          <ThemedText style={{ color: colors.textPrimary }}>Wyczyść</ThemedText>
         </TouchableOpacity>
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -185,9 +191,11 @@ function Section({ title, children }: any) {
 }
 
 function Checkbox({ label, selected, onPress }: any) {
+  const { colors } = useTheme();
+
   return (
     <TouchableOpacity style={styles.row} onPress={onPress}>
-      <View style={[styles.checkbox, selected && styles.checkboxActive]}>
+      <View style={[styles.checkbox, { borderColor: colors.textSecondary }, selected && [styles.checkboxActive, { backgroundColor: colors.primary, borderColor: colors.primary }]]}>
         {selected && <MaterialIcons name="check" size={16} color="#fff" />}
       </View>
       <ThemedText>{label}</ThemedText>

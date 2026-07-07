@@ -2,8 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
 import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
-import { theme } from "@/shared/constants/theme";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
+import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
 import { useAppliedFilters } from "@/features/filters/contexts";
 import { eventTagTranslations } from "@/shared/types/event-enums";
@@ -18,6 +18,7 @@ import { safeParseDate } from "@/utils/functions/event-utils";
 export default function HomeView() {
   const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
+  const { colors } = useTheme();
   const { appliedCategories, appliedLocations, appliedTags } = useAppliedFilters();
 
   const events = useMemo(() => {
@@ -88,7 +89,7 @@ export default function HomeView() {
     <SafeAreaView
       style={[
         styles.container,
-        { backgroundColor: theme.light.mainBackground },
+        { backgroundColor: colors.mainBackground },
       ]}
       edges={["top"]}
     >
@@ -107,16 +108,19 @@ export default function HomeView() {
         }}
       >
         {status === "loading" ? (
-          <HomeLoadingState />
+          <HomeLoadingState colors={colors} />
         ) : status === "offline_no_data" ? (
           <OfflineNoDataPlaceholder
             title="Brak danych offline"
             subtitle="Włącz internet, a wydarzenia pojawią się automatycznie."
           />
         ) : status === "error" ? (
-          <HomeErrorState message={errorMessage ?? null} />
+          <HomeErrorState message={errorMessage ?? null} colors={colors} />
         ) : events?.length === 0 ? (
-          <HomeEmptyState isFiltered={allEvents ? allEvents.length > 0 : false} />
+          <HomeEmptyState
+            isFiltered={allEvents ? allEvents.length > 0 : false}
+            colors={colors}
+          />
         ) : events && containerHeight > 0 ? (
           <FlatList
             ref={flatListRef}
@@ -153,38 +157,50 @@ export default function HomeView() {
   );
 }
 
-const HomeLoadingState = () => (
+const HomeLoadingState = ({ colors }: { colors: { primary: string; textSecondary: string } }) => (
   <View style={styles.emptyContainer}>
-    <ActivityIndicator size="large" color="#000000" />
-    <ThemedText style={[styles.emptyText, { color: "#666666", marginTop: 16 }]}>
+    <ActivityIndicator size="large" color={colors.primary} />
+    <ThemedText style={[styles.emptyText, { color: colors.textSecondary, marginTop: 16 }]}>
       Ładowanie wydarzeń...
     </ThemedText>
   </View>
 );
 
-const HomeErrorState = ({ message }: { message: string | null }) => (
+const HomeErrorState = ({
+  message,
+  colors,
+}: {
+  message: string | null;
+  colors: { red_regular: string; textSecondary: string };
+}) => (
   <View style={styles.emptyContainer}>
-    <ThemedText style={[styles.emptyText, { color: "#d32f2f" }]}>
+    <ThemedText style={[styles.emptyText, { color: colors.red_regular }]}>
       Wystąpił błąd podczas ładowania wydarzeń
     </ThemedText>
     <ThemedText
-      style={[styles.emptyText, { color: "#666666", marginTop: 8, fontSize: 14 }]}
+      style={[styles.emptyText, { color: colors.textSecondary, marginTop: 8, fontSize: 14 }]}
     >
       {message}
     </ThemedText>
   </View>
 );
 
-const HomeEmptyState = ({ isFiltered }: { isFiltered?: boolean }) => (
+const HomeEmptyState = ({
+  isFiltered,
+  colors,
+}: {
+  isFiltered?: boolean;
+  colors: { textMuted: string; textSecondary: string };
+}) => (
   <View style={styles.emptyContainer}>
     <ThemedText 
       adjustsFontSizeToFit 
       numberOfLines={1} 
-      style={{ fontSize: 120, lineHeight: 130, marginBottom: 24, fontWeight: "bold", color: "#999999", textAlign: "center" }}
+      style={{ fontSize: 120, lineHeight: 130, marginBottom: 24, fontWeight: "bold", color: colors.textMuted, textAlign: "center" }}
     >
       :(
     </ThemedText>
-    <ThemedText style={[styles.emptyText, { color: "#666666" }]}>
+    <ThemedText style={[styles.emptyText, { color: colors.textSecondary }]}>
       {isFiltered 
         ? "Nie znaleziono żadnych wydarzeń z wybranymi filtrami"
         : "Brak dostępnych wydarzeń"}

@@ -1,10 +1,8 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
 import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  Pressable,
   Text,
   TouchableOpacity,
   View,
@@ -14,13 +12,14 @@ import {
 import { useResizeDominantBackgroundColor } from "../../hooks/use-resize-dominant-background-color";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import { IEvent } from "@/shared/types/event";
-import { theme, getTagColor } from "@/shared/constants/theme";
+import { getTagColor } from "@/shared/constants/theme";
 import { isEventPassed, isMultiDayEvent } from "@/utils/functions/date-utils";
 import { Badge } from "../badge/badge";
 import { DateAndTime } from "../date-and-time/date-and-time";
 import { Location } from "../location/location";
 import { styles } from "./event-card.styles";
 import { EventImageContainer } from "@/shared/components/event-image-container/event-image-container";
+import { useTheme } from "@/shared/context/ThemeContext";
 
 
 interface EventCardProps {
@@ -42,6 +41,7 @@ export const EventCard = React.memo(function EventCard({
     fontScale,
   } = useWindowDimensions();
   const router = useRouter();
+  const { colors } = useTheme();
 
   // Extract date and image url
   const imageUrl =
@@ -105,6 +105,7 @@ export const EventCard = React.memo(function EventCard({
           {
             width: SCREEN_WIDTH,
             height: cardHeight,
+            backgroundColor: colors.surface,
           },
         ]}
       >
@@ -138,9 +139,9 @@ export const EventCard = React.memo(function EventCard({
           <RoundedButton
             icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
             iconColor={
-              event.isFavorite ? theme.light.red_regular : theme.light.dark_grey
+              event.isFavorite ? colors.red_regular : colors.dark_grey
             }
-            backgroundColor={event.isFavorite ? theme.light.red_light : "white"}
+            backgroundColor={event.isFavorite ? colors.red_light : colors.red_light}
             size="medium"
             onPress={handleFavoritePress}
             style={{
@@ -148,8 +149,8 @@ export const EventCard = React.memo(function EventCard({
               bottom: -16,
               right: 16,
               borderColor: event.isFavorite
-                ? theme.light.red_regular
-                : theme.light.mainBackground,
+                ? colors.red_regular
+                : colors.mainBackground,
               borderWidth: 1,
             }}
           />
@@ -159,6 +160,7 @@ export const EventCard = React.memo(function EventCard({
           <Text
             style={[
               styles.title,
+              { color: colors.textPrimary },
               isSmallScreen && { fontSize: 24, marginTop: 4 },
             ]}
             maxFontSizeMultiplier={1.2}
@@ -169,6 +171,7 @@ export const EventCard = React.memo(function EventCard({
             <Text
               style={[
                 styles.description,
+                { color: colors.textPrimary },
                 isSmallScreen && { fontSize: 16, marginTop: 4 },
               ]}
               numberOfLines={isVerySmallScreen ? 1 : 2}
