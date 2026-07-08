@@ -12,8 +12,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 12, 
     backgroundColor: theme.light.mainBackgroundLighter,
-    borderWidth: 1,
-    borderColor: '#11111',
   },
   textContainer: {
     flex: 1,

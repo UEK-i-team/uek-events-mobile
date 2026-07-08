@@ -29,7 +29,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.light_grey }]}
+      style={[styles.card, { backgroundColor: colors.mainBackgroundLighter }]}
       activeOpacity={0.9}
       onPress={() => router.push(`/event/${event.id}`)}
     >
@@ -49,7 +49,12 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
         </View>
 
         <View style={styles.content}>
-          <Text style={[styles.title, { color: colors.textPrimary }]} numberOfLines={2} ellipsizeMode="tail">
+          {/* Zabezpieczenie przed najeżdżaniem na X: paddingRight dodany wprost do tytułu */}
+          <Text
+            style={[styles.title, { color: colors.textPrimary, paddingRight: 24 }]}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
             {event.title}
           </Text>
 
@@ -81,35 +86,43 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
       </View>
 
       <View style={styles.tagsRow}>
+        {/* 1. Główny typ wydarzenia: Wymuszone stabilne ramki i tło */}
         {event.event_type && (
           <View
             style={[
               styles.tag,
-              { backgroundColor: colors.dark_grey },
+              {
+                backgroundColor: "#111111",
+                borderColor: "#111111",
+                borderWidth: 1,
+                borderStyle: "solid"
+              },
             ]}
           >
-            <Text style={[styles.tagText, { color: colors.light_grey }]}>
+            <Text style={[styles.tagText, { color: "#F4F3F2" }]}>
               {event.event_type}
             </Text>
           </View>
         )}
 
-
-        {visibleTags.map((tag) => (
-          <View
-            key={tag}
-            style={[
-              styles.tag,
-              {
-                backgroundColor: eventHasPassed
-                      ? colors.light_grey
-                  : getTagColor(tag)
-              },
-            ]}
-          >
-            <Text style={[styles.tagText, { color: colors.dark_grey }]}>{tag}</Text>
-          </View>
-        ))}
+        {visibleTags.map((tag) => {
+          const tagBgColor = getTagColor(tag, eventHasPassed);
+          return (
+            <View
+              key={tag}
+              style={[
+                styles.tag,
+                {
+                  backgroundColor: tagBgColor,
+                  borderColor: "#111111",
+                  borderWidth: .5,
+                },
+              ]}
+            >
+              <Text style={[styles.tagText, { color: "#111111" }]}>{tag}</Text>
+            </View>
+          );
+        })}
 
         {remainingTagsCount > 0 && (
           <View style={styles.remainingBadge}>
@@ -128,7 +141,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
         }}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Ionicons name="close" size={24} color="#111111" />
+        <Ionicons name="close" size={24} color={colors.textPrimary} />
       </TouchableOpacity>
     </TouchableOpacity>
   );
