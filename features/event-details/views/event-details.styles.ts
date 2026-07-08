@@ -133,8 +133,8 @@ export const styles = StyleSheet.create({
   tagChip: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 16,
+    borderWidth: .5,
     borderColor: '#11111',
   },
   tagChipText: {
