@@ -5,7 +5,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: .5,
     borderColor: '#11111',
     alignSelf: "flex-start",
   },
