@@ -23,6 +23,7 @@ import LocationIcon from "@/assets/icons/location.svg";
 import PersonIcon from "@/assets/icons/person-200.svg";
 import { InfoRow } from "@/features/event-details/components/info-row/info-row";
 import { useTheme } from "@/shared/context/ThemeContext";
+import { getTagColor } from "@/shared/constants/theme";
 import {
   formatEventTime,
   formatShareEventDate,
@@ -45,9 +46,6 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
     return <Text>Event not found</Text>;
   }
 
-  // Kolory z nowego update'u projektu
-  const colorsArray = ["#B4DEFF", "#FAE5FF", "#C3F2EC"];
-  const passedTagColor = colors.light_grey;
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
 
   const startDateFormatted = formatEventDateWithMonth(event.start_date);
@@ -76,7 +74,6 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.imageContainer}>
-          {/* Nowy wrapper obrazka z update'u */}
           <View style={[styles.imageWrapper, eventHasPassed && styles.passedImage]}>
             <Image
               source={{ uri: event.image_url }}
@@ -105,27 +102,14 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             />
             <RoundedButton
               icon={event.isFavorite ? HeartFilledIcon : HeartOutlineIcon}
-              iconColor={
-                event.isFavorite
-                  ? colors.red_regular
-                  : colors.dark_grey
-              }
-              backgroundColor={
-                event.isFavorite ? colors.red_light : colors.surface
-              }
+              iconColor={event.isFavorite ? colors.red_regular : "#111111"}
+              backgroundColor={event.isFavorite ? colors.red_light : "white"}
               size="medium"
               onPress={() => toggleFavoriteEvent(event.id, !event.isFavorite)}
-              style={
-                event.isFavorite
-                  ? {
-                      borderColor: colors.red_regular,
-                      borderWidth: 1,
-                    }
-                  : {
-                      borderColor: colors.mainBackground,
-                      borderWidth: 1,
-                    }
-              }
+              style={{
+                borderColor: event.isFavorite ? colors.red_regular : "#E1DDD9",
+                borderWidth: 1,
+              }}
             />
           </View>
           <View style={styles.positionBackButton}>
@@ -169,8 +153,8 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
 
            <View style={styles.tagsContainer}>
             {event.event_type && (
-              <View style={[styles.tagChip, { backgroundColor: colors.dark_grey }]}>
-                <Text style={[styles.tagChipText, { color: colors.light_grey }]}>
+              <View style={[styles.tagChip, { backgroundColor: "#111111" }]}>
+                <Text style={[styles.tagChipText, { color: "#F4F3F2" }]}>
                   {event.event_type}
                 </Text>
               </View>
@@ -182,13 +166,11 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
                 style={[
                   styles.tagChip,
                   {
-                    backgroundColor: eventHasPassed
-                      ? passedTagColor
-                      : colorsArray[index % colorsArray.length],
+                    backgroundColor: getTagColor(tag, eventHasPassed),
                   },
                 ]}
               >
-                <Text style={[styles.tagChipText, { color: colors.dark_grey }]}>
+                <Text style={[styles.tagChipText, { color: "#111111" }]}>
                   {tag}
                 </Text>
               </View>
