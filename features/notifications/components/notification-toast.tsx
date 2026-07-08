@@ -10,39 +10,26 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NotificationContext } from '../contexts/notification-context';
 import { NotificationType } from '../types';
+import { useTheme } from '@/shared/context/ThemeContext';
 
-interface NotificationConfig {
-  backgroundColor: string;
-  textColor: string;
-  icon: string | null;
-}
+const notificationIcons: Record<NotificationType, string | null> = {
+  info: null,
+  success: '✓',
+  error: '✕',
+  loading: '⟳',
+};
 
-const notificationConfigs: Record<NotificationType, NotificationConfig> = {
-  info: {
-    backgroundColor: '#3B82F6',
-    textColor: '#FFFFFF',
-    icon: null,
-  },
-  success: {
-    backgroundColor: '#10B981',
-    textColor: '#FFFFFF',
-    icon: '✓',
-  },
-  error: {
-    backgroundColor: '#EF4444',
-    textColor: '#FFFFFF',
-    icon: '✕',
-  },
-  loading: {
-    backgroundColor: '#8B5CF6',
-    textColor: '#FFFFFF',
-    icon: '⟳',
-  },
+const iconColors: Record<NotificationType, { light: string; dark: string }> = {
+  info: { light: '#3B82F6', dark: '#60A5FA' },
+  success: { light: '#059669', dark: '#34D399' },
+  error: { light: '#DC2626', dark: '#F87171' },
+  loading: { light: '#7C3AED', dark: '#A78BFA' },
 };
 
 export const NotificationToastContainer: React.FC = () => {
   const context = useContext(NotificationContext);
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
 
   const translateY = useSharedValue(-100);
   const opacity = useSharedValue(0);
@@ -81,7 +68,10 @@ export const NotificationToastContainer: React.FC = () => {
 
   if (!currentNotification) return null;
 
-  const config = notificationConfigs[currentNotification.type];
+  const icon = notificationIcons[currentNotification.type];
+  const iconColor = isDarkMode
+    ? iconColors[currentNotification.type].dark
+    : iconColors[currentNotification.type].light;
   const topOffset = insets.top + 10;
 
   return (
@@ -89,21 +79,24 @@ export const NotificationToastContainer: React.FC = () => {
       <Animated.View
         style={[
           styles.toast,
-          { backgroundColor: config.backgroundColor },
+          {
+            backgroundColor: colors.mainBackground,
+            borderColor: isDarkMode ? colors.textMuted : colors.border,
+          },
           animatedStyle,
         ]}
       >
         <View style={styles.content}>
-          {config.icon && (
-            <Text style={styles.icon}>{config.icon}</Text>
+          {icon && (
+            <Text style={[styles.icon, { color: iconColor }]}>{icon}</Text>
           )}
-          <Text style={[styles.message, { color: config.textColor }]} numberOfLines={2}>
+          <Text style={[styles.message, { color: colors.textPrimary }]} numberOfLines={2}>
             {currentNotification.message}
           </Text>
         </View>
         {currentNotification.type === 'loading' && (
           <View style={styles.loadingIndicator}>
-            <View style={styles.spinner} />
+            <View style={[styles.spinner, { borderColor: colors.textPrimary, borderTopColor: 'transparent' }]} />
           </View>
         )}
       </Animated.View>
@@ -128,7 +121,8 @@ const styles = StyleSheet.create({
     maxWidth: '90%',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
+    borderWidth: 0.5,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -161,8 +155,6 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
-    borderTopColor: 'transparent',
   },
 });
 

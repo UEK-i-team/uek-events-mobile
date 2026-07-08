@@ -51,6 +51,15 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 39,
   },
+  multiDayEventMarker: {
+    position: "absolute",
+    top: 26,
+    right: 24,
+    backgroundColor: theme.light.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 39,
+  },
   passedText: {
     color: "white",
     fontSize: 14,
@@ -86,6 +95,11 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 12,
+    marginTop: 20,
+  },
+  dateAndTimeColumnContainer: {
+    flexDirection: "column",
     gap: 12,
     marginTop: 20,
   },

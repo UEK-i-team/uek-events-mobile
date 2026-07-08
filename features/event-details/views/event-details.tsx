@@ -29,6 +29,7 @@ import {
   formatShareEventDate,
   formatEventDateWithMonth,
   isEventPassed,
+  isMultiDayEvent,
 } from "@/utils/functions/date-utils";
 
 export interface EventDetailsViewProps {
@@ -47,9 +48,12 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   }
 
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
+  const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);
 
   const startDateFormatted = formatEventDateWithMonth(event.start_date);
   const startTimeFormatted = formatEventTime(event.start_date);
+  const endDateFormatted = formatEventDateWithMonth(event.end_date);
+  const endTimeFormatted = formatEventTime(event.end_date);
 
   const onShare = async () => {
     try {
@@ -89,11 +93,15 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
               </>
             )}
           </View>
-          {eventHasPassed && (
+          {eventHasPassed ? (
             <View style={styles.passedEventMarker}>
               <Text style={styles.passedText}>Wydarzenie zakończone</Text>
             </View>
-          )}
+          ) : isMultiDay ? (
+            <View style={styles.multiDayEventMarker}>
+              <Text style={styles.passedText}>Wydarzenie wielodniowe</Text>
+            </View>
+          ) : null}
           <View style={styles.positionButtons}>
             <RoundedButton
               icon={ShareIcon}
@@ -102,13 +110,13 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             />
             <RoundedButton
               icon={event.isFavorite ? HeartFilledIcon : HeartOutlineIcon}
-              iconColor={event.isFavorite ? colors.red_regular : "#111111"}
-              backgroundColor={event.isFavorite ? colors.red_light : "white"}
+              iconColor={event.isFavorite ? colors.red_regular : colors.dark_grey}
+              backgroundColor={event.isFavorite ? colors.red_light : colors.red_ultra_light}
               size="medium"
               onPress={() => toggleFavoriteEvent(event.id, !event.isFavorite)}
               style={{
-                borderColor: event.isFavorite ? colors.red_regular : "#E1DDD9",
-                borderWidth: 1,
+                borderColor: event.isFavorite ? colors.red_regular : "#CBC8C4",
+                borderWidth: event.isFavorite ? 1 : 0.5,
               }}
             />
           </View>
@@ -125,10 +133,25 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
         <View style={styles.detailsContainer}>
           <Text style={[styles.title, { color: colors.textPrimary }]}>{event.title}</Text>
           <Text style={[styles.shortDesc, { color: colors.textPrimary }]}>{event.short_desc}</Text>
-          <View style={styles.dateAndTimeRowContainer}>
-            <InfoRow icon={CalendarIcon} text={startDateFormatted} />
-            <InfoRow icon={ScheduleIcon} text={startTimeFormatted} />
-          </View>
+          {isMultiDay ? (
+            <View style={styles.dateAndTimeColumnContainer}>
+              <InfoRow
+                icon={CalendarIcon}
+                label="Rozpoczęcie"
+                text={`${startDateFormatted}, ${startTimeFormatted}`}
+              />
+              <InfoRow
+                icon={ScheduleIcon}
+                label="Zakończenie"
+                text={`${endDateFormatted}, ${endTimeFormatted}`}
+              />
+            </View>
+          ) : (
+            <View style={styles.dateAndTimeRowContainer}>
+              <InfoRow icon={CalendarIcon} text={startDateFormatted} />
+              <InfoRow icon={ScheduleIcon} text={startTimeFormatted} />
+            </View>
+          )}
           <View style={styles.locationRowContainerAndOrganizerRowContainer}>
             <InfoRow icon={LocationIcon} text={event.location} />
           </View>

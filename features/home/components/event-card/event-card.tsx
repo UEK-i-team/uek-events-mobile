@@ -140,16 +140,15 @@ export const EventCard = React.memo(function EventCard({
          iconColor={
              event.isFavorite ? colors.red_regular : colors.dark_grey
              }
-         backgroundColor={event.isFavorite ? colors.red_light : "white"}
+         backgroundColor={event.isFavorite ? colors.red_light : colors.red_ultra_light}
          size="medium"
          onPress={handleFavoritePress}
             style={{
           position: "absolute",
          bottom: -16,
          right: 16,
-         borderColor: event.isFavorite ? colors.red_regular : "#E1DDD9",
-         borderWidth: 1,
-         borderStyle: "solid",
+         borderColor: event.isFavorite ? colors.red_regular : "#CBC8C4",
+         borderWidth: event.isFavorite ? 1 : 0.5,
   }}
 />
         </View>
