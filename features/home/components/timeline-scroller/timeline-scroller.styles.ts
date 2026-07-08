@@ -57,7 +57,7 @@ container: {
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-    borderWidth:1,
+    borderWidth: .5,
     borderColor: '#111111',
   },
   dateBoxActive: {
