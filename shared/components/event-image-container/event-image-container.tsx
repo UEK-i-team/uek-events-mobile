@@ -8,7 +8,9 @@ interface EventImageContainerProps {
   height?: number;
   extractedColor?: string;
   cornerRadius?: number;
-  customWidth?: number; 
+  customWidth?: number;
+  // Gdy true, obrazek wypełnia rodzica zamiast liczyć własne wymiary z proporcji.
+  fill?: boolean;
 }
 
 export const EventImageContainer: React.FC<EventImageContainerProps> = ({
@@ -18,6 +20,7 @@ export const EventImageContainer: React.FC<EventImageContainerProps> = ({
   extractedColor,
   cornerRadius = 16,
   customWidth,
+  fill = false,
 }) => {
   const { width: screenWidth } = useWindowDimensions();
 
@@ -44,9 +47,10 @@ export const EventImageContainer: React.FC<EventImageContainerProps> = ({
     <View
       style={[
         styles.container,
+        fill
+          ? { width: '100%', height: '100%' }
+          : { width: columnWidth, height: calculatedHeight },
         {
-          width: columnWidth,
-          height: calculatedHeight,
           backgroundColor: extractedColor || '#E1DDD9',
           borderRadius: cornerRadius,
         },

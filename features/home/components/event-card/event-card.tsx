@@ -71,15 +71,11 @@ export const EventCard = React.memo(function EventCard({
 
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
   const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);
-  let imageHeight = 0;
 
-  if(isVerySmallScreen){
-    imageHeight = 180;
-  } else if(cardHeight > 560){
-    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.40));
-  } else {
-    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.32));
-  }
+  // Minimalna wysokość obrazka - zabezpiecza małe ekrany, żeby zostało
+  // miejsce na tekst. Na większych ekranach obrazek rośnie (flex: 1),
+  // wypełniając wolną przestrzeń pod kartą.
+  const minImageHeight = isVerySmallScreen ? 150 : 180;
 
   const imageWidth = SCREEN_WIDTH - 32;
 
@@ -108,15 +104,15 @@ export const EventCard = React.memo(function EventCard({
           },
         ]}
       >
-        <View style={[styles.imageContainer, { height: imageHeight }]}>
+        <View style={[styles.imageContainer, { flex: 1, minHeight: minImageHeight }]}>
           <View style={[styles.image, eventHasPassed && styles.passedImage]}>
             <EventImageContainer
               imageUrl={imageUrl}
               width={imageWidth}
-              height={imageHeight}
               extractedColor={dominantColor}
               customWidth={imageWidth}
               cornerRadius={30}
+              fill
             />
             {eventHasPassed && (
               <>
