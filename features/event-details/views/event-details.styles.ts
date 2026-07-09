@@ -157,7 +157,7 @@ export const styles = StyleSheet.create({
   },
   stickyBottomContainer: {
     position: "absolute",
-    bottom: 24,
+    bottom: 50,
     left: 0,
     right: 0,
     paddingHorizontal: 24,
