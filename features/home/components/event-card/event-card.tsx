@@ -28,7 +28,7 @@ interface EventCardProps {
   toggleFavorite: (eventId: number, isFavorite: boolean) => void;
 }
 
-const MAX_VISIBLE_TAGS = 4;
+const MAX_VISIBLE_TAGS = 3;
 
 export const EventCard = React.memo(function EventCard({
   event,
