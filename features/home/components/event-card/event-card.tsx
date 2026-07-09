@@ -202,7 +202,7 @@ export const EventCard = React.memo(function EventCard({
                 name={`+${remainingTagsCount}`}
                 color="#EAEAEA"
                 textColor="#111111"
-                style={{ borderWidth: 1, borderColor: "#111111" }}
+                style={{ borderWidth: .5, borderColor: "#111111" }}
               />
             )}
           </View>
