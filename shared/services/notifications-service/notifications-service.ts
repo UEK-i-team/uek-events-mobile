@@ -77,7 +77,6 @@ export class NotificationsService {
         },
         identifier: event.id.toString(),
       });
-      console.log(`Scheduling notification for event ${event.id} at ${triggerDate.toString()}`);
     } catch (e: any) {
       console.error("Failed to schedule notification:", e);
     }
@@ -86,7 +85,6 @@ export class NotificationsService {
   async cancelEventReminder(eventId: number): Promise<void> {
     try {
       await Notifications.cancelScheduledNotificationAsync(eventId.toString());
-      console.log(`Cancelled notification for event ${eventId}`);
     } catch (e) {
       console.error("Failed to cancel scheduled notification:", e);
     }

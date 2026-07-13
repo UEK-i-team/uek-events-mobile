@@ -17,6 +17,7 @@ export interface AppThemeColors {
   dark_grey: string;
   backgroundDeep: string;
   red_light: string;
+  red_ultra_light: string;
   red_regular: string;
 }
 
@@ -41,6 +42,7 @@ export const lightThemeColors: AppThemeColors = {
   dark_grey: "#111111",
   backgroundDeep: "#D9D9D9",
   red_light: "#FFE7E7",
+  red_ultra_light: "#FFF9F9",
   red_regular: "#FF5252",
 };
 
@@ -60,6 +62,7 @@ export const darkThemeColors: AppThemeColors = {
   dark_grey: "#111111",
   backgroundDeep: "#000000",
   red_light: "#F4F3F2",
+  red_ultra_light: "#FFFAFA",
   red_regular: "#FF5252",
 };
 

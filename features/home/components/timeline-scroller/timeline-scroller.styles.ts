@@ -67,7 +67,7 @@ container: {
     backgroundColor: '#EAEAEA',
   },
   dateBoxInactiveDark: {
-    backgroundColor: '#E9E9E9',
+    backgroundColor: '#A0A0A0',
   },
   dateBoxEmpty: {
     width: 36,
@@ -121,6 +121,6 @@ container: {
     backgroundColor: '#4A4A4A',
   },
   dotInactiveDark: {
-    backgroundColor: '#A0A0A0',
+    backgroundColor: '#E9E9E9',
   },
 });

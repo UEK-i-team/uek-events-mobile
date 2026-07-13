@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: "UEK Eventuje",
+    name: "Eventuje",
     slug: "uek-events-mobile",
     version: "1.0.0",
     orientation: "portrait",

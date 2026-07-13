@@ -12,10 +12,10 @@ export const styles = StyleSheet.create({
     overflow: "hidden",
     flexDirection: "column",
     paddingHorizontal: 16,
+    paddingTop: 24,
   },
   imageContainer: {
     width: "100%",
-    height: 240,
     backgroundColor: "#000",
     borderRadius: 30,
   },
@@ -45,6 +45,7 @@ export const styles = StyleSheet.create({
   },
   infoContainer: {
     paddingHorizontal: 10,
+    paddingBottom: 32,
   },
   // passedOverlay: {
   //   position: "absolute",

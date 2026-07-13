@@ -71,15 +71,11 @@ export const EventCard = React.memo(function EventCard({
 
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
   const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);
-  let imageHeight = 0;
 
-  if(isVerySmallScreen){
-    imageHeight = 180;
-  } else if(cardHeight > 560){
-    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.40));
-  } else {
-    imageHeight = Math.max(160, Math.min(220, cardHeight * 0.32));
-  }
+  // Minimalna wysokość obrazka - zabezpiecza małe ekrany, żeby zostało
+  // miejsce na tekst. Na większych ekranach obrazek rośnie (flex: 1),
+  // wypełniając wolną przestrzeń pod kartą.
+  const minImageHeight = isVerySmallScreen ? 150 : 180;
 
   const imageWidth = SCREEN_WIDTH - 32;
 
@@ -108,15 +104,15 @@ export const EventCard = React.memo(function EventCard({
           },
         ]}
       >
-        <View style={[styles.imageContainer, { height: imageHeight }]}>
+        <View style={[styles.imageContainer, { flex: 1, minHeight: minImageHeight }]}>
           <View style={[styles.image, eventHasPassed && styles.passedImage]}>
             <EventImageContainer
               imageUrl={imageUrl}
               width={imageWidth}
-              height={imageHeight}
               extractedColor={dominantColor}
               customWidth={imageWidth}
               cornerRadius={30}
+              fill
             />
             {eventHasPassed && (
               <>
@@ -140,16 +136,15 @@ export const EventCard = React.memo(function EventCard({
          iconColor={
              event.isFavorite ? colors.red_regular : colors.dark_grey
              }
-         backgroundColor={event.isFavorite ? colors.red_light : "white"}
+         backgroundColor={event.isFavorite ? colors.red_light : colors.red_ultra_light}
          size="medium"
          onPress={handleFavoritePress}
             style={{
           position: "absolute",
          bottom: -16,
          right: 16,
-         borderColor: event.isFavorite ? colors.red_regular : "#E1DDD9",
-         borderWidth: 1,
-         borderStyle: "solid",
+         borderColor: event.isFavorite ? colors.red_regular : "#CBC8C4",
+         borderWidth: event.isFavorite ? 1 : 0.5,
   }}
 />
         </View>
@@ -207,7 +202,7 @@ export const EventCard = React.memo(function EventCard({
                 name={`+${remainingTagsCount}`}
                 color="#EAEAEA"
                 textColor="#111111"
-                style={{ borderWidth: 1, borderColor: "#111111" }}
+                style={{ borderWidth: .5, borderColor: "#111111" }}
               />
             )}
           </View>
