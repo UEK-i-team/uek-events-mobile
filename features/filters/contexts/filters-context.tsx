@@ -6,12 +6,12 @@ interface FiltersContextType {
   openFilters: () => void;
   closeFilters: () => void;
   // Filtry
-  selectedCategories: EventCategory[];
-  selectedLocations: EventLocation[];
+  selectedCategories: string[];
+  selectedLocations: string[];
   selectedTags: EventTag[];
   // Akcje
-  toggleCategory: (category: EventCategory) => void;
-  toggleLocation: (location: EventLocation) => void;
+  toggleCategory: (category: string) => void;
+  toggleLocation: (location: string) => void;
   toggleTag: (tag: EventTag) => void;
   clearFilters: () => void;
   applyFilters: () => void;
@@ -21,11 +21,11 @@ const FiltersContext = createContext<FiltersContextType | undefined>(undefined);
 
 export function FiltersProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
-  const [selectedLocations, setSelectedLocations] = useState<EventLocation[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
-  const [appliedCategories, setAppliedCategories] = useState<EventCategory[]>([]);
-  const [appliedLocations, setAppliedLocations] = useState<EventLocation[]>([]);
+  const [appliedCategories, setAppliedCategories] = useState<string[]>([]);
+  const [appliedLocations, setAppliedLocations] = useState<string[]>([]);
   const [appliedTags, setAppliedTags] = useState<EventTag[]>([]);
 
   const openFilters = () => {
@@ -40,7 +40,7 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     setIsOpen(false);
   };
 
-  const toggleCategory = (category: EventCategory) => {
+  const toggleCategory = (category: string) => {
     setSelectedCategories(prev => {
       const newCategories = prev.includes(category)
         ? prev.filter(c => c !== category)
@@ -51,7 +51,7 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const toggleLocation = (location: EventLocation) => {
+  const toggleLocation = (location: string) => {
     setSelectedLocations(prev => {
       const newLocations = prev.includes(location)
         ? prev.filter(l => l !== location)
@@ -130,8 +130,8 @@ export function useFilters() {
 // Hook do uzyskania zastosowanych filtrów (dla filtrowania wydarzeń)
 // Musimy dodać to do kontekstu
 interface AppliedFiltersContextType {
-  appliedCategories: EventCategory[];
-  appliedLocations: EventLocation[];
+  appliedCategories: string[];
+  appliedLocations: string[];
   appliedTags: EventTag[];
 }
 

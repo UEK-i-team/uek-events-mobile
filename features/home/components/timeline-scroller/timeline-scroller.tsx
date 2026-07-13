@@ -376,6 +376,7 @@ export function TimelineScroller({
                   style={{ transform: [{ translateX: stickyTranslateX }] }}
                 >
                   <ThemedText
+                    numberOfLines={1}
                     style={[
                       styles.monthTextSide,
                       isMain && styles.monthTextActive,

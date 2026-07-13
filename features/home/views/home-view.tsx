@@ -26,17 +26,18 @@ export default function HomeView() {
     if (!allEvents) return allEvents;
 
     return allEvents.filter((event) => {
+      const eventType = event.event_type_raw || event.event_type;
       if (
         appliedCategories.length > 0 &&
-        !appliedCategories.includes(event.event_type as any)
+        !appliedCategories.includes(eventType as any)
       ) {
         return false;
       }
 
+      const locationCategory = event.location_category_raw || event.location_category;
       if (
         appliedLocations.length > 0 &&
-        !appliedLocations.includes(event.location_category as any) &&
-        !(appliedLocations.includes("ON_UEK_CAMPUS" as any) && event.location_category === "CAM")
+        !appliedLocations.includes(locationCategory as any)
       ) {
         return false;
       }
@@ -201,7 +202,7 @@ const HomeEmptyState = ({
     <ThemedText
       adjustsFontSizeToFit
       numberOfLines={1}
-      style={{ fontSize: 120, lineHeight: 130, marginBottom: 24, fontWeight: "bold", color: colors.textMuted, textAlign: "center" }}
+      style={{ fontSize: 120, lineHeight: 150, marginBottom: 24, fontWeight: "bold", color: colors.textMuted, textAlign: "center" }}
     >
       :(
     </ThemedText>

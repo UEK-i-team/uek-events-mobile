@@ -2,12 +2,10 @@ import { useFilters } from "@/features/filters/contexts";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import {
-  EventCategory,
-  EventLocation,
   EventTag,
-  eventCategoryTranslations,
   eventTagTranslations,
 } from "@/shared/types/event-enums";
+import { EventContext } from "@/shared/context/EventContext/EventContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   BottomSheetModal,
@@ -42,6 +40,24 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
     toggleTag,
     clearFilters,
   } = useFilters();
+
+  const { events, dictionaries } = React.useContext(EventContext);
+
+  const availableCategories = useMemo(() => {
+    if (!dictionaries?.event_types) return [];
+    return Object.entries(dictionaries.event_types).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [dictionaries]);
+
+  const availableLocations = useMemo(() => {
+    if (!dictionaries?.event_location) return [];
+    return Object.entries(dictionaries.event_location).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [dictionaries]);
 
   const snapPoints = useMemo(() => ["70%", "95%"], []);
 
@@ -128,23 +144,24 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
 
         {/* CATEGORY */}
         <Section title="Typ wydarzenia">
-          {Object.values(EventCategory).map((c) => (
+          {availableCategories.map((c) => (
             <Checkbox
-              key={c}
-              label={eventCategoryTranslations[c]}
-              selected={selectedCategories.includes(c)}
-              onPress={() => toggleCategory(c)}
+              key={c.value}
+              label={c.label}
+              selected={selectedCategories.includes(c.value)}
+              onPress={() => toggleCategory(c.value)}
             />
           ))}
+          {availableCategories.length === 0 && (
+            <ThemedText style={{ color: colors.textSecondary, fontSize: 14 }}>
+              Brak kategorii do wyboru
+            </ThemedText>
+          )}
         </Section>
 
         {/* LOCATION */}
         <Section title="Format">
-          {[
-            { value: EventLocation.OnUekCampus, label: "Stacjonarne" },
-            { value: EventLocation.Online, label: "Online" },
-            { value: EventLocation.Hybrid, label: "Hybrydowe" },
-          ].map(({ value, label }) => (
+          {availableLocations.map(({ value, label }) => (
             <Checkbox
               key={value}
               label={label}
@@ -152,6 +169,11 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
               onPress={() => toggleLocation(value)}
             />
           ))}
+          {availableLocations.length === 0 && (
+            <ThemedText style={{ color: colors.textSecondary, fontSize: 14 }}>
+              Brak formatów do wyboru
+            </ThemedText>
+          )}
         </Section>
 
         {/* TAGS */}
