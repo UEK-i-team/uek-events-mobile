@@ -47,6 +47,21 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
     [events],
   );
 
+  const initialScrollIndex = useMemo(() => {
+    if (!events || events.length === 0) return 0;
+    if (visibleEventId) {
+      const idx = events.findIndex(e => e.id === visibleEventId);
+      if (idx !== -1) return idx;
+    }
+    return nearestFutureEventIndex;
+  }, [events, visibleEventId, nearestFutureEventIndex]);
+
+  useEffect(() => {
+    if (!events || events.length === 0) {
+      setHasScrolledInitial(false);
+    }
+  }, [events]);
+
   useEffect(() => {
     if (
       events &&
@@ -60,7 +75,7 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
       // before enforcing the perfectly aligned scroll offset.
       setTimeout(() => {
         flatListRef.current?.scrollToIndex({
-          index: nearestFutureEventIndex,
+          index: initialScrollIndex,
           animated: false,
         });
       }, 150);
@@ -69,7 +84,7 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
     events,
     containerHeight,
     hasScrolledInitial,
-    nearestFutureEventIndex,
+    initialScrollIndex,
     flatListRef,
   ]);
 
@@ -127,6 +142,7 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
     setContainerHeight,
     selectedDate,
     visibleEventId,
+    initialScrollIndex,
     nearestFutureEventIndex,
     handleDateSelect,
     viewabilityConfig,

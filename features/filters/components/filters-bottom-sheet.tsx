@@ -117,7 +117,14 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       handleIndicatorStyle={[styles.handle, { backgroundColor: colors.textSecondary }]}
     >
       <BottomSheetScrollView ref={scrollRef} contentContainerStyle={styles.content}>
-        <ThemedText style={styles.title}>Filtry</ThemedText>
+        <View style={styles.header}>
+          <ThemedText style={styles.title}>Filtry</ThemedText>
+          <TouchableOpacity onPress={clearFilters}>
+            <ThemedText style={{ color: colors.primary, fontSize: 14, fontWeight: "bold" }}>
+              Wyczyść
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
 
         {/* CATEGORY */}
         <Section title="Typ wydarzenia">
@@ -172,9 +179,6 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
           </View>
         </Section>
 
-        <TouchableOpacity style={[styles.clear, { borderColor: colors.textSecondary }]} onPress={clearFilters}>
-          <ThemedText style={{ color: colors.textPrimary }}>Wyczyść</ThemedText>
-        </TouchableOpacity>
       </BottomSheetScrollView>
     </BottomSheetModal>
   );
@@ -208,7 +212,13 @@ const styles = StyleSheet.create({
   bg: { backgroundColor: "#fff" },
   handle: { width: 40, height: 4, backgroundColor: "#687076" },
 
-  title: { fontSize: 24, fontWeight: "700", marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: "700" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
   section: { marginBottom: 30 },
   sectionTitle: { fontSize: 18, marginBottom: 10 },
 
@@ -238,13 +248,5 @@ const styles = StyleSheet.create({
   tagActive: {
     backgroundColor: "#0066FF",
     borderColor: "#0066FF",
-  },
-
-  clear: {
-    marginTop: 20,
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 20,
-    alignItems: "center",
   },
 });
