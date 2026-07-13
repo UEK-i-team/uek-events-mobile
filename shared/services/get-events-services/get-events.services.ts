@@ -7,11 +7,11 @@ import { IDictionaries } from "@/shared/types/dictionaries";
 import { IEvent } from "@/shared/types/event";
 
 export interface GetAllEventsOptions {
-  onLateUpdate?: (events: IEvent[]) => void;
+  onLateUpdate?: (data: { events: IEvent[]; dictionaries: IDictionaries }) => void;
 }
 
 export interface IEventsService {
-  getAllEvents(options?: GetAllEventsOptions): Promise<IEvent[]>;
+  getAllEvents(options?: GetAllEventsOptions): Promise<{ events: IEvent[]; dictionaries: IDictionaries }>;
 }
 
 export class OfflineNoCacheError extends Error {
@@ -36,23 +36,23 @@ export class EventsService implements IEventsService {
     private readonly eventsRepository: IEventsRepository,
     private readonly dictionariesRepository: IDictionariesRepository,
     private readonly favoriteEventsRepository: IFavoriteEventsRepository,
-  ) {}
+  ) { }
 
   public async getAllEvents(
     options?: GetAllEventsOptions,
-  ): Promise<IEvent[]> {
+  ): Promise<{ events: IEvent[]; dictionaries: IDictionaries }> {
     const netInfo = await NetInfo.fetch();
-    
+
     if (netInfo.isConnected === false) {
       const cachedBundle = await this.loadCachedBundle();
       if (!this.isCompleteCachedBundle(cachedBundle)) {
         throw new OfflineNoCacheError();
       }
-      return this.mapBundle(cachedBundle);
+      return { events: this.mapBundle(cachedBundle), dictionaries: cachedBundle.dictionaries! };
     }
 
     const networkBundlePromise = this.loadNetworkBundle();
-    networkBundlePromise.catch(() => {});
+    networkBundlePromise.catch(() => { });
 
     let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
     const timeoutPromise = new Promise<typeof TIMEOUT_SYMBOL>((resolve) => {
@@ -70,25 +70,25 @@ export class EventsService implements IEventsService {
       });
       const cachedBundle = await this.loadCachedBundle();
       if (this.isCompleteCachedBundle(cachedBundle)) {
-        return this.mapBundle(cachedBundle);
+        return { events: this.mapBundle(cachedBundle), dictionaries: cachedBundle.dictionaries! };
       }
       throw error;
     }
 
     if (raceResult !== TIMEOUT_SYMBOL) {
       if (timeoutHandle) clearTimeout(timeoutHandle);
-      return this.mapBundle(raceResult);
+      return { events: this.mapBundle(raceResult), dictionaries: raceResult.dictionaries! };
     }
 
     const cachedBundle = await this.loadCachedBundle();
     if (!this.isCompleteCachedBundle(cachedBundle)) {
       const networkBundle = await networkBundlePromise;
-      return this.mapBundle(networkBundle);
+      return { events: this.mapBundle(networkBundle), dictionaries: networkBundle.dictionaries! };
     }
 
     networkBundlePromise
       .then((networkBundle) => {
-        options?.onLateUpdate?.(this.mapBundle(networkBundle));
+        options?.onLateUpdate?.({ events: this.mapBundle(networkBundle), dictionaries: networkBundle.dictionaries! });
       })
       .catch((err) => {
         console.error("Late bundle fetch failed", err);
@@ -96,7 +96,7 @@ export class EventsService implements IEventsService {
 
 
     const result = this.mapBundle(cachedBundle);
-    return result
+    return { events: result, dictionaries: cachedBundle.dictionaries! };
   }
 
   private async loadCachedBundle(): Promise<EventsBundle> {
@@ -142,7 +142,9 @@ export class EventsService implements IEventsService {
   ): IEvent[] {
     return events.map((event) => ({
       ...event,
+      event_type_raw: event.event_type,
       event_type: dictionaries.event_types[event.event_type] || "",
+      location_category_raw: event.location_category,
       location_category:
         dictionaries.event_location[event.location_category] || "",
       organisators_category:

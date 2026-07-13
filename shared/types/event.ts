@@ -7,7 +7,9 @@ export interface IEvent {
   short_desc: string;
   topics: string[];
   event_type: string;
+  event_type_raw?: string;
   location_category: string;
+  location_category_raw?: string;
   location: string;
   organisators_category: string;
   organisators: string;

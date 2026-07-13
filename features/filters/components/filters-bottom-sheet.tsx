@@ -2,12 +2,10 @@ import { useFilters } from "@/features/filters/contexts";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import {
-  EventCategory,
-  EventLocation,
   EventTag,
-  eventCategoryTranslations,
   eventTagTranslations,
 } from "@/shared/types/event-enums";
+import { EventContext } from "@/shared/context/EventContext/EventContext";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   BottomSheetModal,
@@ -42,6 +40,24 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
     toggleTag,
     clearFilters,
   } = useFilters();
+
+  const { events, dictionaries } = React.useContext(EventContext);
+
+  const availableCategories = useMemo(() => {
+    if (!dictionaries?.event_types) return [];
+    return Object.entries(dictionaries.event_types).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [dictionaries]);
+
+  const availableLocations = useMemo(() => {
+    if (!dictionaries?.event_location) return [];
+    return Object.entries(dictionaries.event_location).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [dictionaries]);
 
   const snapPoints = useMemo(() => ["70%", "95%"], []);
 
@@ -117,64 +133,65 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       handleIndicatorStyle={[styles.handle, { backgroundColor: colors.textSecondary }]}
     >
       <BottomSheetScrollView ref={scrollRef} contentContainerStyle={styles.content}>
-        <ThemedText style={styles.title}>Filtry</ThemedText>
+        <View style={styles.header}>
+          <ThemedText style={styles.title}>Filtry</ThemedText>
+          <TouchableOpacity onPress={clearFilters}>
+            <ThemedText style={{ color: colors.primary, fontSize: 14, fontWeight: "bold" }}>
+              Wyczyść
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
 
         {/* CATEGORY */}
         <Section title="Typ wydarzenia">
-          {Object.values(EventCategory).map((c) => (
+          {availableCategories.map((c) => (
             <Checkbox
-              key={c}
-              label={eventCategoryTranslations[c]}
-              selected={selectedCategories.includes(c)}
-              onPress={() => toggleCategory(c)}
+              key={c.value}
+              label={c.label}
+              value={c.value}
+              selected={selectedCategories.includes(c.value)}
+              onToggle={toggleCategory}
             />
           ))}
+          {availableCategories.length === 0 && (
+            <ThemedText style={{ color: colors.textSecondary, fontSize: 14 }}>
+              Brak kategorii do wyboru
+            </ThemedText>
+          )}
         </Section>
 
         {/* LOCATION */}
         <Section title="Format">
-          {[
-            { value: EventLocation.OnUekCampus, label: "Stacjonarne" },
-            { value: EventLocation.Online, label: "Online" },
-            { value: EventLocation.Hybrid, label: "Hybrydowe" },
-          ].map(({ value, label }) => (
+          {availableLocations.map(({ value, label }) => (
             <Checkbox
               key={value}
               label={label}
+              value={value}
               selected={selectedLocations.includes(value)}
-              onPress={() => toggleLocation(value)}
+              onToggle={toggleLocation}
             />
           ))}
+          {availableLocations.length === 0 && (
+            <ThemedText style={{ color: colors.textSecondary, fontSize: 14 }}>
+              Brak formatów do wyboru
+            </ThemedText>
+          )}
         </Section>
 
         {/* TAGS */}
         <Section title="Tematy">
           <View style={styles.tags}>
-            {Object.values(EventTag).map((tag) => {
-              const selected = selectedTags.includes(tag);
-
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  onPress={() => toggleTag(tag)}
-                  style={[
-                    styles.tag,
-                    { borderColor: colors.textSecondary },
-                    selected && [styles.tagActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
-                  ]}
-                >
-                  <ThemedText style={{ color: selected ? "#fff" : colors.textPrimary }}>
-                    {eventTagTranslations[tag]}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
+            {Object.values(EventTag).map((tag) => (
+              <FilterTag
+                key={tag}
+                tag={tag}
+                selected={selectedTags.includes(tag)}
+                onToggle={toggleTag}
+              />
+            ))}
           </View>
         </Section>
 
-        <TouchableOpacity style={[styles.clear, { borderColor: colors.textSecondary }]} onPress={clearFilters}>
-          <ThemedText style={{ color: colors.textPrimary }}>Wyczyść</ThemedText>
-        </TouchableOpacity>
       </BottomSheetScrollView>
     </BottomSheetModal>
   );
@@ -190,25 +207,50 @@ function Section({ title, children }: any) {
   );
 }
 
-function Checkbox({ label, selected, onPress }: any) {
+const Checkbox = React.memo(({ label, selected, onToggle, value }: any) => {
   const { colors } = useTheme();
 
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress}>
+    <TouchableOpacity style={styles.row} onPress={() => onToggle(value)}>
       <View style={[styles.checkbox, { borderColor: colors.textSecondary }, selected && [styles.checkboxActive, { backgroundColor: colors.primary, borderColor: colors.primary }]]}>
         {selected && <MaterialIcons name="check" size={16} color="#fff" />}
       </View>
       <ThemedText>{label}</ThemedText>
     </TouchableOpacity>
   );
-}
+});
+
+const FilterTag = React.memo(({ tag, selected, onToggle }: any) => {
+  const { colors } = useTheme();
+
+  return (
+    <TouchableOpacity
+      onPress={() => onToggle(tag)}
+      style={[
+        styles.tag,
+        { borderColor: colors.textSecondary },
+        selected && [styles.tagActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+      ]}
+    >
+      <ThemedText style={{ color: selected ? "#fff" : colors.textPrimary }}>
+        {eventTagTranslations[tag as EventTag]}
+      </ThemedText>
+    </TouchableOpacity>
+  );
+});
 
 const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40 },
   bg: { backgroundColor: "#fff" },
   handle: { width: 40, height: 4, backgroundColor: "#687076" },
 
-  title: { fontSize: 24, fontWeight: "700", marginBottom: 20 },
+  title: { fontSize: 24, fontWeight: "700" },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
   section: { marginBottom: 30 },
   sectionTitle: { fontSize: 18, marginBottom: 10 },
 
@@ -238,13 +280,5 @@ const styles = StyleSheet.create({
   tagActive: {
     backgroundColor: "#0066FF",
     borderColor: "#0066FF",
-  },
-
-  clear: {
-    marginTop: 20,
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 20,
-    alignItems: "center",
   },
 });

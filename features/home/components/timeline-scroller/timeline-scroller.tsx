@@ -364,10 +364,10 @@ export function TimelineScroller({
             const stickyTranslateX =
               maxTranslate > 0
                 ? scrollX.interpolate({
-                    inputRange: [X_start, X_start + maxTranslate],
-                    outputRange: [0, maxTranslate],
-                    extrapolate: "clamp",
-                  })
+                  inputRange: [X_start, X_start + maxTranslate],
+                  outputRange: [0, maxTranslate],
+                  extrapolate: "clamp",
+                })
                 : 0;
 
             return (
@@ -376,6 +376,7 @@ export function TimelineScroller({
                   style={{ transform: [{ translateX: stickyTranslateX }] }}
                 >
                   <ThemedText
+                    numberOfLines={1}
                     style={[
                       styles.monthTextSide,
                       isMain && styles.monthTextActive,

@@ -5,10 +5,10 @@ import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
-import { useAppliedFilters } from "@/features/filters/contexts";
+import { useAppliedFilters, useFilters } from "@/features/filters/contexts";
 import { eventTagTranslations } from "@/shared/types/event-enums";
 import React, { useCallback, useContext, useMemo } from "react";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, FlatList, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
@@ -20,22 +20,24 @@ export default function HomeView() {
     useContext(EventContext);
   const { colors } = useTheme();
   const { appliedCategories, appliedLocations, appliedTags } = useAppliedFilters();
+  const { clearFilters } = useFilters();
 
   const events = useMemo(() => {
     if (!allEvents) return allEvents;
 
     return allEvents.filter((event) => {
+      const eventType = event.event_type_raw || event.event_type;
       if (
         appliedCategories.length > 0 &&
-        !appliedCategories.includes(event.event_type as any)
+        !appliedCategories.includes(eventType as any)
       ) {
         return false;
       }
 
+      const locationCategory = event.location_category_raw || event.location_category;
       if (
         appliedLocations.length > 0 &&
-        !appliedLocations.includes(event.location_category as any) &&
-        !(appliedLocations.includes("ON_UEK_CAMPUS" as any) && event.location_category === "CAM")
+        !appliedLocations.includes(locationCategory as any)
       ) {
         return false;
       }
@@ -60,6 +62,7 @@ export default function HomeView() {
     setContainerHeight,
     selectedDate,
     visibleEventId,
+    initialScrollIndex,
     nearestFutureEventIndex,
     handleDateSelect,
     viewabilityConfig,
@@ -120,6 +123,7 @@ export default function HomeView() {
           <HomeEmptyState
             isFiltered={allEvents ? allEvents.length > 0 : false}
             colors={colors}
+            onClearFilters={clearFilters}
           />
         ) : events && containerHeight > 0 ? (
           <FlatList
@@ -133,7 +137,7 @@ export default function HomeView() {
               offset: containerHeight * index,
               index,
             })}
-            initialScrollIndex={nearestFutureEventIndex}
+            initialScrollIndex={initialScrollIndex}
             onScrollToIndexFailed={(info) => {
               const wait = new Promise((resolve) => setTimeout(resolve, 500));
               wait.then(() => {
@@ -188,22 +192,31 @@ const HomeErrorState = ({
 const HomeEmptyState = ({
   isFiltered,
   colors,
+  onClearFilters,
 }: {
   isFiltered?: boolean;
-  colors: { textMuted: string; textSecondary: string };
+  colors: { textMuted: string; textSecondary: string; primary: string };
+  onClearFilters?: () => void;
 }) => (
   <View style={styles.emptyContainer}>
-    <ThemedText 
-      adjustsFontSizeToFit 
-      numberOfLines={1} 
-      style={{ fontSize: 120, lineHeight: 130, marginBottom: 24, fontWeight: "bold", color: colors.textMuted, textAlign: "center" }}
+    <ThemedText
+      adjustsFontSizeToFit
+      numberOfLines={1}
+      style={{ fontSize: 120, lineHeight: 150, marginBottom: 24, fontWeight: "bold", color: colors.textMuted, textAlign: "center" }}
     >
       :(
     </ThemedText>
     <ThemedText style={[styles.emptyText, { color: colors.textSecondary }]}>
-      {isFiltered 
+      {isFiltered
         ? "Nie znaleziono żadnych wydarzeń z wybranymi filtrami"
         : "Brak dostępnych wydarzeń"}
     </ThemedText>
+    {isFiltered && onClearFilters && (
+      <TouchableOpacity onPress={onClearFilters}>
+        <ThemedText style={[styles.emptyText, { color: colors.primary, marginTop: 12, fontWeight: "bold" }]}>
+          Wyczyść filtry
+        </ThemedText>
+      </TouchableOpacity>
+    )}
   </View>
 );

@@ -18,6 +18,7 @@ import {
 
 export interface IEventContext {
   events: IEvent[] | null;
+  dictionaries: IDictionaries | null;
   status: "idle" | "loading" | "success" | "error" | "offline_no_data";
   errorMessage?: string | null;
   toggleFavoriteEvent: (eventId: number, isFavorite: boolean) => Promise<void>;
@@ -26,6 +27,7 @@ export interface IEventContext {
 
 const defualtEventsContext: IEventContext = {
   events: null,
+  dictionaries: null,
   status: "idle",
   toggleFavoriteEvent: async () => {},
   getEventById: () => undefined,
@@ -42,6 +44,7 @@ export const EventContextProvider = ({
   const notificationContext = useContext(NotificationContext);
 
   const [events, setEvents] = useState<IEvent[] | null>(null);
+  const [dictionaries, setDictionaries] = useState<IDictionaries | null>(null);
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error" | "offline_no_data"
   >("idle");
@@ -65,12 +68,14 @@ export const EventContextProvider = ({
 
     eventsService
       .getAllEvents({
-        onLateUpdate: (lateEvents) => {
-          setEvents(sortEventsAscending(lateEvents));
+        onLateUpdate: (lateData) => {
+          setEvents(sortEventsAscending(lateData.events));
+          setDictionaries(lateData.dictionaries);
         },
       })
-      .then((events) => {
-        setEvents(sortEventsAscending(events));
+      .then((data) => {
+        setEvents(sortEventsAscending(data.events));
+        setDictionaries(data.dictionaries);
         setStatus("success");
       })
       .catch((error) => {
@@ -101,12 +106,14 @@ export const EventContextProvider = ({
       refetchInFlightRef.current = true;
       eventsService
         .getAllEvents({
-          onLateUpdate: (lateEvents) => {
-            setEvents(sortEventsAscending(lateEvents));
+          onLateUpdate: (lateData) => {
+            setEvents(sortEventsAscending(lateData.events));
+            setDictionaries(lateData.dictionaries);
           },
         })
-        .then((freshEvents) => {
-          setEvents(sortEventsAscending(freshEvents));
+        .then((freshData) => {
+          setEvents(sortEventsAscending(freshData.events));
+          setDictionaries(freshData.dictionaries);
           setStatus("success");
           setErrorMessage(null);
           showNotificationRef.current?.("info", "Załadowano nowe wydarzenia");
@@ -166,12 +173,13 @@ export const EventContextProvider = ({
   const contextValue = useMemo(
     () => ({
       events,
+      dictionaries,
       status,
       errorMessage,
       toggleFavoriteEvent,
       getEventById,
     }),
-    [events, status, errorMessage, toggleFavoriteEvent, getEventById],
+    [events, dictionaries, status, errorMessage, toggleFavoriteEvent, getEventById],
   );
 
   return (
