@@ -148,8 +148,9 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
             <Checkbox
               key={c.value}
               label={c.label}
+              value={c.value}
               selected={selectedCategories.includes(c.value)}
-              onPress={() => toggleCategory(c.value)}
+              onToggle={toggleCategory}
             />
           ))}
           {availableCategories.length === 0 && (
@@ -165,8 +166,9 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
             <Checkbox
               key={value}
               label={label}
+              value={value}
               selected={selectedLocations.includes(value)}
-              onPress={() => toggleLocation(value)}
+              onToggle={toggleLocation}
             />
           ))}
           {availableLocations.length === 0 && (
@@ -179,25 +181,14 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
         {/* TAGS */}
         <Section title="Tematy">
           <View style={styles.tags}>
-            {Object.values(EventTag).map((tag) => {
-              const selected = selectedTags.includes(tag);
-
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  onPress={() => toggleTag(tag)}
-                  style={[
-                    styles.tag,
-                    { borderColor: colors.textSecondary },
-                    selected && [styles.tagActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
-                  ]}
-                >
-                  <ThemedText style={{ color: selected ? "#fff" : colors.textPrimary }}>
-                    {eventTagTranslations[tag]}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
+            {Object.values(EventTag).map((tag) => (
+              <FilterTag
+                key={tag}
+                tag={tag}
+                selected={selectedTags.includes(tag)}
+                onToggle={toggleTag}
+              />
+            ))}
           </View>
         </Section>
 
@@ -216,18 +207,37 @@ function Section({ title, children }: any) {
   );
 }
 
-function Checkbox({ label, selected, onPress }: any) {
+const Checkbox = React.memo(({ label, selected, onToggle, value }: any) => {
   const { colors } = useTheme();
 
   return (
-    <TouchableOpacity style={styles.row} onPress={onPress}>
+    <TouchableOpacity style={styles.row} onPress={() => onToggle(value)}>
       <View style={[styles.checkbox, { borderColor: colors.textSecondary }, selected && [styles.checkboxActive, { backgroundColor: colors.primary, borderColor: colors.primary }]]}>
         {selected && <MaterialIcons name="check" size={16} color="#fff" />}
       </View>
       <ThemedText>{label}</ThemedText>
     </TouchableOpacity>
   );
-}
+});
+
+const FilterTag = React.memo(({ tag, selected, onToggle }: any) => {
+  const { colors } = useTheme();
+
+  return (
+    <TouchableOpacity
+      onPress={() => onToggle(tag)}
+      style={[
+        styles.tag,
+        { borderColor: colors.textSecondary },
+        selected && [styles.tagActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
+      ]}
+    >
+      <ThemedText style={{ color: selected ? "#fff" : colors.textPrimary }}>
+        {eventTagTranslations[tag as EventTag]}
+      </ThemedText>
+    </TouchableOpacity>
+  );
+});
 
 const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40 },
