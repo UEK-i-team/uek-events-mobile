@@ -73,7 +73,7 @@ export default function InfoScreen() {
           </View>
           <View style={styles.linkItem}>
             <ExternalLink
-              href="https://docs.google.com/document/d/1a5hBbEeb7S7NytOmOBCKH1SiwleBu7JNx-4U6JYfE48/edit?usp=sharing"
+              href="https://eventuje.pl/polityka-prywatnosci"
               style={styles.link}
             >
               <ThemedText style={[styles.linkText, { color: colors.textPrimary }]}>
@@ -85,7 +85,7 @@ export default function InfoScreen() {
 
           <View style={styles.linkItem}>
             <ExternalLink
-              href="https://docs.google.com/document/d/1xXgFqgD8j96Mu1_4y1BC2MKSPQDcXLYnTZknXu1etNY/edit?usp=sharing"
+              href="https://eventuje.pl/regulamin"
               style={styles.link}
             >
               <ThemedText style={[styles.linkText, { color: colors.textPrimary }]}>

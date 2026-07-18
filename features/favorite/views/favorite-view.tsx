@@ -18,6 +18,7 @@ import { safeParseDate } from "@/utils/functions/event-utils";
 
 import { FavoriteEventCard } from "../components/favorite-event-card/favorite-event-card";
 import { styles } from "./favorite-view.styles";
+import { theme } from "@/shared/constants/theme";
 
 type SortMode = "liked" | "added";
 
@@ -110,7 +111,7 @@ export default function FavoriteView() {
           <Ionicons
             name="bookmark-outline"
             size={40}
-            color={colors.dark_grey}
+            color={isDarkMode ? colors.textPrimary : colors.dark_grey}
           />
           <ThemedText style={[styles.emptyTitle, { color: colors.textPrimary }]}>Brak ulubionych</ThemedText>
           <ThemedText style={[styles.emptySubtext, { color: colors.textSecondary }]}>
