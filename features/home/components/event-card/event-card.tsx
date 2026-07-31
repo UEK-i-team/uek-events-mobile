@@ -21,7 +21,6 @@ import { styles } from "./event-card.styles";
 import { EventImageContainer } from "@/shared/components/event-image-container/event-image-container";
 import { useTheme } from "@/shared/context/ThemeContext";
 
-
 interface EventCardProps {
   event: IEvent;
   cardHeight: number;
@@ -41,9 +40,10 @@ export const EventCard = React.memo(function EventCard({
     fontScale,
   } = useWindowDimensions();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
 
-  // Extract date and image url
+  const isTablet = SCREEN_WIDTH >= 768;
+
   const imageUrl =
     event.image_url ||
     "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
@@ -72,15 +72,12 @@ export const EventCard = React.memo(function EventCard({
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
   const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);
 
-  // Minimalna wysokość obrazka - zabezpiecza małe ekrany, żeby zostało
-  // miejsce na tekst. Na większych ekranach obrazek rośnie (flex: 1),
-  // wypełniając wolną przestrzeń pod kartą.
   const minImageHeight = isVerySmallScreen ? 150 : 180;
-
   const imageWidth = SCREEN_WIDTH - 32;
 
-  const visibleTags = (event.tags || []).slice(0, MAX_VISIBLE_TAGS);
-  const remainingTagsCount = (event.tags || []).length - MAX_VISIBLE_TAGS;
+  const allTags = event.tags || [];
+  const visibleTags = isTablet ? allTags : allTags.slice(0, MAX_VISIBLE_TAGS);
+  const remainingTagsCount = isTablet ? 0 : allTags.length - MAX_VISIBLE_TAGS;
 
   return (
     <View
@@ -131,22 +128,22 @@ export const EventCard = React.memo(function EventCard({
             </View>
           ) : null}
 
-    <RoundedButton
-         icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
-         iconColor={
-             event.isFavorite ? colors.red_regular : colors.dark_grey
-             }
-         backgroundColor={event.isFavorite ? colors.red_light : colors.red_ultra_light}
-         size="medium"
-         onPress={handleFavoritePress}
+          <RoundedButton
+            icon={event.isFavorite ? FavoriteIconFilled : FavoriteIcon}
+            iconColor={
+              event.isFavorite ? colors.red_regular : colors.dark_grey
+            }
+            backgroundColor={event.isFavorite ? colors.red_light : colors.red_ultra_light}
+            size="medium"
+            onPress={handleFavoritePress}
             style={{
-          position: "absolute",
-         bottom: -16,
-         right: 16,
-         borderColor: event.isFavorite ? colors.red_regular : "#CBC8C4",
-         borderWidth: event.isFavorite ? 1 : 0.5,
-  }}
-/>
+              position: "absolute",
+              bottom: -16,
+              right: 16,
+              borderColor: event.isFavorite ? colors.red_regular : "#CBC8C4",
+              borderWidth: event.isFavorite ? 1 : 0.5,
+            }}
+          />
         </View>
         <View style={styles.infoContainer}>
           <DateAndTime dateISO={event.start_date} style={{ marginTop: 22 }} />
@@ -200,9 +197,8 @@ export const EventCard = React.memo(function EventCard({
               <Badge
                 key="remaining-count-badge"
                 name={`+${remainingTagsCount}`}
-                color="#EAEAEA"
+                color={isDarkMode ? "#A0A0A0" : "#EAEAEA"}
                 textColor="#111111"
-                style={{ borderWidth: .5, borderColor: "#111111" }}
               />
             )}
           </View>
@@ -211,4 +207,3 @@ export const EventCard = React.memo(function EventCard({
     </View>
   );
 });
-
