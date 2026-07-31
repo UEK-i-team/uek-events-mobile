@@ -57,8 +57,6 @@ container: {
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-    borderWidth: .5,
-    borderColor: '#111111',
   },
   dateBoxActive: {
     backgroundColor: '#FF7324', // Orange
@@ -67,7 +65,7 @@ container: {
     backgroundColor: '#EAEAEA',
   },
   dateBoxInactiveDark: {
-    backgroundColor: '#A0A0A0',
+    backgroundColor: '#A0A0A0', // lub A0A0A0
   },
   dateBoxEmpty: {
     width: 36,
@@ -76,7 +74,7 @@ container: {
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent', 
+    backgroundColor: 'transparent',
   },
   dayText: {
     fontSize: 24,
