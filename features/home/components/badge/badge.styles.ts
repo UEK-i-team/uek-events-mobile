@@ -5,8 +5,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 16,
-    borderWidth: .5,
-    borderColor: '#111111',
     alignSelf: "flex-start",
   },
   text: {
