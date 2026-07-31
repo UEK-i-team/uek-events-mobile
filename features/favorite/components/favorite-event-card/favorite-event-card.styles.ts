@@ -109,8 +109,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#111111',
   },
   tagText: {
     fontSize: 14,
@@ -132,3 +130,4 @@ export const styles = StyleSheet.create({
     flex: 1,
   }
 });
+
