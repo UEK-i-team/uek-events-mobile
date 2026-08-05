@@ -57,6 +57,8 @@ container: {
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
+    borderWidth: .5,
+    borderColor: '#111111',
   },
   dateBoxActive: {
     backgroundColor: '#FF7324', // Orange
