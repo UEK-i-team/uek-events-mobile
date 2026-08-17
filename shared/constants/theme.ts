@@ -28,10 +28,10 @@ export interface AppTheme {
 
 export const lightThemeColors: AppThemeColors = {
   primary: "#FF6A2A",
-  mainBackground: "#E1DDD9",
+  mainBackground: "#F6F6F6",
   mainBackgroundDarker: "#D9D9D9",
   mainBackgroundLighter: "#E9E8E8",
-  surface: "#E1DDD9",
+  surface: "#F6F6F6",
   light_grey: "#F4F3F2",
   ligth_grey: "#F4F3F2",
   textPrimary: "#111111",

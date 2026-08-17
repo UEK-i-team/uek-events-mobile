@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Linking,
   Share,
+  useWindowDimensions,
 } from "react-native";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -40,7 +41,9 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const router = useRouter();
   const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
   const { colors, isDarkMode } = useTheme();
-
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
+ 
+  const isTablet = SCREEN_WIDTH >= 768;
   const event = getEventById(Number(eventId));
 
   if (!event) {
@@ -74,11 +77,20 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.mainBackground }]} edges={["top", "left", "right"]}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isTablet && { paddingBottom: 160 } // Zwiększamy odstęp na dole, aby scroll nie zasłaniał przycisku
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.imageContainer}>
-          <View style={[styles.imageWrapper, eventHasPassed && styles.passedImage]}>
+          <View
+            style={[
+              styles.imageWrapper,
+              isTablet && { height: 320 }, // Powiększone zdjęcie na tablecie (320px)
+              eventHasPassed && styles.passedImage
+            ]}
+          >
             <Image
               source={{ uri: event.image_url }}
               style={styles.image}
@@ -130,9 +142,13 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             />
           </View>
         </View>
-        <View style={styles.detailsContainer}>
-          <Text style={[styles.title, { color: colors.textPrimary }]}>{event.title}</Text>
-          <Text style={[styles.shortDesc, { color: colors.textPrimary }]}>{event.short_desc}</Text>
+        <View style={[styles.detailsContainer, isTablet && { maxWidth: 850, alignSelf: "center", width: "100%" }]}>
+          <Text style={[styles.title, { color: colors.textPrimary }, isTablet && { fontSize: 32, marginTop: 24 }]}>
+            {event.title}
+          </Text>
+          <Text style={[styles.shortDesc, { color: colors.textPrimary }, isTablet && { fontSize: 18, lineHeight: 26 }]}>
+            {event.short_desc}
+          </Text>
           {isMultiDay ? (
             <View style={styles.dateAndTimeColumnContainer}>
               <InfoRow
@@ -169,12 +185,14 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             {event.topics.map((topic, index) => (
               <View style={styles.bulletListItem} key={index}>
                 <View style={[styles.bulletPoint, { backgroundColor: colors.textPrimary }]} />
-                <Text style={[styles.bulletText, { color: colors.textPrimary }]}>{topic}</Text>
+                <Text style={[styles.bulletText, { color: colors.textPrimary }, isTablet && { fontSize: 18, lineHeight: 24 }]}>
+                  {topic}
+                </Text>
               </View>
             ))}
           </View>
 
-           <View style={styles.tagsContainer}>
+          <View style={styles.tagsContainer}>
             {event.event_type && (
               <View style={[styles.tagChip, { backgroundColor: "#111111" }]}>
                 <Text style={[styles.tagChipText, { color: "#F4F3F2" }]}>
@@ -202,13 +220,13 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
         </View>
       </ScrollView>
 
-      <View style={styles.stickyBottomContainer}>
+      <View style={[styles.stickyBottomContainer, isTablet && { bottom: 56, paddingHorizontal: 32 }]}>
         <TouchableOpacity
-          style={[styles.actionButton, { backgroundColor: colors.primary }]}
+          style={[styles.actionButton, { backgroundColor: colors.primary }, isTablet && { height: 60 }]}
           activeOpacity={0.8}
           onPress={() => Linking.openURL(event.origin_url)}
         >
-          <Text style={[styles.actionButtonText, { color: colors.dark_grey }]}>
+          <Text style={[styles.actionButtonText, { color: colors.dark_grey }, isTablet && { fontSize: 20 }]}>
             Zobacz szczegóły wydarzenia
           </Text>
         </TouchableOpacity>

@@ -5,13 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View, useWindowDimensions } from "react-native";
 import { styles } from "./favorite-event-card.styles";
 import { formatEventDate, formatEventTime, isEventPassed } from "@/utils/functions/date-utils";
 import { getTagColor } from "@/shared/constants/theme";
 import { useTheme } from "@/shared/context/ThemeContext";
-
-const MAX_VISIBLE_TAGS = 2;
 
 interface FavoriteEventCardProps {
   event: IEvent;
@@ -20,12 +18,14 @@ interface FavoriteEventCardProps {
 
 export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
   const router = useRouter();
-  const { colors } = useTheme();
-
+  const { colors, isDarkMode } = useTheme();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
+  const isTablet = SCREEN_WIDTH >= 768;
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
-
-  const visibleTags = (event.tags || []).slice(0, MAX_VISIBLE_TAGS);
-  const remainingTagsCount = (event.tags || []).length - MAX_VISIBLE_TAGS;
+  const maxTags = isTablet ? 6 : 2;
+  const allTags = event.tags || [];
+  const visibleTags = allTags.slice(0, maxTags);
+  const remainingTagsCount = allTags.length - maxTags;
 
   return (
     <TouchableOpacity
@@ -49,7 +49,6 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
         </View>
 
         <View style={styles.content}>
-          {/* Zabezpieczenie przed najeżdżaniem na X: paddingRight dodany wprost do tytułu */}
           <Text
             style={[styles.title, { color: colors.textPrimary, paddingRight: 24 }]}
             numberOfLines={2}
@@ -86,16 +85,12 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
       </View>
 
       <View style={styles.tagsRow}>
-        {/* 1. Główny typ wydarzenia: Wymuszone stabilne ramki i tło */}
         {event.event_type && (
           <View
             style={[
               styles.tag,
               {
                 backgroundColor: "#111111",
-                borderColor: "#111111",
-                borderWidth: 1,
-                borderStyle: "solid"
               },
             ]}
           >
@@ -114,8 +109,6 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
                 styles.tag,
                 {
                   backgroundColor: tagBgColor,
-                  borderColor: "#111111",
-                  borderWidth: .5,
                 },
               ]}
             >
@@ -124,13 +117,13 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
           );
         })}
 
-        {remainingTagsCount > 0 && (
-          <View style={styles.remainingBadge}>
-            <Text style={[styles.remainingText, { color: colors.textPrimary }]}>
-              +{remainingTagsCount}
-            </Text>
-          </View>
-        )}
+{remainingTagsCount > 0 && (
+  <View style={[styles.remainingBadge, { backgroundColor: 'transparent' }]}>
+    <Text style={[styles.remainingText, { color: colors.textPrimary }]}>
+      +{remainingTagsCount}
+    </Text>
+  </View>
+)}
       </View>
 
       <TouchableOpacity
