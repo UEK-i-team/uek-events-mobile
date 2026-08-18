@@ -51,8 +51,8 @@ container: {
     paddingVertical: 8,
   },
   dateBox: {
-    width: 48,
-    height: 48,
+    width: 53,
+    height: 53,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
@@ -64,7 +64,7 @@ container: {
     backgroundColor: '#FF7324', // Orange
   },
   dateBoxInactiveLight: {
-    backgroundColor: '#EAEAEA',
+    backgroundColor: '#E1DFDF',
   },
   dateBoxInactiveDark: {
     backgroundColor: '#A0A0A0', // lub A0A0A0
@@ -86,7 +86,7 @@ container: {
     color: '#11181C', // Dark text on active orange
   },
   dayTextInactiveLight: {
-    color: '#687076',
+    color: '#11181C',
   },
   dayTextInactiveDark: {
     color: '#111111',
