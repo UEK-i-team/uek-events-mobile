@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import UekLogo from "@/assets/images/uek_logo.svg";
 import { ExternalLink } from "@/shared/components/external-link/external-link";
 import { IconSymbol } from "@/shared/components/icon-symbol/icon-symbol";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
@@ -10,6 +11,7 @@ import { NotificationContext } from "@/features/notifications/contexts/notificat
 import { useTheme } from "@/shared/context/ThemeContext";
 
 const EMAIL = "kontakt@uekeventuje.pl";
+const UEK_COLOR = "#803248";
 
 export default function InfoScreen() {
   const notificationContext = useContext(NotificationContext);
@@ -60,17 +62,27 @@ export default function InfoScreen() {
               CEL APLIKACJI
             </ThemedText>
             <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
-              Ile razy przegapiłeś ważny event, bo ogłoszenie zaginęło w
-              mailach? My też mieliśmy dość. Dlatego stworzyliśmy aplikację,
-              która zbiera wszystkie wydarzenia, konkursy i oferty w jednym
-              miejscu.
+            Ile razy przegapiliście jakiś event, bo ogłoszenie zaginęło w dziesiątkach maili na poczcie? Nam zdarzało się to regularnie...
+            </ThemedText>
+            <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
+            Jednak nie ma takiego problemu, którego nie dałoby się rozwiązać! Jako studenci UEK stworzyliśmy aplikację, która w jednym miejscu zbierze dla Was wszystkie wydarzenia, konkursy i oferty! Teraz już nic nie umknie Waszej uwadze!
             </ThemedText>
             <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
               {
-                "Jesteśmy studentami UEK, którzy mają dokładnie ten sam problem i chcemy go rozwiązać. \n\nAplikacja stwrzona \nprzez studentów, dla studentów. 🚀"
+                "\nUEK Eventuje to aplikacja stworzona przez studentów, dla studentów, w partnerstwie z Uniwersytetem Ekonomicznym w Krakowie."
               }
             </ThemedText>
           </View>
+          <ExternalLink href="https://uek.krakow.pl" style={styles.partnerBadgeLink}>
+            <View style={styles.partnerBadge}>
+              <View style={styles.partnerBadgeLogo}>
+                <UekLogo width={18} height={30} />
+              </View>
+              <ThemedText style={styles.partnerBadgeText}>
+              UEK - Oficjalnym Partnerem
+              </ThemedText>
+            </View>
+          </ExternalLink>
           <View style={styles.linkItem}>
             <ExternalLink
               href="https://eventuje.pl/polityka-prywatnosci"
@@ -150,6 +162,34 @@ const styles = StyleSheet.create({
   },
   subLinkText: {
     fontSize: 12,
+  },
+  partnerBadgeLink: {
+    alignSelf: "flex-start",
+    marginHorizontal: 20,
+    marginTop: -22,
+    marginBottom: 12
+  },
+  partnerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: UEK_COLOR,
+    backgroundColor: "#FFFFFF",
+  },
+  partnerBadgeLogo: {
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  partnerBadgeText: {
+    marginLeft: 12,
+    fontSize: 16,
+    lineHeight: 18,
+    fontWeight: "700",
+    color: UEK_COLOR,
   },
   creatorsSection: {
     marginTop: 8,
