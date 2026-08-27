@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { getColors } from "react-native-image-colors";
 
 import { theme } from "@/shared/constants/theme";
+import { useImageTransparency } from "@/shared/hooks/use-image-transparency";
 
 export const useDailyEventColor = (imageUrl: string | null) => {
   const [dominantColor, setDominantColor] = useState<string>(
     theme.light.mainBackground,
   );
+  const { hasAlpha } = useImageTransparency(imageUrl);
 
   useEffect(() => {
     if (!imageUrl) return;
@@ -42,5 +44,5 @@ export const useDailyEventColor = (imageUrl: string | null) => {
     };
   }, [imageUrl]);
 
-  return { dominantColor };
+  return { dominantColor, hasAlpha };
 };

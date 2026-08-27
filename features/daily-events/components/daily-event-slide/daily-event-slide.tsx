@@ -37,7 +37,7 @@ export const DailyEventSlide = React.memo(function DailyEventSlide({
 }: DailyEventSlideProps) {
   const {
     imageUrl,
-    dominantColor,
+    imageBackground,
     countdown,
     gradientStart,
     gradientMiddle,
@@ -64,12 +64,12 @@ export const DailyEventSlide = React.memo(function DailyEventSlide({
           <View
             style={[
               styles.imageWrapper,
-              { height: imageHeight, backgroundColor: dominantColor },
+              { height: imageHeight, backgroundColor: imageBackground },
             ]}
           >
             <Image
               source={imageUrl}
-              placeholder={dominantColor}
+              placeholder={imageBackground}
               contentFit="contain"
               transition={300}
               style={styles.image}

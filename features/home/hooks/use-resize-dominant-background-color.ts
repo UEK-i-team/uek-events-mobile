@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
-import { Image as RNImage, ImageResizeMode } from "react-native";
+import { Image as RNImage } from "react-native";
 import { getColors } from "react-native-image-colors";
-import { theme } from "@/shared/constants/theme";
 import { ImageContentFit } from "expo-image";
+
+import {
+  IMAGE_TRANSPARENT_BG,
+  theme,
+} from "@/shared/constants/theme";
+import { useImageTransparency } from "@/shared/hooks/use-image-transparency";
 
 export const useResizeDominantBackgroundColor = (imageUrl: string | null) => {
   const [dominantColor, setDominantColor] = useState<string>(
-    theme.light.mainBackground
+    theme.light.mainBackground,
   );
   const [resizeMode, setResizeMode] = useState<ImageContentFit>("contain");
+  const { hasAlpha } = useImageTransparency(imageUrl);
 
   useEffect(() => {
     if (imageUrl) {
@@ -22,9 +28,9 @@ export const useResizeDominantBackgroundColor = (imageUrl: string | null) => {
             setResizeMode("contain");
           }
         },
-        (error) => {
-          // here you have to handle error handling for image size error
-        }
+        () => {
+          // silently handle image size error
+        },
       );
 
       getColors(imageUrl, {
@@ -40,11 +46,13 @@ export const useResizeDominantBackgroundColor = (imageUrl: string | null) => {
             theme.light.mainBackground;
           setDominantColor(color);
         })
-        .catch((err) => {
+        .catch(() => {
           // silently handle color extraction error
         });
     }
   }, [imageUrl]);
 
-  return { dominantColor, resizeMode };
+  const backgroundColor = hasAlpha ? IMAGE_TRANSPARENT_BG : dominantColor;
+
+  return { dominantColor, backgroundColor, resizeMode };
 };

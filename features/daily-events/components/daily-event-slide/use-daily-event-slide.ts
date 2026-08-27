@@ -8,6 +8,10 @@ import {
 } from "react-native-reanimated";
 
 import { IEvent } from "@/shared/types/event";
+import {
+  IMAGE_TRANSPARENT_BG,
+  NEUTRAL_GRADIENT_BASE,
+} from "@/shared/constants/theme";
 
 import { useCountdown } from "../../hooks/use-countdown";
 import { useDailyEventColor } from "../../hooks/use-daily-event-color";
@@ -33,12 +37,14 @@ export function useDailyEventSlide({
 }: UseDailyEventSlideParams) {
   const router = useRouter();
   const imageUrl = event.image_url || FALLBACK_IMAGE;
-  const { dominantColor } = useDailyEventColor(imageUrl);
+  const { dominantColor, hasAlpha } = useDailyEventColor(imageUrl);
   const countdown = useCountdown(event.start_date, event.end_date);
 
-  const gradientStart = dominantColor;
-  const gradientMiddle = darkenHexColor(dominantColor, 0.4);
-  const gradientEnd = darkenHexColor(dominantColor, 0.7);
+  const gradientBase = hasAlpha ? NEUTRAL_GRADIENT_BASE : dominantColor;
+  const gradientStart = gradientBase;
+  const gradientMiddle = darkenHexColor(gradientBase, 0.4);
+  const gradientEnd = darkenHexColor(gradientBase, 0.7);
+  const imageBackground = hasAlpha ? IMAGE_TRANSPARENT_BG : dominantColor;
 
   const textColor = getReadableTextColor(gradientEnd);
   const isLight = textColor === "#FFFFFF";
@@ -87,6 +93,7 @@ export function useDailyEventSlide({
   return {
     imageUrl,
     dominantColor,
+    imageBackground,
     countdown,
     gradientStart,
     gradientMiddle,

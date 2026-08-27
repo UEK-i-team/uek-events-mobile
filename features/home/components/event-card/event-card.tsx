@@ -48,7 +48,7 @@ export const EventCard = React.memo(function EventCard({
     event.image_url ||
     "https://bg.uek.krakow.pl//sites/default/files/default_images/szkolenie.jpg";
 
-  const { dominantColor, resizeMode } =
+  const { backgroundColor, resizeMode } =
     useResizeDominantBackgroundColor(imageUrl);
 
   const isSmallScreen =
@@ -106,7 +106,7 @@ export const EventCard = React.memo(function EventCard({
             <EventImageContainer
               imageUrl={imageUrl}
               width={imageWidth}
-              extractedColor={dominantColor}
+              extractedColor={backgroundColor}
               customWidth={imageWidth}
               cornerRadius={30}
               fill

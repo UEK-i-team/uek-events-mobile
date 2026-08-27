@@ -71,6 +71,9 @@ export const theme = {
   dark: darkThemeColors,
 };
 
+export const IMAGE_TRANSPARENT_BG = "#FFFFFF";
+export const NEUTRAL_GRADIENT_BASE = "#EDECEA";
+
 // To delete soon
 export const Colors = {
 light: {
