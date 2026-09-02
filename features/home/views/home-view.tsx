@@ -7,15 +7,17 @@ import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
 import { useAppliedFilters, useFilters } from "@/features/filters/contexts";
 import { eventTagTranslations } from "@/shared/types/event-enums";
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useCallback, useContext, useMemo, useEffect } from "react";
 import { ActivityIndicator, FlatList, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "expo-router"; // 1. IMPORT HOOKA NAWIGACJI
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
 import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
 import { safeParseDate } from "@/utils/functions/event-utils";
 
 export default function HomeView() {
+  const navigation = useNavigation(); // 2. INICJALIZACJA NAWIGACJI
   const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
   const { colors } = useTheme();
@@ -68,6 +70,35 @@ export default function HomeView() {
     viewabilityConfig,
     onViewableItemsChanged,
   } = useHomeScreen({ events });
+
+ // 3. OBSŁUGA PONOWNEGO KLIKNIĘCIA W TAB "HOME"
+ useEffect(() => {
+   const unsubscribe = navigation.addListener("tabPress" as any, () => {
+     // 1. Pobieramy dzisiejsze wydarzenie (lub pierwsze nadchodzące)
+     const targetIndex = nearestFutureEventIndex >= 0 ? nearestFutureEventIndex : 0;
+     const targetEvent = events?.[targetIndex];
+
+     // 2. Pobieramy właściwą datę z dzisiejszego wydarzenia
+     if (targetEvent?.start_date) {
+       const todayEventDate = safeParseDate(targetEvent.start_date);
+       if (todayEventDate) {
+         handleDateSelect(todayEventDate);
+       }
+     } else {
+       handleDateSelect(new Date());
+     }
+
+     // 3. Przewijamy listę wydarzeń na odpowiednią pozycję
+     if (events && events.length > 0 && flatListRef.current) {
+       flatListRef.current.scrollToIndex({
+         index: targetIndex,
+         animated: true,
+       });
+     }
+   });
+
+   return unsubscribe;
+ }, [navigation, handleDateSelect, events, nearestFutureEventIndex, flatListRef]);
 
   const renderEventCard = useCallback(
     ({ item }: { item: IEvent }) => {
