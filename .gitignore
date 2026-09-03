@@ -48,3 +48,4 @@ app-example
 .vscode
 
 .claude
+.env.local

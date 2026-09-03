@@ -15,6 +15,7 @@ import {
   useRef,
   useState
 } from "react";
+import { trackEvent } from "@/shared/services/analytics";
 
 export interface IEventContext {
   events: IEvent[] | null;
@@ -148,11 +149,13 @@ export const EventContextProvider = ({
 
       try {
         if (isFavorite) {
+          trackEvent('favorite_added', { event_id: String(eventId) });
           await favoriteEventsRepository.addFavoriteEvent(eventId);
           if (eventToSchedule) {
             await notificationsService.scheduleEventReminder(eventToSchedule);
           }
         } else {
+          trackEvent('favorite_removed', { event_id: String(eventId) });
           await favoriteEventsRepository.removeFavoriteEvent(eventId);
           await notificationsService.cancelEventReminder(eventId);
         }
