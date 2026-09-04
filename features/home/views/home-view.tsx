@@ -72,39 +72,12 @@ export default function HomeView() {
     visibleEventId,
     initialScrollIndex,
     nearestFutureEventIndex,
+    resetViewedPosition,
+    restoreLastViewedEvent,
     handleDateSelect,
     viewabilityConfig,
     onViewableItemsChanged,
   } = useHomeScreen({ events });
-
- // 3. OBSŁUGA PONOWNEGO KLIKNIĘCIA W TAB "HOME"
- useEffect(() => {
-   const unsubscribe = navigation.addListener("tabPress" as any, () => {
-     // 1. Pobieramy dzisiejsze wydarzenie (lub pierwsze nadchodzące)
-     const targetIndex = nearestFutureEventIndex >= 0 ? nearestFutureEventIndex : 0;
-     const targetEvent = events?.[targetIndex];
-
-     // 2. Pobieramy właściwą datę z dzisiejszego wydarzenia
-     if (targetEvent?.start_date) {
-       const todayEventDate = safeParseDate(targetEvent.start_date);
-       if (todayEventDate) {
-         handleDateSelect(todayEventDate);
-       }
-     } else {
-       handleDateSelect(new Date());
-     }
-
-     // 3. Przewijamy listę wydarzeń na odpowiednią pozycję
-     if (events && events.length > 0 && flatListRef.current) {
-       flatListRef.current.scrollToIndex({
-         index: targetIndex,
-         animated: true,
-       });
-     }
-   });
-
-   return unsubscribe;
- }, [navigation, handleDateSelect, events, nearestFutureEventIndex, flatListRef]);
 
   const renderEventCard = useCallback(
     ({ item }: { item: IEvent }) => {
@@ -140,11 +113,60 @@ export default function HomeView() {
     actualSelectedDate && firstEventDate
       ? isSameDay(actualSelectedDate, firstEventDate)
       : false;
+  const showReturnToToday =
+    isFocused && !isTodaySelected && !isHomeEventDay && !isFirstEventDay;
 
   useEffect(() => {
-    const showReturnToToday =
-      isFocused && !isTodaySelected && !isHomeEventDay && !isFirstEventDay;
+    if (!isFocused || !events || events.length === 0 || containerHeight === 0) {
+      return;
+    }
 
+    const timeout = setTimeout(() => {
+      restoreLastViewedEvent();
+    }, 150);
+
+    return () => clearTimeout(timeout);
+  }, [containerHeight, events, isFocused, restoreLastViewedEvent]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("tabPress" as any, () => {
+      if (!showReturnToToday) return;
+
+      resetViewedPosition();
+
+      const targetIndex =
+        nearestFutureEventIndex >= 0 ? nearestFutureEventIndex : 0;
+      const targetEvent = events?.[targetIndex];
+
+      if (targetEvent?.start_date) {
+        const todayEventDate = safeParseDate(targetEvent.start_date);
+        if (todayEventDate) {
+          handleDateSelect(todayEventDate);
+        }
+      } else {
+        handleDateSelect(new Date());
+      }
+
+      if (events && events.length > 0 && flatListRef.current) {
+        flatListRef.current.scrollToIndex({
+          index: targetIndex,
+          animated: true,
+        });
+      }
+    });
+
+    return unsubscribe;
+  }, [
+    events,
+    flatListRef,
+    handleDateSelect,
+    navigation,
+    nearestFutureEventIndex,
+    resetViewedPosition,
+    showReturnToToday,
+  ]);
+
+  useEffect(() => {
     navigation.setOptions({
       tabBarLabel: showReturnToToday ? "Powrót do dzisiaj" : "Strona główna",
       tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
@@ -161,7 +183,7 @@ export default function HomeView() {
         />
       ),
     });
-  }, [isFirstEventDay, isFocused, isHomeEventDay, isTodaySelected, navigation]);
+  }, [navigation, showReturnToToday]);
 
   return (
     <SafeAreaView

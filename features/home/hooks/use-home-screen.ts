@@ -17,6 +17,8 @@ events: IEvent[] | null | undefined;
 
 const HEADER_BASE_HEIGHT = 60;
 const FILTERS_HEIGHT = 60;
+let lastViewedEventId: number | null = null;
+let lastViewedDate: Date | null = null;
 
 /**
 * Hook zarządzający logiką strony głównej
@@ -38,9 +40,11 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
 
   const [containerHeight, setContainerHeight] = useState(0);
   const [selectedDate, setSelectedDate] = useState<Date | null | undefined>(
-    null,
+    lastViewedDate,
   );
-  const [visibleEventId, setVisibleEventId] = useState<number | null>(null);
+  const [visibleEventId, setVisibleEventId] = useState<number | null>(
+    lastViewedEventId,
+  );
   const [hasScrolledInitial, setHasScrolledInitial] = useState(false);
 
   const nearestFutureEventIndex = useMemo(
@@ -104,6 +108,8 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
       if (index !== -1) {
         // 2. NOWOŚĆ: Natychmiast aktualizujemy ID widocznego wydarzenia,
         // dzięki czemu kropka pod aktywnym dniem od razu się zapala!
+        lastViewedEventId = events[index].id;
+        lastViewedDate = date;
         setVisibleEventId(events[index].id);
 
         isProgrammaticScrollRef.current = true;
@@ -127,10 +133,12 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
         const event = visibleItem.item as IEvent;
 
         if (event) {
+          lastViewedEventId = event.id;
           setVisibleEventId(event.id);
           if (event.start_date) {
             const date = safeParseDate(event.start_date);
             if (date) {
+              lastViewedDate = date;
               setSelectedDate((prev) => {
                 if (!prev || !isSameDay(prev, date)) {
                   return date;
@@ -145,6 +153,23 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
     [],
   );
 
+  const resetViewedPosition = useCallback(() => {
+    lastViewedEventId = null;
+    lastViewedDate = null;
+    setVisibleEventId(null);
+    setSelectedDate(null);
+  }, []);
+
+  const restoreLastViewedEvent = useCallback(() => {
+    if (!events || events.length === 0 || lastViewedEventId === null) return;
+
+    const index = events.findIndex((event) => event.id === lastViewedEventId);
+    if (index === -1) return;
+
+    setVisibleEventId(lastViewedEventId);
+    flatListRef.current?.scrollToIndex({ index, animated: false });
+  }, [events]);
+
   return {
     flatListRef,
     cardHeight,
@@ -155,6 +180,8 @@ export function useHomeScreen({ events }: UseHomeScreenProps) {
     visibleEventId,
     initialScrollIndex,
     nearestFutureEventIndex,
+    resetViewedPosition,
+    restoreLastViewedEvent,
     handleDateSelect,
     viewabilityConfig,
     onViewableItemsChanged,
