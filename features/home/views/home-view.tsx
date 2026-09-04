@@ -1,5 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
+import ArrowLeftIcon from "@/assets/icons/arrow-left-300.svg";
+import HomeIconFilled from "@/assets/icons/home-icon-filled.svg";
+import HomeIconOutline from "@/assets/icons/home-icon-outline.svg";
 import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
@@ -7,15 +9,21 @@ import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
 import { useAppliedFilters, useFilters } from "@/features/filters/contexts";
 import { eventTagTranslations } from "@/shared/types/event-enums";
-import React, { useCallback, useContext, useMemo } from "react";
+import { isSameDay } from "@/utils/functions/date-utils";
+import { safeParseDate } from "@/utils/functions/event-utils";
+import { SvgIcon } from "@/shared/components/svg-icon/svg-icon";
+import React, { useCallback, useContext, useMemo, useEffect } from "react";
 import { ActivityIndicator, FlatList, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "expo-router"; // 1. IMPORT HOOKA NAWIGACJI
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
 import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
-import { safeParseDate } from "@/utils/functions/event-utils";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function HomeView() {
+  const navigation = useNavigation(); // 2. INICJALIZACJA NAWIGACJI
+  const isFocused = useIsFocused();
   const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
   const { colors } = useTheme();
@@ -64,6 +72,8 @@ export default function HomeView() {
     visibleEventId,
     initialScrollIndex,
     nearestFutureEventIndex,
+    resetViewedPosition,
+    restoreLastViewedEvent,
     handleDateSelect,
     viewabilityConfig,
     onViewableItemsChanged,
@@ -87,6 +97,93 @@ export default function HomeView() {
     (events && events.length > 0
       ? safeParseDate(events[nearestFutureEventIndex]?.start_date)
       : null);
+  const homeEventDate =
+    events && events.length > 0
+      ? safeParseDate(events[nearestFutureEventIndex]?.start_date)
+      : null;
+  const firstEventDate =
+    events && events.length > 0 ? safeParseDate(events[0].start_date) : null;
+  const isTodaySelected =
+    !actualSelectedDate || isSameDay(actualSelectedDate, new Date());
+  const isHomeEventDay =
+    actualSelectedDate && homeEventDate
+      ? isSameDay(actualSelectedDate, homeEventDate)
+      : false;
+  const isFirstEventDay =
+    actualSelectedDate && firstEventDate
+      ? isSameDay(actualSelectedDate, firstEventDate)
+      : false;
+  const showReturnToToday =
+    isFocused && !isTodaySelected && !isHomeEventDay && !isFirstEventDay;
+
+  useEffect(() => {
+    if (!isFocused || !events || events.length === 0 || containerHeight === 0) {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      restoreLastViewedEvent();
+    }, 150);
+
+    return () => clearTimeout(timeout);
+  }, [containerHeight, events, isFocused, restoreLastViewedEvent]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("tabPress" as any, () => {
+      if (!showReturnToToday) return;
+
+      resetViewedPosition();
+
+      const targetIndex =
+        nearestFutureEventIndex >= 0 ? nearestFutureEventIndex : 0;
+      const targetEvent = events?.[targetIndex];
+
+      if (targetEvent?.start_date) {
+        const todayEventDate = safeParseDate(targetEvent.start_date);
+        if (todayEventDate) {
+          handleDateSelect(todayEventDate);
+        }
+      } else {
+        handleDateSelect(new Date());
+      }
+
+      if (events && events.length > 0 && flatListRef.current) {
+        flatListRef.current.scrollToIndex({
+          index: targetIndex,
+          animated: true,
+        });
+      }
+    });
+
+    return unsubscribe;
+  }, [
+    events,
+    flatListRef,
+    handleDateSelect,
+    navigation,
+    nearestFutureEventIndex,
+    resetViewedPosition,
+    showReturnToToday,
+  ]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      tabBarLabel: showReturnToToday ? "Powrót do dzisiaj" : "Strona główna",
+      tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+        <SvgIcon
+          Icon={
+            showReturnToToday
+              ? ArrowLeftIcon
+              : focused
+                ? HomeIconFilled
+                : HomeIconOutline
+          }
+          size={24}
+          color={color}
+        />
+      ),
+    });
+  }, [navigation, showReturnToToday]);
 
   return (
     <SafeAreaView
