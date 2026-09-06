@@ -223,7 +223,7 @@ export const EventCard = React.memo(function EventCard({
               <Badge
                 key="remaining-count-badge"
                 name={`+${remainingTagsCount}`}
-                color={isDarkMode ? "#A0A0A0" : "#F4F0EA"}
+                color={isDarkMode ? "#A0A0A0" : "#EAEAEA"}
                 textColor="#111111"
               />
             )}
