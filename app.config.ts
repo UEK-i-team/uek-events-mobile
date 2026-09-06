@@ -19,10 +19,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ITSAppUsesNonExemptEncryption: false,
         ...(allowHttp
           ? {
-              NSAppTransportSecurity: {
-                NSAllowsArbitraryLoads: true,
-              },
-            }
+            NSAppTransportSecurity: {
+              NSAllowsArbitraryLoads: true,
+            },
+          }
           : {}),
       },
     },
@@ -48,6 +48,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       "expo-router",
+
       [
         "expo-notifications",
         {
