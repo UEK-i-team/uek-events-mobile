@@ -30,7 +30,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.mainBackgroundDarker }]}
+      style={[styles.card, { backgroundColor: colors.mainBackgroundLighter }]}
       activeOpacity={0.9}
       onPress={() => router.push(`/event/${event.id}`)}
     >
