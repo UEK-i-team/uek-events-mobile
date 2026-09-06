@@ -10,6 +10,7 @@ import { styles } from "./favorite-event-card.styles";
 import { formatEventDate, formatEventTime, isEventPassed } from "@/utils/functions/date-utils";
 import { getTagColor } from "@/shared/constants/theme";
 import { useTheme } from "@/shared/context/ThemeContext";
+import { Badge } from "@/features/home/components/badge/badge";
 
 interface FavoriteEventCardProps {
   event: IEvent;
@@ -29,7 +30,7 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: colors.mainBackgroundLighter }]}
+      style={[styles.card, { backgroundColor: colors.mainBackgroundDarker }]}
       activeOpacity={0.9}
       onPress={() => router.push(`/event/${event.id}`)}
     >
@@ -86,44 +87,35 @@ export function FavoriteEventCard({ event, onRemove }: FavoriteEventCardProps) {
 
       <View style={styles.tagsRow}>
         {event.event_type && (
-          <View
-            style={[
-              styles.tag,
-              {
-                backgroundColor: "#111111",
-              },
-            ]}
-          >
-            <Text style={[styles.tagText, { color: "#F4F3F2" }]}>
-              {event.event_type}
-            </Text>
-          </View>
+          <Badge
+            key={event.event_type}
+            name={event.event_type}
+            color="#111111"
+            textColor="#F4F3F2"
+            size="small"
+          />
         )}
 
         {visibleTags.map((tag) => {
           const tagBgColor = getTagColor(tag, eventHasPassed);
           return (
-            <View
+            <Badge
               key={tag}
-              style={[
-                styles.tag,
-                {
-                  backgroundColor: tagBgColor,
-                },
-              ]}
-            >
-              <Text style={[styles.tagText, { color: "#111111" }]}>{tag}</Text>
-            </View>
+              name={tag}
+              color={tagBgColor}
+              textColor="#111111"
+              size="small"
+            />
           );
         })}
 
-{remainingTagsCount > 0 && (
-  <View style={[styles.remainingBadge, { backgroundColor: 'transparent' }]}>
-    <Text style={[styles.remainingText, { color: colors.textPrimary }]}>
-      +{remainingTagsCount}
-    </Text>
-  </View>
-)}
+        {remainingTagsCount > 0 && (
+          <View style={[styles.remainingBadge, { backgroundColor: 'transparent' }]}>
+            <Text style={[styles.remainingText, { color: colors.textPrimary }]}>
+              +{remainingTagsCount}
+            </Text>
+          </View>
+        )}
       </View>
 
       <TouchableOpacity
