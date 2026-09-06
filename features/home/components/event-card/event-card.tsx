@@ -131,7 +131,7 @@ export const EventCard = React.memo(function EventCard({
             <EventImageContainer
               imageUrl={imageUrl}
               width={imageWidth}
-              extractedColor={dominantColor}
+              extractedColor={backgroundColor}
               customWidth={imageWidth}
               cornerRadius={30}
               fill
