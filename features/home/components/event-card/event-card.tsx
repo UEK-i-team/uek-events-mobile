@@ -1,5 +1,13 @@
 import FavoriteIcon from "@/assets/icons/favorite.svg";
 import FavoriteIconFilled from "@/assets/icons/heart-icon-filled.svg";
+import WorkIcon from "@/assets/icons/work-icon.svg";
+import MeetingIcon from "@/assets/icons/meeting-icon.svg";
+import PresentationIcon from "@/assets/icons/presentation-icon.svg";
+import ForumIcon from "@/assets/icons/forum-icon.svg";
+import ConferenceIcon from "@/assets/icons/conference-icon.svg";
+import WorkshopIcon from "@/assets/icons/workshop-icon.svg";
+import RecrutationIcon from "@/assets/icons/recrutation-icon.svg";
+import ChampionshipIcon from "@/assets/icons/championship-icon.svg";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
@@ -28,6 +36,23 @@ interface EventCardProps {
 }
 
 const MAX_VISIBLE_TAGS = 3;
+
+const getEventTypeIcon = (eventType?: string) => {
+  if (!eventType) return undefined;
+
+  const normalizedType = eventType.toLowerCase();
+
+  if (normalizedType.includes("kariera")) return WorkIcon;
+  if (normalizedType.includes("spotkanie")) return MeetingIcon;
+  if (normalizedType.includes("debata"))  return ForumIcon;
+  if (normalizedType.includes("konferencja")) return ConferenceIcon;
+  if (normalizedType.includes("warsztaty")) return WorkshopIcon;
+  if (normalizedType.includes("wykład")) return PresentationIcon;
+  if (normalizedType.includes("konkurs")) return ChampionshipIcon;
+  if (normalizedType.includes("rekrutacja")) return RecrutationIcon;
+
+  return undefined;
+};
 
 export const EventCard = React.memo(function EventCard({
   event,
@@ -182,6 +207,7 @@ export const EventCard = React.memo(function EventCard({
                 name={event.event_type}
                 color="#111111"
                 textColor="#F4F3F2"
+                icon={getEventTypeIcon(event.event_type)}
               />
             )}
 
