@@ -18,6 +18,8 @@ import {
 import { styles } from "./timeline-scroller.styles";
 import { useTheme } from "@/shared/context/ThemeContext";
 
+const TIMELINE_DAYS = ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "So"];
+
 const getCurrentDate = () => new Date();
 
 export interface DateItem {
@@ -99,6 +101,9 @@ const Day = memo(function Day({
           >
             {dayNumber}
           </ThemedText>
+          <ThemedText style={isDark ? styles.dayOfWeekEmptyDark : styles.dayOfWeekEmptyLight}>
+            {TIMELINE_DAYS[item.date.getDay()]}
+          </ThemedText>
         </View>
       </View>
     );
@@ -132,6 +137,18 @@ const Day = memo(function Day({
           ]}
         >
           {dayNumber}
+        </ThemedText>
+        <ThemedText
+          style={[
+            styles.dayOfWeek,
+            isDaySelected
+              ? styles.dayOfWeekActive
+              : isDark
+                ? styles.dayOfWeekInactiveDark
+                : styles.dayOfWeekInactiveLight,
+          ]}
+        >
+          {TIMELINE_DAYS[item.date.getDay()]}
         </ThemedText>
       </View>
       <View style={styles.dotsContainer}>

@@ -59,6 +59,7 @@ container: {
     marginBottom: 8,
     borderWidth: .5,
     borderColor: '#111111',
+    paddingTop: 4,
   },
   dateBoxActive: {
     backgroundColor: '#FF7324', // Orange
@@ -72,32 +73,56 @@ container: {
   dateBoxEmpty: {
     width: 36,
     height: 62, // Total height of normal item: 48 (box) + 8 (margin) + 6 (dots)
-    paddingBottom: 14, // Push the text up to match the visual center of the 48px box
+    paddingBottom: 8, // Push the text up to match the visual center of the 48px box
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
   },
   dayText: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '400',
+  },
+  dayOfWeek: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: -2,
   },
   dayTextActive: {
     color: '#11181C', // Dark text on active orange
   },
+  dayOfWeekActive: {
+    color: '#11181C',
+  },
   dayTextInactiveLight: {
     color: '#687076',
   },
+  dayOfWeekInactiveLight: {
+    color: '#687076',
+  },
   dayTextInactiveDark: {
+    color: '#111111',
+  },
+  dayOfWeekInactiveDark: {
     color: '#111111',
   },
   dayTextEmptyLight: {
     fontSize: 15,
     color: '#A0A0A0', // Greyed out text
   },
+  dayOfWeekEmptyLight: {
+    fontSize: 10,
+    color: '#A0A0A0',
+    marginTop: -2,
+  },
   dayTextEmptyDark: {
     fontSize: 15,
     color: '#555555', // Greyed out text for dark mode
+  },
+  dayOfWeekEmptyDark: {
+    fontSize: 10,
+    color: '#555555',
+    marginTop: -2,
   },
   dotsContainer: {
     flexDirection: 'row',
