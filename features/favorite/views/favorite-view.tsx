@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -16,31 +16,50 @@ import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
 import { safeParseDate } from "@/utils/functions/event-utils";
 
+import { useDependencies } from "@/shared/di/DependencyProvider";
+
 import { FavoriteEventCard } from "../components/favorite-event-card/favorite-event-card";
 import { styles } from "./favorite-view.styles";
 import { theme } from "@/shared/constants/theme";
 
-type SortMode = "liked" | "added";
+type SortMode = "liked" | "event_date";
 
 export default function FavoriteView() {
   const { events, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
   const [sortMode, setSortMode] = useState<SortMode>("liked");
   const { isDarkMode, colors } = useTheme();
+  const { favoriteEventsRepository } = useDependencies();
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    favoriteEventsRepository.getFavoriteEvents().then((ids) => {
+      setFavoriteIds(ids || []);
+    });
+  }, [favoriteEventsRepository, events]);
 
   const favoriteEvents = useMemo(() => {
     const favs = events?.filter((event) => event.isFavorite) || [];
-    if (sortMode === "added") {
-      return [...favs].sort(
-        (a, b) => {
-          const timeA = safeParseDate(a.start_date)?.getTime() || 0;
-          const timeB = safeParseDate(b.start_date)?.getTime() || 0;
-          return timeA - timeB;
-        }
-      );
+    
+    if (sortMode === "liked") {
+      return [...favs].sort((a, b) => {
+        const indexA = favoriteIds.indexOf(a.id);
+        const indexB = favoriteIds.indexOf(b.id);
+        const validIndexA = indexA === -1 ? -1 : indexA;
+        const validIndexB = indexB === -1 ? -1 : indexB;
+        return validIndexB - validIndexA;
+      });
     }
-    return favs;
-  }, [events, sortMode]);
+    
+    // event_date
+    return [...favs].sort(
+      (a, b) => {
+        const timeA = safeParseDate(a.start_date)?.getTime() || 0;
+        const timeB = safeParseDate(b.start_date)?.getTime() || 0;
+        return timeA - timeB;
+      }
+    );
+  }, [events, sortMode, favoriteIds]);
 
   const renderEventCard = ({ item }: { item: IEvent }) => (
     <FavoriteEventCard event={item} onRemove={toggleFavoriteEvent} />
@@ -159,20 +178,20 @@ export default function FavoriteView() {
                   flex: 1,
                   minWidth: 0,
                   backgroundColor: colors.light_grey,
-                  borderColor: sortMode === "added" ? colors.primary : (isDarkMode ? "transparent" : "rgba(0,0,0,0.13)"),
-                  borderWidth: sortMode === "added" ? 2 : 1,
+                  borderColor: sortMode === "event_date" ? colors.primary : (isDarkMode ? "transparent" : "rgba(0,0,0,0.13)"),
+                  borderWidth: sortMode === "event_date" ? 2 : 1,
                 },
               ]}
-              onPress={() => setSortMode("added")}
+              onPress={() => setSortMode("event_date")}
               activeOpacity={0.8}
             >
               <Text
                 style={
                   [
-                    sortMode === "added"
+                    sortMode === "event_date"
                       ? styles.tabTextActive
                       : styles.tabTextInactive,
-                    { color: sortMode === "added" ? colors.primary : colors.textPrimary },
+                    { color: sortMode === "event_date" ? colors.primary : colors.textPrimary },
                   ]
                 }
                 numberOfLines={1}
