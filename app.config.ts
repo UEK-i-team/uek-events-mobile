@@ -15,6 +15,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.item.uekevents",
+      associatedDomains: ["applinks:eventuje.pl"],
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         ...(allowHttp
@@ -31,6 +32,20 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       versionCode: 1,
       // @ts-ignore - To właściwość znana przez natywny builder, ale może jej brakować w podstawowych typach configu.
       usesCleartextTraffic: allowHttp,
+      intentFilters: [
+        {
+          action: "VIEW",
+          autoVerify: true,
+          data: [
+            {
+              scheme: "https",
+              host: "eventuje.pl",
+              pathPrefix: "/",
+            },
+          ],
+          category: ["BROWSABLE", "DEFAULT"],
+        },
+      ],
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
         foregroundImage: "./assets/images/android-icon-foreground.png",
@@ -48,6 +63,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       "expo-router",
+      [
+        "expo-calendar",
+        {
+          calendarPermission: "Eventuje potrzebuje dostępu do kalendarza, aby dodawać wydarzenia.",
+        }
+      ],
       [
         "expo-notifications",
         {

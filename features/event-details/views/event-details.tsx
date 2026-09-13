@@ -6,7 +6,9 @@ import {
   Linking,
   Share,
   useWindowDimensions,
+  Alert,
 } from "react-native";
+import * as Calendar from "expo-calendar";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -42,7 +44,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
   const { colors, isDarkMode } = useTheme();
   const { width: SCREEN_WIDTH } = useWindowDimensions();
- 
+
   const isTablet = SCREEN_WIDTH >= 768;
   const event = getEventById(Number(eventId));
 
@@ -62,15 +64,55 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
     try {
       const formattedDate = formatShareEventDate(event.start_date);
       const formattedTime = formatEventTime(event.start_date);
-      const categoryText = event.event_type ? `**${event.event_type.toLowerCase()}**` : 'wydarzenie';
-      const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
+      const shareUrl = `https://eventuje.pl/event/${eventId}`;
+      const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${shareUrl}\n\n📍 Gdzie: ${event.location}`;
 
       await Share.share({
         message: messageTemplate,
-        url: event.origin_url,
+        url: shareUrl,
       });
     } catch (error: any) {
       console.error(error.message);
+    }
+  };
+
+  const addToCalendar = async () => {
+    try {
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert("Brak uprawnień", "Aby dodać wydarzenie, przyznaj aplikacji dostęp do kalendarza.");
+        return;
+      }
+
+      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+      // Priority to the default calendar or the first available
+      const defaultCalendar = calendars.find(c => c.isPrimary) || calendars[0];
+      
+      if (!defaultCalendar) {
+        Alert.alert("Błąd", "Nie znaleziono domyślnego kalendarza na urządzeniu.");
+        return;
+      }
+
+      const startDate = new Date(event.start_date);
+      let endDate = new Date(event.end_date);
+      
+      // If end_date is missing or invalid, default to 1 hour after start
+      if (isNaN(endDate.getTime())) {
+        endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+      }
+
+      await Calendar.createEventAsync(defaultCalendar.id, {
+        title: event.title,
+        startDate: startDate,
+        endDate: endDate,
+        location: event.location,
+        notes: event.short_desc,
+      });
+
+      Alert.alert("Sukces", "Wydarzenie zostało dodane do kalendarza!");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Błąd", "Nie udało się dodać wydarzenia do kalendarza.");
     }
   };
 
@@ -115,6 +157,12 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
             </View>
           ) : null}
           <View style={styles.positionButtons}>
+            <RoundedButton
+              icon={CalendarIcon}
+              iconColor={isDarkMode ? colors.textPrimary : colors.dark_grey}
+              backgroundColor={colors.surface}
+              onPress={addToCalendar}
+            />
             <RoundedButton
               icon={ShareIcon}
               backgroundColor={colors.primary}
