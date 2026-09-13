@@ -22,6 +22,7 @@ import HomeIconFilled from "@/assets/icons/home-icon-filled.svg";
 import HomeIconOutline from "@/assets/icons/home-icon-outline.svg";
 import InfoIconFilled from "@/assets/icons/info-icon-filled.svg";
 import InfoIconOutline from "@/assets/icons/info-icon-outline.svg";
+import ScheduleIcon from "@/assets/icons/schedule.svg";
 
 const AnimatedPressable = Animated.createAnimatedComponent(PlatformPressable);
 
@@ -104,6 +105,19 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <SvgIcon
               Icon={focused ? HeartIconFilled : HeartIconOutline}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="schedule"
+        options={{
+          title: "Plan zajęć",
+          tabBarIcon: ({ color, focused }) => (
+            <SvgIcon
+              Icon={ScheduleIcon}
               size={24}
               color={color}
             />
