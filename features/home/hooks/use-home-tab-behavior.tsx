@@ -7,8 +7,7 @@ import HomeIconFilled from "@/assets/icons/home-icon-filled.svg";
 import HomeIconOutline from "@/assets/icons/home-icon-outline.svg";
 import { SvgIcon } from "@/shared/components/svg-icon/svg-icon";
 import { IEvent } from "@/shared/types/event";
-import { isSameDay } from "@/utils/functions/date-utils";
-import { safeParseDate } from "@/utils/functions/event-utils";
+import { shouldShowReturnToToday } from "./home-tab-state";
 
 interface UseHomeTabBehaviorProps {
   events: IEvent[] | null | undefined;
@@ -35,27 +34,13 @@ export function useHomeTabBehavior({
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-  const hasEvents = !!events && events.length > 0;
-  const homeEventDate = hasEvents
-    ? safeParseDate(events![nearestFutureEventIndex]?.start_date)
-    : null;
-  const firstEventDate = hasEvents
-    ? safeParseDate(events![0].start_date)
-    : null;
-
-  const isTodaySelected =
-    !actualSelectedDate || isSameDay(actualSelectedDate, new Date());
-  const isHomeEventDay =
-    actualSelectedDate && homeEventDate
-      ? isSameDay(actualSelectedDate, homeEventDate)
-      : false;
-  const isFirstEventDay =
-    actualSelectedDate && firstEventDate
-      ? isSameDay(actualSelectedDate, firstEventDate)
-      : false;
-
   const showReturnToToday =
-    isFocused && !isTodaySelected && !isHomeEventDay && !isFirstEventDay;
+    isFocused &&
+    shouldShowReturnToToday({
+      events,
+      actualSelectedDate,
+      nearestFutureEventIndex,
+    });
 
   // Przywracanie pozycji po powrocie na ekran. Pierwsze wejście pomijamy —
   // start ma wylądować na najbliższym evencie (robi to efekt initial-scroll).
@@ -93,7 +78,7 @@ export function useHomeTabBehavior({
   // Ikona i label zakładki zależne od tego, czy pokazujemy „Wróć do dziś".
   useEffect(() => {
     navigation.setOptions({
-      tabBarLabel: showReturnToToday ? "Wróć do dziś" : "Strona główna",
+      tabBarLabel: showReturnToToday ? "Powrót" : "Strona główna",
       tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
         <SvgIcon
           Icon={

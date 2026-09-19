@@ -49,6 +49,15 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       "expo-router",
       [
+        "expo-build-properties",
+        {
+          ios: {
+            deploymentTarget: "15.1",
+          },
+        },
+      ],
+      ["./plugins/with-ios-deployment-target", { deploymentTarget: "15.1" }],
+      [
         "expo-notifications",
         {
           icon: "./assets/images/android-icon-monochrome.png",
