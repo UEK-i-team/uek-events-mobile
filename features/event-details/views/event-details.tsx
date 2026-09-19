@@ -47,15 +47,23 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const isTablet = SCREEN_WIDTH >= 768;
   const event = getEventById(Number(eventId));
 
+  useEffect(() => {
+    if (!event?.id) {
+      return;
+    }
+
+    // Debounce/dedup: przy szybkiej nawigacji timeout jest czyszczony
+    // przed wysłaniem, więc nie spamujemy zdarzeniem view_event.
+    const timeout = setTimeout(() => {
+      trackEvent('view_event', { event_id: event.id });
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [event?.id]);
+
   if (!event) {
     return <Text>Event not found</Text>;
   }
-
-  useEffect(() => {
-    trackEvent('view_event', { event_id: event.id });
-  }, [event.id]);
-
-
 
   const eventHasPassed = isEventPassed(event.end_date, event.start_date);
   const isMultiDay = isMultiDayEvent(event.start_date, event.end_date);

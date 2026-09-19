@@ -1,30 +1,23 @@
+import { apiConnector } from "@/shared/connectors/api-connector/api-connector";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://api.uekeventuje.pl/';
+const ANALYTICS_ENDPOINT = "api/analytics/";
 
-export const trackEvent = async (eventName: string, parameters?: Record<string, any>) => {
-    try {
-        const url = new URL('/api/analytics/', API_BASE_URL).toString();
+export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
+    const payload = {
+        event_type: eventName,
+        metadata: parameters || {},
+        timestamp: new Date().toISOString(),
+    };
 
-        const payload = {
-            event_type: eventName,
-            metadata: parameters || {},
-            timestamp: new Date().toISOString(),
-        };
-
-        console.log(`[Analytics] Sending to ${url}:`, JSON.stringify(payload, null, 2));
-
-        // Zabezpieczenie przed wyrzuceniem błędu do UI w przypadku braku połączenia
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        }).catch((err) => {
-            console.warn(`[Analytics] Nie udało się wysłać zdarzenia ${eventName}:`, err.message);
-        });
-
-    } catch (e) {
-        console.warn(`[Analytics] Błąd inicjalizacji zapytania dla ${eventName}`);
+    if (__DEV__) {
+        console.log(`[Analytics] ${eventName}:`, JSON.stringify(payload, null, 2));
     }
+
+    // Fire-and-forget: nie blokujemy UI i nie propagujemy błędów sieciowych do interfejsu.
+    // Korzystamy z apiConnector (spójny base URL, nagłówki, retry).
+    apiConnector.post(ANALYTICS_ENDPOINT, payload).catch((err) => {
+        if (__DEV__) {
+            console.warn(`[Analytics] Nie udało się wysłać zdarzenia ${eventName}:`, err?.message);
+        }
+    });
 };
