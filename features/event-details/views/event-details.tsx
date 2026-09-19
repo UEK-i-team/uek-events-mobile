@@ -11,7 +11,8 @@ import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { styles } from "./event-details.styles";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
+import { trackEvent } from "@/shared/services/analytics";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import HeartOutlineIcon from "@/assets/icons/heart-icon-outline.svg";
@@ -72,6 +73,20 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const isTablet = SCREEN_WIDTH >= 768;
   const event = getEventById(Number(eventId));
 
+  useEffect(() => {
+    if (!event?.id) {
+      return;
+    }
+
+    // Debounce/dedup: przy szybkiej nawigacji timeout jest czyszczony
+    // przed wysłaniem, więc nie spamujemy zdarzeniem view_event.
+    const timeout = setTimeout(() => {
+      trackEvent('view_event', { event_id: event.id });
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [event?.id]);
+
   if (!event) {
     return <Text>Event not found</Text>;
   }
@@ -91,10 +106,14 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
       const categoryText = event.event_type ? `**${event.event_type.toLowerCase()}**` : 'wydarzenie';
       const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
 
-      await Share.share({
+      const result = await Share.share({
         message: messageTemplate,
         url: event.origin_url,
       });
+
+      if (result.action === Share.sharedAction) {
+        trackEvent('event_shared', { event_id: event.id });
+      }
     } catch (error: any) {
       console.error(error.message);
     }
@@ -245,7 +264,10 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.primary }, isTablet && { height: 60 }]}
           activeOpacity={0.8}
-          onPress={() => Linking.openURL(event.origin_url)}
+          onPress={() => {
+            trackEvent('external_link_clicked', { event_id: event.id, url: event.origin_url });
+            Linking.openURL(event.origin_url);
+          }}
         >
           <Text style={[styles.actionButtonText, { color: colors.dark_grey }, isTablet && { fontSize: 20 }]}>
             Zobacz szczegóły wydarzenia
