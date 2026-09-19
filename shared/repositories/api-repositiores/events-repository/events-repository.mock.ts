@@ -232,6 +232,33 @@ export class EventsRepositoryMock implements IEventsRepository {
       },
     ];
 
+    // === DEMO BŁĘDU „Wróć do dziś" ===
+    // Przestawiamy daty na WZGLĘDNE do dzisiaj, żeby na żywo odtworzyć scenariusz
+    // koleżanki: są dostępne przyszłe eventy, a mimo to na dniu najbliższego
+    // przyszłego eventu (kotwica) tabbar pokazuje „Strona główna" zamiast „Wróć".
+    // Aby przywrócić oryginalne, sztywne daty: git checkout na tym pliku.
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const schedule: { id: number; offsetDays: number; hour: number }[] = [
+      { id: 8, offsetDays: -40, hour: 18 }, // pierwszy event listy (też chowa „Wróć")
+      { id: 7, offsetDays: -25, hour: 11 },
+      { id: 4, offsetDays: -12, hour: 18 },
+      { id: 5, offsetDays: -12, hour: 18 },
+      { id: 6, offsetDays: -12, hour: 18 },
+      { id: 9, offsetDays: 2, hour: 17 }, // <-- NAJBLIŻSZY PRZYSZŁY EVENT = kotwica „Strona główna"
+      { id: 10, offsetDays: 5, hour: 12 },
+      { id: 11, offsetDays: 9, hour: 10 },
+      { id: 12, offsetDays: 16, hour: 16 },
+    ];
+    for (const s of schedule) {
+      const ev = events.find((e) => e.id === s.id);
+      if (!ev) continue;
+      const start = new Date(Date.now() + s.offsetDays * DAY_MS);
+      start.setHours(s.hour, 0, 0, 0);
+      const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+      ev.start_date = start.toISOString();
+      ev.end_date = end.toISOString();
+    }
+
     events.sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
     return events;
   }
