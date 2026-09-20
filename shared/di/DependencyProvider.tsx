@@ -18,6 +18,7 @@ import { NotificationsService } from "@/shared/services/notifications-service/no
 import { DictionariesRepository } from "../repositories/api-repositiores/dictionaries-repository/dictionaries-repository";
 import { DictionariesRepositoryMock } from "../repositories/api-repositiores/dictionaries-repository/dictionaries-repository.mock";
 import { EventsRepositoryMock } from "../repositories/api-repositiores/events-repository/events-repository.mock";
+import { ScheduleRepository } from "@/shared/repositories/api-repositiores/schedule-repository/schedule-repository";
 
 const IS_API_MOCK_ENABLED =
   process.env.EXPO_PUBLIC_IS_API_MOCK_ENABLED === "true" || false;
@@ -31,11 +32,13 @@ const favoriteEventsStorage = new AsyncStorageService<number[]>(
 const favoriteEventsRepository = new FavoriteEventsRepository(
   favoriteEventsStorage,
 );
+const scheduleGroupsStorage = new AsyncStorageService<any>("schedule-groups-cache");
 
 // Repositories
 
 let eventsRepository;
 let dictionariesRepository;
+const scheduleRepository = new ScheduleRepository(apiConnector, scheduleGroupsStorage);
 
 if (IS_API_MOCK_ENABLED) {
   eventsRepository = new EventsRepositoryMock();
@@ -62,6 +65,7 @@ interface AppDependencies {
   eventsService: EventsService;
   favoriteEventsRepository: FavoriteEventsRepository;
   notificationsService: NotificationsService;
+  scheduleRepository: ScheduleRepository;
 }
 
 const DependencyContext = createContext<AppDependencies | null>(null);
@@ -76,6 +80,7 @@ export const DependencyProvider = ({ children }: ProviderProps) => {
       eventsService,
       favoriteEventsRepository,
       notificationsService,
+      scheduleRepository,
     }),
     [],
   );

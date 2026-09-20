@@ -51,8 +51,14 @@ export const getStyles = (colors: AppThemeColors) =>
       fontSize: 18,
       fontWeight: "500",
       color: colors.textPrimary,
-      marginBottom: 16,
+      marginBottom: 4,
       lineHeight: 24,
+    },
+    groupNameText: {
+      fontSize: 14,
+      color: colors.primary, // Highlight the group visually
+      fontWeight: "500",
+      marginBottom: 12,
     },
     footerContainer: {
       marginTop: "auto",

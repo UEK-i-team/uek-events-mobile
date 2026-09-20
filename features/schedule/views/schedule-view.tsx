@@ -9,75 +9,158 @@ import { BreakDivider } from "../components/break-divider/break-divider";
 import { IEvent } from "@/shared/types/event";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
+import { TouchableOpacity } from "react-native";
+import { useSchedule } from "../contexts/schedule-context";
+import { GroupSelectorModal } from "../components/group-selector-modal/group-selector-modal";
+
+const translateEventType = (type: string) => {
+  const map: Record<string, string> = {
+    'PHYSICAL_EDUCATION': 'Wychowanie fizyczne',
+    'LECTURE': 'Wykład',
+    'LABORATORY': 'Laboratorium',
+    'PROJECT': 'Projekt',
+    'SEMINAR': 'Seminarium',
+    'EXERCISES': 'Ćwiczenia',
+    'WORKSHOP': 'Warsztaty',
+    'EXAM': 'Egzamin',
+    'OTHER': 'Inne',
+  };
+  return map[type] || type;
+};
 
 export const ScheduleView = () => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
   
-  // Create a mock date for "Poniedziałek, 24 gru" as requested in the design
-  // We'll use the current year, month 11 (December), day 24
-  const mockSelectedDate = new Date(new Date().getFullYear(), 11, 24);
-  const [selectedDate, setSelectedDate] = useState<Date>(mockSelectedDate);
+  // Initialize to the current device date
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // Format date like "Poniedziałek, 24 gru"
   const formattedDate = format(selectedDate, "EEEE, d MMM", { locale: pl });
   // capitalize first letter
   const capitalizedFormattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
 
-  const mockEvents: IEvent[] = [
-    {
-      id: 1,
-      update_date: new Date().toISOString(),
-      start_date: mockSelectedDate.toISOString(),
-      end_date: mockSelectedDate.toISOString(),
-      title: "Mock",
-      short_desc: "",
-      topics: [],
-      event_type: "",
-      location_category: "",
-      location: "",
-      organisators_category: "",
-      organisators: "",
-      tags: [],
-      image_url: "",
-      origin_url: "",
-      registration_type: "",
+  const { scheduleEvents, getGroupName } = useSchedule();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  // Filter and sort events for the selected date
+  const dayEvents = scheduleEvents
+    .filter(event => {
+      const eventDate = new Date(event.start_time);
+      return (
+        eventDate.getDate() === selectedDate.getDate() &&
+        eventDate.getMonth() === selectedDate.getMonth() &&
+        eventDate.getFullYear() === selectedDate.getFullYear()
+      );
+    })
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+
+  const handleScrollEndDrag = (event: any) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const threshold = 50;
+    
+    // Calculate the maximum normal scroll position. If content is shorter than the screen, it's 0.
+    const maxScroll = Math.max(0, contentSize.height - layoutMeasurement.height);
+
+    if (contentOffset.y < -threshold) {
+      // Pulled down at the top -> previous day
+      const prevDay = new Date(selectedDate);
+      prevDay.setDate(prevDay.getDate() - 1);
+      setSelectedDate(prevDay);
+    } else if (contentOffset.y > maxScroll + threshold) {
+      // Pulled up at the bottom -> next day
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      setSelectedDate(nextDay);
     }
-  ];
+  };
+
+  const handleTouchStart = (e: any) => {
+    setTouchStartY(e.nativeEvent.pageY);
+  };
+
+  const handleTouchEnd = (e: any) => {
+    if (touchStartY === null) return;
+    const touchEndY = e.nativeEvent.pageY;
+    const distance = touchEndY - touchStartY;
+    const threshold = 50;
+
+    // Only apply manual touch swipe if there are no events (ScrollView won't scroll)
+    if (dayEvents.length === 0) {
+      if (distance > threshold) {
+        // Pulled down -> previous day
+        const prevDay = new Date(selectedDate);
+        prevDay.setDate(prevDay.getDate() - 1);
+        setSelectedDate(prevDay);
+      } else if (distance < -threshold) {
+        // Pulled up -> next day
+        const nextDay = new Date(selectedDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        setSelectedDate(nextDay);
+      }
+    }
+    setTouchStartY(null);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <TimelineScroller
-        events={mockEvents}
+        events={scheduleEvents as any}
         selectedDate={selectedDate}
         onDateSelect={setSelectedDate}
         visibleEventId={null}
       />
       
-      <Text style={styles.headerText}>{capitalizedFormattedDate}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.headerText}>{capitalizedFormattedDate}</Text>
+        <TouchableOpacity style={styles.iconButton} onPress={() => setIsModalVisible(true)}>
+          <Text style={{ fontSize: 24, color: colors.primary }}>+</Text>
+        </TouchableOpacity>
+      </View>
 
-      <ScrollView contentContainerStyle={styles.listContent}>
-        <ClassCard
-          timeRange="8:00-9:30"
-          room="Sala F 615"
-          title="Oszustwa podatkowe"
-          type="Wykład"
-          professor="Prof. UEK Mariusz Grabowski"
-          borderColor="#00D2D3" // Cyan
-          roomDotColor="#00D2D3"
-        />
-        <BreakDivider durationText="Przerwa 15 min" />
-        <ClassCard
-          timeRange="9:45-11:15"
-          room="Sala B 015"
-          title="Analiza gospodarcza i marketing rynkowy"
-          type="Ćwiczenia"
-          professor="Prof. UEK Mariusz Grabowski"
-          borderColor="#FDCB6E" // Yellow
-          roomDotColor="#FDCB6E"
-        />
-        <BreakDivider durationText="Przerwa 2 h" />
+      <ScrollView 
+        contentContainerStyle={[styles.listContent, dayEvents.length === 0 && { flexGrow: 1 }]}
+        onScrollEndDrag={handleScrollEndDrag}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        scrollEventThrottle={16}
+        bounces={true}
+        alwaysBounceVertical={true}
+      >
+        {dayEvents.length === 0 ? (
+          <Text style={{ textAlign: "center", color: colors.textSecondary, marginTop: 20 }}>
+            Brak zajęć na ten dzień.
+          </Text>
+        ) : (
+          dayEvents.map((event, index) => {
+            const nextEvent = dayEvents[index + 1];
+            const hasBreak = nextEvent && new Date(nextEvent.start_time).getTime() >= new Date(event.end_time).getTime();
+            
+            return (
+              <React.Fragment key={event.id}>
+                <ClassCard
+                  timeRange={`${new Date(event.start_time).getHours()}:${new Date(event.start_time).getMinutes().toString().padStart(2, '0')}-${new Date(event.end_time).getHours()}:${new Date(event.end_time).getMinutes().toString().padStart(2, '0')}`}
+                  room={event.room?.name || "Sala nieznana"}
+                  title={event.course}
+                  type={translateEventType(event.type)}
+                  professor={event.teacher?.name || "Nieznany prowadzący"}
+                  borderColor={event.borderColor || "#00D2D3"}
+                  roomDotColor={event.roomDotColor || "#00D2D3"}
+                />
+                {hasBreak && (
+                  <BreakDivider durationText="Przerwa" />
+                )}
+              </React.Fragment>
+            );
+          })
+        )}
       </ScrollView>
+
+      <GroupSelectorModal 
+        visible={isModalVisible} 
+        onClose={() => setIsModalVisible(false)} 
+      />
     </SafeAreaView>
   );
 };

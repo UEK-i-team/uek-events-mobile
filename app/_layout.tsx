@@ -25,6 +25,7 @@ import {
 import { EventContext, EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
 import { ThemeProvider as AppThemeProvider, useTheme } from "@/shared/context/ThemeContext";
+import { ScheduleProvider } from "@/features/schedule/contexts/schedule-context";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -146,11 +147,13 @@ export default function RootLayout() {
         <NotificationProvider>
           <EventContextProvider>
             <NewEventsProvider>
-              <NavigationThemeProvider value={DefaultTheme}>
-                <AppThemeProvider>
-                  <ThemedApp />
-                </AppThemeProvider>
-              </NavigationThemeProvider>
+              <ScheduleProvider>
+                <NavigationThemeProvider value={DefaultTheme}>
+                  <AppThemeProvider>
+                    <ThemedApp />
+                  </AppThemeProvider>
+                </NavigationThemeProvider>
+              </ScheduleProvider>
             </NewEventsProvider>
           </EventContextProvider>
         </NotificationProvider>
