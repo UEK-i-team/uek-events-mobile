@@ -12,6 +12,8 @@ import { useTheme } from "@/shared/context/ThemeContext";
 
 const EMAIL = "kontakt@uekeventuje.pl";
 const UEK_COLOR = "#803248";
+const GOOGLE_FORM_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSeXM4sSqfKpRZfKkIyg87GS5EsXpfZUpMIdoEMSzxJJSb_U7Q/viewform?usp=dialog";
 
 export default function InfoScreen() {
   const notificationContext = useContext(NotificationContext);
@@ -36,7 +38,9 @@ export default function InfoScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.section}>
-          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.textPrimary }]}>Ustawienia</ThemedText>
+          <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+            Ustawienia
+          </ThemedText>
           <View style={styles.linkItem}>
             <ThemedText style={{ color: colors.textPrimary, fontSize: 16 }}>
               Tryb ciemny
@@ -57,15 +61,15 @@ export default function InfoScreen() {
           >
             O aplikacji
           </ThemedText>
-          <View style={[styles.creatorsSection]}>
+          <View style={styles.creatorsSection}>
             <ThemedText style={[styles.creatorsTitle, { color: colors.textPrimary }]}>
               CEL APLIKACJI
             </ThemedText>
             <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
-            Ile razy przegapiliście jakiś event, bo ogłoszenie zaginęło w dziesiątkach maili na poczcie? Nam zdarzało się to regularnie...
+              Ile razy przegapiliście jakiś event, bo ogłoszenie zaginęło w dziesiątkach maili na poczcie? Nam zdarzało się to regularnie...
             </ThemedText>
             <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
-            Jednak nie ma takiego problemu, którego nie dałoby się rozwiązać! Jako studenci UEK stworzyliśmy aplikację, która w jednym miejscu zbierze dla Was wszystkie wydarzenia, konkursy i oferty! Teraz już nic nie umknie Waszej uwadze!
+              Jednak nie ma takiego problemu, którego nie dałoby się rozwiązać! Jako studenci UEK stworzyliśmy aplikację, która w jednym miejscu zbierze dla Was wszystkie wydarzenia, konkursy i oferty! Teraz już nic nie umknie Waszej uwadze!
             </ThemedText>
             <ThemedText style={[styles.creatorsText, { color: colors.textPrimary }]}>
               {
@@ -79,16 +83,22 @@ export default function InfoScreen() {
                 <UekLogo width={18} height={30} />
               </View>
               <ThemedText style={styles.partnerBadgeText}>
-              UEK - Oficjalnym Partnerem
+                UEK - Oficjalnym Partnerem
               </ThemedText>
             </View>
           </ExternalLink>
 
+          {/* Zgłoś błąd / Sugestie (poprawnie ułożony tekst w pigułce/pionowo) */}
           <View style={styles.linkItem}>
-            <ExternalLink href={"https://docs.google.com/forms/d/e/1FAIpQLSeXM4sSqfKpRZfKkIyg87GS5EsXpfZUpMIdoEMSzxJJSb_U7Q/viewform?usp=dialog"} style={styles.link}>
-              <ThemedText style={[styles.linkText, { color: colors.textPrimary }]}>
-                Formularz kontaktowy
-              </ThemedText>
+            <ExternalLink href={GOOGLE_FORM_URL} style={styles.link}>
+              <View>
+                <ThemedText style={[styles.linkText, { color: colors.textPrimary, fontWeight: "600" }]}>
+                  Zgłoś błąd / Sugestie
+                </ThemedText>
+                <ThemedText style={[styles.subLinkText, { color: colors.textSecondary }]}>
+                  Podziel się opinią, pomysłem lub zgłoś usterkę
+                </ThemedText>
+              </View>
             </ExternalLink>
             <IconSymbol name="arrow.up.right" size={20} color={colors.textSecondary} />
           </View>
@@ -172,6 +182,7 @@ const styles = StyleSheet.create({
   },
   subLinkText: {
     fontSize: 12,
+    marginTop: 2,
   },
   partnerBadgeLink: {
     alignSelf: "flex-start",
