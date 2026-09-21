@@ -83,6 +83,16 @@ export default function InfoScreen() {
               </ThemedText>
             </View>
           </ExternalLink>
+
+          <View style={styles.linkItem}>
+            <ExternalLink href={"https://docs.google.com/forms/d/e/1FAIpQLSeXM4sSqfKpRZfKkIyg87GS5EsXpfZUpMIdoEMSzxJJSb_U7Q/viewform?usp=dialog"} style={styles.link}>
+              <ThemedText style={[styles.linkText, { color: colors.textPrimary }]}>
+                Formularz kontaktowy
+              </ThemedText>
+            </ExternalLink>
+            <IconSymbol name="arrow.up.right" size={20} color={colors.textSecondary} />
+          </View>
+
           <View style={styles.linkItem}>
             <ExternalLink
               href="https://eventuje.pl/polityka-prywatnosci"
@@ -167,7 +177,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginHorizontal: 20,
     marginTop: -22,
-    marginBottom: 12
+    marginBottom: 12,
   },
   partnerBadge: {
     flexDirection: "row",
@@ -205,33 +215,5 @@ const styles = StyleSheet.create({
   creatorsText: {
     fontSize: 15,
     lineHeight: 22,
-  },
-  clearButton: {
-    marginHorizontal: 20,
-    marginTop: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  clearButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    gap: 12,
-  },
-  clearButtonTextContainer: {
-    flex: 1,
-  },
-  clearButtonTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  clearButtonDescription: {
-    fontSize: 13,
   },
 });
