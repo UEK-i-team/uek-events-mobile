@@ -88,12 +88,11 @@ export default function InfoScreen() {
             </View>
           </ExternalLink>
 
-          {/* Zgłoś błąd / Sugestie (poprawnie ułożony tekst w pigułce/pionowo) */}
           <View style={styles.linkItem}>
             <ExternalLink href={GOOGLE_FORM_URL} style={styles.link}>
               <View>
                 <ThemedText style={[styles.linkText, { color: colors.textPrimary, fontWeight: "600" }]}>
-                  Zgłoś błąd / Sugestie
+                  Formularz kontaktowy
                 </ThemedText>
                 <ThemedText style={[styles.subLinkText, { color: colors.textSecondary }]}>
                   Podziel się opinią, pomysłem lub zgłoś usterkę
