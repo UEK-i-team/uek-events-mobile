@@ -1,15 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { AsyncStorageService } from "@/shared/storage/async-storage-service/async-storage-service";
 import { useDependencies } from "@/shared/di/DependencyProvider";
-import { IScheduleEvent } from "@/shared/types/schedule";
+import { IScheduleEvent, IScheduleGroupsResponse } from "@/shared/types/schedule";
 
 interface ScheduleContextProps {
   selectedGroupIds: number[];
   scheduleEvents: IScheduleEvent[];
   isLoading: boolean;
-  toggleGroup: (groupId: number) => void;
+  setSelectedGroupIds: (ids: number[]) => void;
   refreshSchedule: () => Promise<void>;
   getGroupName: (groupId: number) => string;
+  groupsData: IScheduleGroupsResponse | null;
 }
 
 const ScheduleContext = createContext<ScheduleContextProps | undefined>(undefined);
@@ -58,11 +59,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [selectedGroupIds, isLoading]);
 
-  const toggleGroup = useCallback((groupId: number) => {
-    setSelectedGroupIds((prev) =>
-      prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
-    );
-  }, []);
+
 
   const fetchIdRef = React.useRef(0);
 
@@ -125,7 +122,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
   }, [groupsData]);
 
   return (
-    <ScheduleContext.Provider value={{ selectedGroupIds, scheduleEvents, isLoading, toggleGroup, refreshSchedule, getGroupName }}>
+    <ScheduleContext.Provider value={{ selectedGroupIds, scheduleEvents, isLoading, setSelectedGroupIds, refreshSchedule, getGroupName, groupsData }}>
       {children}
     </ScheduleContext.Provider>
   );

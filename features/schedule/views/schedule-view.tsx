@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { getStyles } from "./schedule-view.styles";
 import { TimelineScroller } from "@/features/home/components/timeline-scroller/timeline-scroller";
@@ -11,7 +12,7 @@ import { format } from "date-fns";
 import { pl } from "date-fns/locale";
 import { TouchableOpacity } from "react-native";
 import { useSchedule } from "../contexts/schedule-context";
-import { GroupSelectorModal } from "../components/group-selector-modal/group-selector-modal";
+import { GroupWizard } from "../components/group-wizard/group-wizard";
 
 const translateEventType = (type: string) => {
   const map: Record<string, string> = {
@@ -43,6 +44,8 @@ export const ScheduleView = () => {
   const { scheduleEvents, getGroupName } = useSchedule();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [isScrollable, setIsScrollable] = useState(false);
+  const [layoutHeight, setLayoutHeight] = useState(0);
 
   // Filter and sort events for the selected date
   const dayEvents = scheduleEvents
@@ -86,8 +89,8 @@ export const ScheduleView = () => {
     const distance = touchEndY - touchStartY;
     const threshold = 50;
 
-    // Only apply manual touch swipe if there are no events (ScrollView won't scroll)
-    if (dayEvents.length === 0) {
+    // Only apply manual touch swipe if content is not scrollable
+    if (!isScrollable) {
       if (distance > threshold) {
         // Pulled down -> previous day
         const prevDay = new Date(selectedDate);
@@ -115,15 +118,17 @@ export const ScheduleView = () => {
       <View style={styles.headerRow}>
         <Text style={styles.headerText}>{capitalizedFormattedDate}</Text>
         <TouchableOpacity style={styles.iconButton} onPress={() => setIsModalVisible(true)}>
-          <Text style={{ fontSize: 24, color: colors.primary }}>+</Text>
+          <Ionicons name="pencil" size={20} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       <ScrollView 
-        contentContainerStyle={[styles.listContent, dayEvents.length === 0 && { flexGrow: 1 }]}
+        contentContainerStyle={[styles.listContent, !isScrollable && { flexGrow: 1 }]}
         onScrollEndDrag={handleScrollEndDrag}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onLayout={(e) => setLayoutHeight(e.nativeEvent.layout.height)}
+        onContentSizeChange={(_, height) => setIsScrollable(height > layoutHeight)}
         scrollEventThrottle={16}
         bounces={true}
         alwaysBounceVertical={true}
@@ -157,7 +162,7 @@ export const ScheduleView = () => {
         )}
       </ScrollView>
 
-      <GroupSelectorModal 
+      <GroupWizard 
         visible={isModalVisible} 
         onClose={() => setIsModalVisible(false)} 
       />

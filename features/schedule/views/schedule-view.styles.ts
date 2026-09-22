@@ -21,7 +21,12 @@ export const getStyles = (colors: AppThemeColors) =>
       color: colors.textPrimary,
     },
     iconButton: {
-      padding: 4,
+      padding: 6,
+      borderWidth: 1,
+      borderColor: colors.primary,
+      borderRadius: 8,
+      alignItems: "center",
+      justifyContent: "center",
     },
     listContent: {
       paddingHorizontal: 20,
