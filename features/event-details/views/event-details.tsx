@@ -11,7 +11,8 @@ import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { styles } from "./event-details.styles";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
+import { trackEvent } from "@/shared/services/analytics";
 import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { RoundedButton } from "@/shared/components/rounded-button/rounded-button";
 import HeartOutlineIcon from "@/assets/icons/heart-icon-outline.svg";
@@ -22,8 +23,17 @@ import ArrowBackIcon from "@/assets/icons/arrow-left-300.svg";
 import ShareIcon from "@/assets/icons/share-300.svg";
 import LocationIcon from "@/assets/icons/location.svg";
 import PersonIcon from "@/assets/icons/person-200.svg";
+import WorkIcon from "@/assets/icons/work-icon.svg";
+import MeetingIcon from "@/assets/icons/meeting-icon.svg";
+import PresentationIcon from "@/assets/icons/presentation-icon.svg";
+import ForumIcon from "@/assets/icons/forum-icon.svg";
+import ConferenceIcon from "@/assets/icons/conference-icon.svg";
+import WorkshopIcon from "@/assets/icons/workshop-icon.svg";
+import RecrutationIcon from "@/assets/icons/recrutation-icon.svg";
+import ChampionshipIcon from "@/assets/icons/championship-icon.svg"; // <-- Poprawiona nazwa importu
 import { InfoRow } from "@/features/event-details/components/info-row/info-row";
 import { useTheme } from "@/shared/context/ThemeContext";
+import { Badge } from "@/features/home/components/badge/badge";
 import { getTagColor } from "@/shared/constants/theme";
 import {
   formatEventTime,
@@ -37,14 +47,45 @@ export interface EventDetailsViewProps {
   eventId: string;
 }
 
+const getEventTypeIcon = (eventType?: string) => {
+  if (!eventType) return undefined;
+
+  const normalizedType = eventType.toLowerCase();
+
+  if (normalizedType.includes("kariera")) return WorkIcon;
+  if (normalizedType.includes("spotkanie")) return MeetingIcon;
+  if (normalizedType.includes("debata")) return ForumIcon;
+  if (normalizedType.includes("konferencja")) return ConferenceIcon;
+  if (normalizedType.includes("warsztaty")) return WorkshopIcon;
+  if (normalizedType.includes("wykład")) return PresentationIcon;
+  if (normalizedType.includes("konkurs")) return ChampionshipIcon;
+  if (normalizedType.includes("rekrutacja")) return RecrutationIcon;
+
+  return undefined;
+};
+
 export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
   const router = useRouter();
   const { getEventById, toggleFavoriteEvent } = useContext(EventContext);
   const { colors, isDarkMode } = useTheme();
   const { width: SCREEN_WIDTH } = useWindowDimensions();
- 
+
   const isTablet = SCREEN_WIDTH >= 768;
   const event = getEventById(Number(eventId));
+
+  useEffect(() => {
+    if (!event?.id) {
+      return;
+    }
+
+    // Debounce/dedup: przy szybkiej nawigacji timeout jest czyszczony
+    // przed wysłaniem, więc nie spamujemy zdarzeniem view_event.
+    const timeout = setTimeout(() => {
+      trackEvent('view_event', { event_id: event.id });
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [event?.id]);
 
   if (!event) {
     return <Text>Event not found</Text>;
@@ -65,10 +106,14 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
       const categoryText = event.event_type ? `**${event.event_type.toLowerCase()}**` : 'wydarzenie';
       const messageTemplate = `Hej! ${formattedDate} o ${formattedTime} odbędzie się wydarzenie ${categoryText}\n${event.title}\n\n👥 Organizowane przez ${event.organisators}\nTu są szczegóły\n${event.origin_url}\n\n📍 Gdzie: ${event.location}`;
 
-      await Share.share({
+      const result = await Share.share({
         message: messageTemplate,
         url: event.origin_url,
       });
+
+      if (result.action === Share.sharedAction) {
+        trackEvent('event_shared', { event_id: event.id });
+      }
     } catch (error: any) {
       console.error(error.message);
     }
@@ -79,7 +124,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          isTablet && { paddingBottom: 160 } // Zwiększamy odstęp na dole, aby scroll nie zasłaniał przycisku
+          isTablet && { paddingBottom: 160 }
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -87,7 +132,7 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
           <View
             style={[
               styles.imageWrapper,
-              isTablet && { height: 320 }, // Powiększone zdjęcie na tablecie (320px)
+              isTablet && { height: 320 },
               eventHasPassed && styles.passedImage
             ]}
           >
@@ -194,27 +239,22 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
 
           <View style={styles.tagsContainer}>
             {event.event_type && (
-              <View style={[styles.tagChip, { backgroundColor: "#111111" }]}>
-                <Text style={[styles.tagChipText, { color: "#F4F3F2" }]}>
-                  {event.event_type}
-                </Text>
-              </View>
+              <Badge
+                key={event.event_type}
+                name={event.event_type}
+                color="#111111"
+                textColor="#F4F3F2"
+                icon={getEventTypeIcon(event.event_type)}
+              />
             )}
 
             {event.tags.map((tag, index) => (
-              <View
+              <Badge
                 key={index}
-                style={[
-                  styles.tagChip,
-                  {
-                    backgroundColor: getTagColor(tag, eventHasPassed),
-                  },
-                ]}
-              >
-                <Text style={[styles.tagChipText, { color: "#111111" }]}>
-                  {tag}
-                </Text>
-              </View>
+                name={tag}
+                color={getTagColor(tag, eventHasPassed)}
+                textColor="#111111"
+              />
             ))}
           </View>
         </View>
@@ -224,7 +264,10 @@ export const EventDetailsView = ({ eventId }: EventDetailsViewProps) => {
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.primary }, isTablet && { height: 60 }]}
           activeOpacity={0.8}
-          onPress={() => Linking.openURL(event.origin_url)}
+          onPress={() => {
+            trackEvent('external_link_clicked', { event_id: event.id, url: event.origin_url });
+            Linking.openURL(event.origin_url);
+          }}
         >
           <Text style={[styles.actionButtonText, { color: colors.dark_grey }, isTablet && { fontSize: 20 }]}>
             Zobacz szczegóły wydarzenia

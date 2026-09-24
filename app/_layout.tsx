@@ -27,6 +27,8 @@ import { EventContext, EventContextProvider } from "@/shared/context/EventContex
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
 import { ThemeProvider as AppThemeProvider, useTheme } from "@/shared/context/ThemeContext";
 import { ScheduleProvider } from "@/features/schedule/contexts/schedule-context";
+import { trackEvent } from "@/shared/services/analytics";
+import * as Linking from "expo-linking";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -73,6 +75,13 @@ function AppContent() {
   const { isOpen, closeFilters } = useFilters();
   const router = useRouter();
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
+  const url = Linking.useURL();
+
+  useEffect(() => {
+    if (url) {
+      trackEvent('app_opened_from_share', { url });
+    }
+  }, [url]);
 
   useEffect(() => {
     if (

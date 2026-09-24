@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useHomeScreen } from "@/features/home/hooks/use-home-screen";
 import { OfflineNoDataPlaceholder } from "@/shared/components/offline-no-data-placeholder/offline-no-data-placeholder";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
@@ -7,13 +6,12 @@ import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
 import { useAppliedFilters, useFilters } from "@/features/filters/contexts";
 import { eventTagTranslations } from "@/shared/types/event-enums";
-import React, { useCallback, useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo } from "react";
 import { ActivityIndicator, FlatList, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
 import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
-import { safeParseDate } from "@/utils/functions/event-utils";
 
 export default function HomeView() {
   const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
@@ -63,7 +61,6 @@ export default function HomeView() {
     selectedDate,
     visibleEventId,
     initialScrollIndex,
-    nearestFutureEventIndex,
     handleDateSelect,
     viewabilityConfig,
     onViewableItemsChanged,
@@ -82,12 +79,6 @@ export default function HomeView() {
     [containerHeight, toggleFavoriteEvent],
   );
 
-  const actualSelectedDate =
-    selectedDate ||
-    (events && events.length > 0
-      ? safeParseDate(events[nearestFutureEventIndex]?.start_date)
-      : null);
-
   return (
     <SafeAreaView
       style={[
@@ -99,7 +90,7 @@ export default function HomeView() {
       {events && events.length > 0 && (
         <TimelineScroller
           events={events}
-          selectedDate={actualSelectedDate}
+          selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
           visibleEventId={visibleEventId}
         />

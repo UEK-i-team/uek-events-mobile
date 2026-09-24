@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { BackHandler, StyleSheet, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "@/shared/context/ThemeContext";
+import { trackEvent } from "@/shared/services/analytics";
 
 interface FiltersBottomSheetProps {
   isOpen: boolean;
@@ -102,12 +103,17 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
 
       if (index === -1) {
         isClosingRef.current = false;
+        trackEvent('filters_applied', {
+          categories: selectedCategories.join(','),
+          locations: selectedLocations.join(','),
+          tags: selectedTags.join(',')
+        });
         onClose();
       } else {
         scrollRef.current?.scrollTo({ y: 0, animated: false });
       }
     },
-    [onClose]
+    [onClose, selectedCategories, selectedLocations, selectedTags]
   );
 
   const renderBackdrop = useCallback(

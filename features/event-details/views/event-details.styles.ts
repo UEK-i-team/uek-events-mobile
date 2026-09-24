@@ -141,7 +141,7 @@ export const styles = StyleSheet.create({
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    gap: 8,
     marginTop: 30
   },
   tagChip: {
