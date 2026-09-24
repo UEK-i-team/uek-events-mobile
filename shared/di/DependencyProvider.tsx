@@ -1,6 +1,13 @@
 import React, { createContext, ReactNode, useContext, useMemo } from "react";
 
+import { AuthRepository } from "@/features/auth/api/auth-repository";
+import { AuthRepositoryMock } from "@/features/auth/api/auth-repository.mock";
+import { AuthSessionService } from "@/features/auth/services/auth-session.service";
+import { SecureAuthTokenStore } from "@/features/auth/storage/auth-token-store";
+import { authConnector } from "@/shared/connectors/auth-connector/auth-connector";
 import { apiConnector } from "@/shared/connectors/api-connector/api-connector";
+import { AuthorizedHttpConnector } from "@/shared/connectors/authorized-connector/authorized-connector";
+import { IScheduleGroupsResponse } from "@/shared/types/schedule";
 
 import { cacheService } from "@/shared/storage/cache-service/cache-service";
 
@@ -18,6 +25,7 @@ import { NotificationsService } from "@/shared/services/notifications-service/no
 import { DictionariesRepository } from "../repositories/api-repositiores/dictionaries-repository/dictionaries-repository";
 import { DictionariesRepositoryMock } from "../repositories/api-repositiores/dictionaries-repository/dictionaries-repository.mock";
 import { EventsRepositoryMock } from "../repositories/api-repositiores/events-repository/events-repository.mock";
+import { ScheduleRepository } from "@/shared/repositories/api-repositiores/schedule-repository/schedule-repository";
 
 const IS_API_MOCK_ENABLED =
   process.env.EXPO_PUBLIC_IS_API_MOCK_ENABLED === "true" || false;
@@ -31,11 +39,32 @@ const favoriteEventsStorage = new AsyncStorageService<number[]>(
 const favoriteEventsRepository = new FavoriteEventsRepository(
   favoriteEventsStorage,
 );
+const scheduleGroupsStorage = new AsyncStorageService<IScheduleGroupsResponse>(
+  "schedule-groups-cache",
+);
+
+// Auth
+const authTokenStore = new SecureAuthTokenStore();
+const authRepository = IS_API_MOCK_ENABLED
+  ? new AuthRepositoryMock()
+  : new AuthRepository(authConnector);
+const authSessionService = new AuthSessionService(
+  authRepository,
+  authTokenStore,
+);
+const authorizedApiConnector = new AuthorizedHttpConnector(
+  apiConnector,
+  authSessionService,
+);
 
 // Repositories
 
 let eventsRepository;
 let dictionariesRepository;
+const scheduleRepository = new ScheduleRepository(
+  authorizedApiConnector,
+  scheduleGroupsStorage,
+);
 
 if (IS_API_MOCK_ENABLED) {
   eventsRepository = new EventsRepositoryMock();
@@ -62,6 +91,8 @@ interface AppDependencies {
   eventsService: EventsService;
   favoriteEventsRepository: FavoriteEventsRepository;
   notificationsService: NotificationsService;
+  scheduleRepository: ScheduleRepository;
+  authSessionService: AuthSessionService;
 }
 
 const DependencyContext = createContext<AppDependencies | null>(null);
@@ -76,6 +107,8 @@ export const DependencyProvider = ({ children }: ProviderProps) => {
       eventsService,
       favoriteEventsRepository,
       notificationsService,
+      scheduleRepository,
+      authSessionService,
     }),
     [],
   );

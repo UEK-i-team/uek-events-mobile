@@ -7,7 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: "Eventuje",
     slug: "uek-events-mobile",
-    version: "1.2.0",
+    version: "1.3.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "uekeventsmobile",
@@ -47,6 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       favicon: "./assets/images/favicon.png",
     },
     plugins: [
+      "expo-secure-store",
       "expo-router",
 
       [
@@ -77,6 +78,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           },
         },
       ],
+      // Xcode 27 / iOS 27 require UIScene; Expo SDK 54 prebuild does not generate it.
+      "./plugins/with-ios-scene-lifecycle",
     ],
     experiments: {
       typedRoutes: true,

@@ -1,5 +1,5 @@
 import CalendarIcon from "@/assets/icons/calendar.svg";
-import ClockIcon from "@/assets/icons/schedule.svg";
+import ClockIcon from "@/assets/icons/schedule-icon-outline.svg";
 import { IEvent } from "@/shared/types/event";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";

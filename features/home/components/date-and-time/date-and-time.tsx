@@ -3,7 +3,7 @@ import {
   formatEventTime,
 } from "@/utils/functions/date-utils";
 import CalendarIcon from "@/assets/icons/calendar.svg";
-import ClockIcon from "@/assets/icons/schedule.svg";
+import ClockIcon from "@/assets/icons/schedule-icon-outline.svg";
 import React from "react";
 import { StyleProp, Text, View, ViewStyle } from "react-native";
 import { styles } from "./date-and-time.styles";
