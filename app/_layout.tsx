@@ -22,9 +22,11 @@ import {
   NewEventsProvider,
   useDailyEventsGate,
 } from "@/features/daily-events";
+import { AuthProvider } from "@/features/auth";
 import { EventContext, EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
 import { ThemeProvider as AppThemeProvider, useTheme } from "@/shared/context/ThemeContext";
+import { ScheduleProvider } from "@/features/schedule/contexts/schedule-context";
 import { trackEvent } from "@/shared/services/analytics";
 import * as Linking from "expo-linking";
 
@@ -152,17 +154,21 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <DependencyProvider>
-        <NotificationProvider>
-          <EventContextProvider>
-            <NewEventsProvider>
-              <NavigationThemeProvider value={DefaultTheme}>
-                <AppThemeProvider>
-                  <ThemedApp />
-                </AppThemeProvider>
-              </NavigationThemeProvider>
-            </NewEventsProvider>
-          </EventContextProvider>
-        </NotificationProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <EventContextProvider>
+              <NewEventsProvider>
+                <ScheduleProvider>
+                  <NavigationThemeProvider value={DefaultTheme}>
+                    <AppThemeProvider>
+                      <ThemedApp />
+                    </AppThemeProvider>
+                  </NavigationThemeProvider>
+                </ScheduleProvider>
+              </NewEventsProvider>
+            </EventContextProvider>
+          </NotificationProvider>
+        </AuthProvider>
       </DependencyProvider>
     </GestureHandlerRootView>
   );

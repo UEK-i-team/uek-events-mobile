@@ -89,10 +89,13 @@ const Day = memo(function Day({
     setSelectedDate(item.date);
   }, [setSelectedDate, item.date]);
 
-  if (!hasEvents) {
-    // Small greyed out version for dates with no events
+  // If inactive and no events, show small grey text
+  if (!hasEvents && !isDaySelected) {
     return (
-      <View style={[styles.dayContainer, { width: itemWidth }]}>
+      <Pressable
+        style={[styles.dayContainer, { width: itemWidth }]}
+        onPress={handlePress}
+      >
         <View style={styles.dateBoxEmpty}>
           <ThemedText
             style={isDark ? styles.dayTextEmptyDark : styles.dayTextEmptyLight}
@@ -100,11 +103,11 @@ const Day = memo(function Day({
             {dayNumber}
           </ThemedText>
         </View>
-      </View>
+      </Pressable>
     );
   }
 
-  const dotConfig = getDotConfig(item.events, visibleEventId);
+  const dotConfig = hasEvents ? getDotConfig(item.events, visibleEventId) : [];
 
   return (
     <Pressable
@@ -182,7 +185,9 @@ export function TimelineScroller({
 
     // Group events by their reset timestamp (O(N) lookup later)
     events.forEach((event) => {
-      const time = resetTime(event.start_date).getTime();
+      const dateString = (event as any).start_time || event.start_date;
+      if (!dateString) return;
+      const time = resetTime(new Date(dateString)).getTime();
 
       if (!eventsByDate.has(time)) {
         eventsByDate.set(time, []);
@@ -192,32 +197,14 @@ export function TimelineScroller({
 
     const todayTime = resetTime(getCurrentDate()).getTime();
 
-    if (eventsByDate.size === 0) {
-      // No events at all, just return today
-      return [
-        {
-          date: new Date(todayTime),
-          events: [],
-        } as DateItem,
-      ];
-    }
+    // Enforce timeline span: 6 months backward and 6 months forward from today
+    const sixMonthsAgo = new Date(todayTime);
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const startTime = sixMonthsAgo.getTime();
 
-    const sortedTimes = Array.from(eventsByDate.keys()).sort((a, b) => a - b);
-
-    // Start date is earliest event or today
-    const earliestEventTime = sortedTimes[0];
-    const startTime = Math.min(earliestEventTime, todayTime);
-
-    // End date is furthest event or today
-    const latestEventTime = sortedTimes[sortedTimes.length - 1];
-    let endTime = Math.max(latestEventTime, todayTime);
-
-    // Safety cap: Never generate more than 365 days between start and end
-    // Approximate milliseconds for 365 days
-    const maxTimeDifference = 365 * 24 * 60 * 60 * 1000;
-    if (endTime - startTime > maxTimeDifference) {
-      endTime = startTime + maxTimeDifference;
-    }
+    const sixMonthsForward = new Date(todayTime);
+    sixMonthsForward.setMonth(sixMonthsForward.getMonth() + 6);
+    const endTime = sixMonthsForward.getTime();
 
     const continuousDays: DateItem[] = [];
 

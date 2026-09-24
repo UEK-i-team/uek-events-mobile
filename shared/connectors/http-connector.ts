@@ -5,6 +5,8 @@ import axios, {
   AxiosResponse,
 } from "axios";
 
+import { describeError } from "../utils/describe-error";
+
 export interface IHttpConnector {
   get<T = any>(
     url: string,
@@ -124,7 +126,7 @@ export class HttpConnector implements IHttpConnector {
         return config;
       },
       (error) => {
-        console.error("❌ Request Error:", error);
+        console.error("❌ Request Error:", describeError(error));
         return Promise.reject(error);
       },
     );

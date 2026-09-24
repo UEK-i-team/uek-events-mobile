@@ -18,7 +18,7 @@ import { RoundedButton } from "@/shared/components/rounded-button/rounded-button
 import HeartOutlineIcon from "@/assets/icons/heart-icon-outline.svg";
 import HeartFilledIcon from "@/assets/icons/heart-icon-filled.svg";
 import CalendarIcon from "@/assets/icons/calendar.svg";
-import ScheduleIcon from "@/assets/icons/schedule.svg";
+import ScheduleIcon from "@/assets/icons/schedule-icon-outline.svg";
 import ArrowBackIcon from "@/assets/icons/arrow-left-300.svg";
 import ShareIcon from "@/assets/icons/share-300.svg";
 import LocationIcon from "@/assets/icons/location.svg";
