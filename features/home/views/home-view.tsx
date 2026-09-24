@@ -17,6 +17,8 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function HomeView() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const openFilters = useCallback(() => setIsFiltersOpen(true), []);
+  const closeFilters = useCallback(() => setIsFiltersOpen(false), []);
   const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
   const { colors, isDarkMode } = useTheme();
@@ -183,7 +185,9 @@ export default function HomeView() {
             zIndex: 10,
           }}
           activeOpacity={0.8}
-          onPress={() => setIsFiltersOpen(true)}
+          onPress={openFilters}
+          disabled={isFiltersOpen}
+          accessibilityLabel="Otwórz filtry"
         >
           <Ionicons
             name="options-outline"
@@ -213,7 +217,7 @@ export default function HomeView() {
       {/* Arkusz filtrów */}
       <FiltersBottomSheet
         isOpen={isFiltersOpen}
-        onClose={() => setIsFiltersOpen(false)}
+        onClose={closeFilters}
       />
     </SafeAreaView>
   );
