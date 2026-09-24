@@ -658,6 +658,78 @@ describe("AuthSessionService", () => {
     expect(await tokenStore.getRefreshToken()).toBe("refresh-1");
   });
 
+  it("U1: refreshAfterUnauthorized rotates the rejected access token", async () => {
+    const repository = new TestAuthRepository();
+    const tokenStore = new MemoryTokenStore();
+    const service = new AuthSessionService(repository, tokenStore);
+
+    await service.verify("challenge-1", "123456");
+
+    const token = await service.refreshAfterUnauthorized("access-1");
+
+    expect(token).toBe("access-2");
+    expect(repository.refreshCalls).toBe(1);
+    expect(service.getStatus()).toBe("authenticated");
+    expect(await tokenStore.getRefreshToken()).toBe("refresh-2");
+  });
+
+  it("U2: refreshAfterUnauthorized reuses a token already refreshed by another request", async () => {
+    const repository = new TestAuthRepository();
+    const service = new AuthSessionService(repository, new MemoryTokenStore());
+
+    await service.verify("challenge-1", "123456");
+
+    const [first, second] = await Promise.all([
+      service.refreshAfterUnauthorized("access-1"),
+      service.refreshAfterUnauthorized("access-1"),
+    ]);
+    const late = await service.refreshAfterUnauthorized("access-1");
+
+    expect(first).toBe("access-2");
+    expect(second).toBe("access-2");
+    expect(late).toBe("access-2");
+    expect(repository.refreshCalls).toBe(1);
+  });
+
+  it("U3: refreshAfterUnauthorized keeps the session on a transient refresh failure", async () => {
+    const repository = new TestAuthRepository();
+    const tokenStore = new MemoryTokenStore();
+    const service = new AuthSessionService(repository, tokenStore);
+
+    await service.verify("challenge-1", "123456");
+    repository.nextRefreshError = new AuthApiError(
+      "network_error",
+      "Server error",
+      500,
+    );
+
+    await expect(service.refreshAfterUnauthorized("access-1")).rejects.toThrow(
+      "Server error",
+    );
+
+    expect(service.getStatus()).toBe("authenticated");
+    expect(await tokenStore.getRefreshToken()).toBe("refresh-1");
+  });
+
+  it("U4: refreshAfterUnauthorized ends the session when refresh is rejected", async () => {
+    const repository = new TestAuthRepository();
+    const tokenStore = new MemoryTokenStore();
+    const service = new AuthSessionService(repository, tokenStore);
+
+    await service.verify("challenge-1", "123456");
+    repository.nextRefreshError = new AuthApiError(
+      "session_revoked",
+      "Unauthorized",
+      401,
+    );
+
+    const token = await service.refreshAfterUnauthorized("access-1");
+
+    expect(token).toBeNull();
+    expect(service.getStatus()).toBe("unauthenticated");
+    expect(await tokenStore.getRefreshToken()).toBeNull();
+  });
+
   it("R3: revalidate ends the session when the server revokes it", async () => {
     const repository = new TestAuthRepository();
     const tokenStore = new MemoryTokenStore();

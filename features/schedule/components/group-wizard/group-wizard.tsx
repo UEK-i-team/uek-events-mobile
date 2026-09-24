@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { Modal, View, Text, TouchableOpacity, TextInput, FlatList, Platform } from "react-native";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { Modal, View, Text, TouchableOpacity, TextInput, FlatList, Platform, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/features/auth";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { getStyles } from "./group-wizard.styles";
 import { useSchedule } from "../../contexts/schedule-context";
@@ -45,7 +46,9 @@ const cleanCategoryName = (name: string) => {
 export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
-  const { selectedGroupIds, setSelectedGroupIds, groupsData } = useSchedule();
+  const { selectedGroupIds, setSelectedGroupIds, groupsData, isGroupsLoading, refreshGroups } = useSchedule();
+  const { status, authSessionService } = useAuth();
+  const [isRestoringSession, setIsRestoringSession] = useState(false);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,9 +67,16 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Reset local state when modal opens
+  // Reset local state once per opening; later groupsData refreshes must not
+  // discard the user's in-progress selection.
+  const isInitializedRef = useRef(false);
   useEffect(() => {
-    if (visible && groupsData) {
+    if (!visible) {
+      isInitializedRef.current = false;
+      return;
+    }
+    if (groupsData && !isInitializedRef.current) {
+      isInitializedRef.current = true;
       setStep(1);
       setSearchQuery("");
       
@@ -89,6 +99,21 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
       setLocalWfIds(selectedWf);
     }
   }, [visible, groupsData]);
+
+  useEffect(() => {
+    if (visible && !groupsData) {
+      void refreshGroups();
+    }
+  }, [visible, groupsData, refreshGroups]);
+
+  const handleRetryGroups = () => {
+    if (status === "unverified") {
+      setIsRestoringSession(true);
+      void authSessionService.restore().finally(() => setIsRestoringSession(false));
+    } else {
+      void refreshGroups();
+    }
+  };
 
   const handleSaveAndClose = () => {
     const finalIds = [...localJezykiIds, ...localKierunekIds, ...localWfIds];
@@ -495,6 +520,35 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
     );
   };
 
+  const renderGroupsUnavailable = () => {
+    const isBusy = isGroupsLoading || isRestoringSession || status === "initializing";
+
+    return (
+      <>
+        <View style={styles.statusContent}>
+          {isBusy ? (
+            <ActivityIndicator size="large" color={colors.primary} />
+          ) : (
+            <>
+              <Text style={[styles.mainTitle, styles.statusTitle]}>Nie udało się pobrać listy grup</Text>
+              <Text style={[styles.subtitle, styles.statusText]}>
+                Sprawdź połączenie z internetem i spróbuj ponownie.
+              </Text>
+              <TouchableOpacity style={styles.statusRetryButton} onPress={handleRetryGroups}>
+                <Text style={styles.buttonPrimaryText}>Spróbuj ponownie</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+        <View style={styles.bottomNav}>
+          <TouchableOpacity style={styles.buttonSecondary} onPress={onClose}>
+            <Text style={styles.buttonSecondaryText}>Zamknij</Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    );
+  };
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={styles.safeArea}>
@@ -507,6 +561,8 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
           <Text style={[styles.headerTitle, step === 1 && { marginLeft: 0 }]}>Plan zajęć</Text>
         </View>
 
+        {!groupsData ? renderGroupsUnavailable() : (
+        <>
         <View style={styles.stepperContainer}>
           {[
             { num: 1, label: "Kierunek" },
@@ -556,6 +612,8 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             </TouchableOpacity>
           )}
         </View>
+        </>
+        )}
       </SafeAreaView>
     </Modal>
   );

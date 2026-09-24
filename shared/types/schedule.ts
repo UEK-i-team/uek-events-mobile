@@ -34,6 +34,16 @@ export interface IScheduleFetchRequest {
   versions?: Record<number, string>; // Maps group ID to its version if available
 }
 
+export interface IScheduleGroupVersion {
+  id: number;
+  version: number;
+}
+
+/** `unchanged` is the backend's 204: every requested group matches the sent versions. */
+export type ScheduleFetchResult =
+  | { kind: "unchanged" }
+  | { kind: "updated"; groups: IScheduleGroupVersion[]; events: IScheduleEvent[] };
+
 export interface IScheduleEvent {
   id?: number;
   group_id?: number;

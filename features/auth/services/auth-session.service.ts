@@ -87,6 +87,30 @@ export class AuthSessionService {
     return this.refreshAccessToken();
   }
 
+  /**
+   * Called after an API responded 401 to `rejectedAccessToken`. Refreshes once
+   * even when several requests fail with the same token. Ends the session only
+   * when the refresh itself is rejected as expired; transient refresh failures
+   * are rethrown and keep the session intact.
+   */
+  public async refreshAfterUnauthorized(
+    rejectedAccessToken: string,
+  ): Promise<string | null> {
+    if (
+      this.accessToken &&
+      this.accessToken !== rejectedAccessToken &&
+      this.isAccessTokenValid()
+    ) {
+      return this.accessToken;
+    }
+
+    if (this.accessToken === rejectedAccessToken) {
+      this.accessTokenExpiresAt = 0;
+    }
+
+    return this.refreshAccessToken();
+  }
+
   public async logout(): Promise<void> {
     try {
       const accessToken = await this.getValidAccessToken();

@@ -6,6 +6,8 @@ import { AuthSessionService } from "@/features/auth/services/auth-session.servic
 import { SecureAuthTokenStore } from "@/features/auth/storage/auth-token-store";
 import { authConnector } from "@/shared/connectors/auth-connector/auth-connector";
 import { apiConnector } from "@/shared/connectors/api-connector/api-connector";
+import { AuthorizedHttpConnector } from "@/shared/connectors/authorized-connector/authorized-connector";
+import { IScheduleGroupsResponse } from "@/shared/types/schedule";
 
 import { cacheService } from "@/shared/storage/cache-service/cache-service";
 
@@ -37,13 +39,32 @@ const favoriteEventsStorage = new AsyncStorageService<number[]>(
 const favoriteEventsRepository = new FavoriteEventsRepository(
   favoriteEventsStorage,
 );
-const scheduleGroupsStorage = new AsyncStorageService<any>("schedule-groups-cache");
+const scheduleGroupsStorage = new AsyncStorageService<IScheduleGroupsResponse>(
+  "schedule-groups-cache",
+);
+
+// Auth
+const authTokenStore = new SecureAuthTokenStore();
+const authRepository = IS_API_MOCK_ENABLED
+  ? new AuthRepositoryMock()
+  : new AuthRepository(authConnector);
+const authSessionService = new AuthSessionService(
+  authRepository,
+  authTokenStore,
+);
+const authorizedApiConnector = new AuthorizedHttpConnector(
+  apiConnector,
+  authSessionService,
+);
 
 // Repositories
 
 let eventsRepository;
 let dictionariesRepository;
-const scheduleRepository = new ScheduleRepository(apiConnector, scheduleGroupsStorage);
+const scheduleRepository = new ScheduleRepository(
+  authorizedApiConnector,
+  scheduleGroupsStorage,
+);
 
 if (IS_API_MOCK_ENABLED) {
   eventsRepository = new EventsRepositoryMock();
@@ -64,16 +85,6 @@ const eventsService = new EventsService(
 );
 
 const notificationsService = new NotificationsService();
-
-// Auth
-const authTokenStore = new SecureAuthTokenStore();
-const authRepository = IS_API_MOCK_ENABLED
-  ? new AuthRepositoryMock()
-  : new AuthRepository(authConnector);
-const authSessionService = new AuthSessionService(
-  authRepository,
-  authTokenStore,
-);
 
 // React part
 interface AppDependencies {

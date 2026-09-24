@@ -1,105 +1,238 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from "react";
+import { AppState } from "react-native";
+import { useAuth } from "@/features/auth";
 import { AsyncStorageService } from "@/shared/storage/async-storage-service/async-storage-service";
 import { useDependencies } from "@/shared/di/DependencyProvider";
 import { IScheduleEvent, IScheduleGroupsResponse } from "@/shared/types/schedule";
+import { describeError } from "@/shared/utils/describe-error";
+import {
+  buildVersionsParam,
+  flattenScheduleEvents,
+  mergeScheduleResult,
+  migrateScheduleCache,
+  ScheduleCache,
+} from "../utils/schedule-cache";
 
 interface ScheduleContextProps {
   selectedGroupIds: number[];
   scheduleEvents: IScheduleEvent[];
   isLoading: boolean;
+  isCacheHydrated: boolean;
+  hasCachedSchedule: boolean;
+  lastUpdatedAt: Date | null;
+  fetchError: boolean;
   setSelectedGroupIds: (ids: number[]) => void;
   refreshSchedule: () => Promise<void>;
   getGroupName: (groupId: number) => string;
   groupsData: IScheduleGroupsResponse | null;
+  isGroupsLoading: boolean;
+  groupsError: boolean;
+  refreshGroups: () => Promise<void>;
 }
 
 const ScheduleContext = createContext<ScheduleContextProps | undefined>(undefined);
 
+const RESUME_REFRESH_THROTTLE_MS = 30_000;
+
 const selectedGroupsStorage = new AsyncStorageService<number[]>("selected-schedule-groups");
-const scheduleCacheStorage = new AsyncStorageService<IScheduleEvent[]>("schedule-events-cache");
-const scheduleVersionsStorage = new AsyncStorageService<Record<number, string>>("schedule-versions-cache");
+const scheduleCacheStorage = new AsyncStorageService<unknown>("schedule-events-cache");
+// Versions used to live under a separate key; they are now stored with the classes.
+const legacyScheduleVersionsStorage = new AsyncStorageService<unknown>("schedule-versions-cache");
 
 export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
   const { scheduleRepository } = useDependencies();
+  const { status } = useAuth();
   const [selectedGroupIds, setSelectedGroupIds] = useState<number[]>([]);
-  const [scheduleEvents, setScheduleEvents] = useState<IScheduleEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [groupsData, setGroupsData] = useState<any>(null);
+  const [scheduleCache, setScheduleCache] = useState<ScheduleCache | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCacheHydrated, setIsCacheHydrated] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+  const [groupsData, setGroupsData] = useState<IScheduleGroupsResponse | null>(null);
+  const [isGroupsLoading, setIsGroupsLoading] = useState(false);
+  const [groupsError, setGroupsError] = useState(false);
 
-  // Load selected groups and cached schedule on mount
+  const statusRef = useRef(status);
+  statusRef.current = status;
+  const fetchIdRef = useRef(0);
+  const groupsDataRef = useRef(groupsData);
+  groupsDataRef.current = groupsData;
+  const groupsRequestRef = useRef<Promise<void> | null>(null);
+  const scheduleCacheRef = useRef(scheduleCache);
+  const isCacheHydratedRef = useRef(isCacheHydrated);
+  isCacheHydratedRef.current = isCacheHydrated;
+  const lastFetchSucceededAtRef = useRef(0);
+
+  const scheduleEvents = useMemo(
+    () => flattenScheduleEvents(scheduleCache, selectedGroupIds),
+    [scheduleCache, selectedGroupIds],
+  );
+  const lastUpdatedAt = useMemo(
+    () => (scheduleCache?.fetchedAt ? new Date(scheduleCache.fetchedAt) : null),
+    [scheduleCache],
+  );
+
+  const applyCache = useCallback((cache: ScheduleCache | null) => {
+    scheduleCacheRef.current = cache;
+    setScheduleCache(cache);
+  }, []);
+
+  // Load selected groups, cached schedule and cached groups on mount
   useEffect(() => {
     const loadInitData = async () => {
       try {
-        const storedIds = await selectedGroupsStorage.get();
+        const [storedIds, cachedSchedule, cachedGroups] = await Promise.all([
+          selectedGroupsStorage.get(),
+          scheduleCacheStorage.get().then(migrateScheduleCache),
+          scheduleRepository.getCachedGroups(),
+        ]);
+        legacyScheduleVersionsStorage.remove().catch(console.error);
+
         if (storedIds) {
           setSelectedGroupIds(storedIds);
         }
-        
-        const cachedEvents = await scheduleCacheStorage.get();
-        if (cachedEvents) {
-          setScheduleEvents(cachedEvents);
+        if (cachedGroups) {
+          setGroupsData((current) => current ?? cachedGroups);
+        }
+        if (cachedSchedule && statusRef.current !== "unauthenticated") {
+          applyCache(cachedSchedule);
         }
       } catch (error) {
         console.error("Failed to load schedule context data:", error);
       } finally {
-        setIsLoading(false);
+        setIsCacheHydrated(true);
       }
     };
 
     loadInitData();
-    
-    // Also background fetch groups to populate names
-    scheduleRepository.getAvailableGroups().then(setGroupsData).catch(console.error);
-  }, [scheduleRepository]);
+  }, [scheduleRepository, applyCache]);
 
   // Sync selected group IDs to storage whenever they change
   useEffect(() => {
-    if (!isLoading) {
+    if (isCacheHydrated) {
       selectedGroupsStorage.set(selectedGroupIds).catch(console.error);
     }
-  }, [selectedGroupIds, isLoading]);
+  }, [selectedGroupIds, isCacheHydrated]);
 
+  // The schedule belongs to the logged-in user: drop it once the session ends.
+  // Selected groups are kept so the schedule comes back after logging in again.
+  useEffect(() => {
+    if (status !== "unauthenticated") return;
 
+    fetchIdRef.current++;
+    setIsLoading(false);
+    setFetchError(false);
+    applyCache(null);
+    scheduleCacheStorage.remove().catch(console.error);
+  }, [status, applyCache]);
 
-  const fetchIdRef = React.useRef(0);
+  const saveSchedule = useCallback(async (cache: ScheduleCache) => {
+    applyCache(cache);
+    setFetchError(false);
+    lastFetchSucceededAtRef.current = Date.now();
+    await scheduleCacheStorage.set(cache);
+  }, [applyCache]);
+
+  const refreshGroups = useCallback(() => {
+    if (statusRef.current !== "authenticated") return Promise.resolve();
+    if (groupsRequestRef.current) return groupsRequestRef.current;
+
+    setIsGroupsLoading(true);
+    const request = scheduleRepository
+      .getAvailableGroups()
+      .then((groups) => {
+        setGroupsData(groups);
+        setGroupsError(false);
+      })
+      .catch((error) => {
+        console.warn("Failed to fetch schedule groups:", describeError(error));
+        setGroupsError(true);
+      })
+      .finally(() => {
+        groupsRequestRef.current = null;
+        setIsGroupsLoading(false);
+      });
+
+    groupsRequestRef.current = request;
+    return request;
+  }, [scheduleRepository]);
 
   const refreshSchedule = useCallback(async () => {
-    if (selectedGroupIds.length === 0) {
-      setScheduleEvents([]);
-      await scheduleCacheStorage.remove();
+    if (statusRef.current !== "authenticated") return;
+
+    if (!groupsDataRef.current) {
+      void refreshGroups();
+    }
+
+    const currentFetchId = ++fetchIdRef.current;
+    const requestedIds = selectedGroupIds;
+
+    if (requestedIds.length === 0) {
+      setIsLoading(false);
+      await saveSchedule({ groups: {}, fetchedAt: new Date().toISOString() }).catch(console.error);
       return;
     }
-    
-    const currentFetchId = ++fetchIdRef.current;
+
     setIsLoading(true);
-    
+
     try {
-      const versions = await scheduleVersionsStorage.get() || {};
-      const versionsArray = selectedGroupIds.map(id => Number(versions[id]) || 0);
-      
-      const newEvents = await scheduleRepository.fetchScheduleForGroup(selectedGroupIds, versionsArray);
-      
+      const versions = buildVersionsParam(scheduleCacheRef.current, requestedIds);
+      const result = await scheduleRepository.fetchScheduleForGroup(requestedIds, versions);
+
       if (currentFetchId === fetchIdRef.current) {
-        if (newEvents) {
-          setScheduleEvents(newEvents);
-          await scheduleCacheStorage.set(newEvents);
-        }
+        const nextCache = mergeScheduleResult(scheduleCacheRef.current, requestedIds, result, {
+          sentVersions: versions !== undefined,
+          fetchedAt: new Date().toISOString(),
+        });
+        await saveSchedule(nextCache);
       }
     } catch (error) {
-      console.error("Failed to fetch schedule events:", error);
+      // Keep the cached schedule: only an explicit session end removes it.
+      console.warn("Failed to fetch schedule events:", describeError(error));
+      if (currentFetchId === fetchIdRef.current) {
+        setFetchError(true);
+      }
     } finally {
       if (currentFetchId === fetchIdRef.current) {
         setIsLoading(false);
       }
     }
-  }, [selectedGroupIds, scheduleRepository]);
+  }, [selectedGroupIds, scheduleRepository, saveSchedule, refreshGroups]);
 
-  // Whenever selected groups change, try to fetch the latest schedule
+  // Fetch the latest schedule once the session is confirmed and whenever groups change
   useEffect(() => {
-    if (!isLoading) {
+    if (status === "authenticated" && isCacheHydrated) {
       refreshSchedule();
     }
-  }, [selectedGroupIds]);
+  }, [status, isCacheHydrated, refreshSchedule]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      refreshGroups();
+    }
+  }, [status, refreshGroups]);
+
+  // Resuming the app does not change the auth status, so it would not trigger
+  // the effects above.
+  const refreshScheduleRef = useRef(refreshSchedule);
+  refreshScheduleRef.current = refreshSchedule;
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (
+        nextState !== "active" ||
+        statusRef.current !== "authenticated" ||
+        !isCacheHydratedRef.current ||
+        Date.now() - lastFetchSucceededAtRef.current < RESUME_REFRESH_THROTTLE_MS
+      ) {
+        return;
+      }
+
+      void refreshScheduleRef.current();
+      void refreshGroups();
+    });
+
+    return () => subscription.remove();
+  }, [refreshGroups]);
 
   const getGroupName = useCallback((groupId: number) => {
     if (!groupsData) return `Grupa ${groupId}`;
@@ -122,7 +255,24 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
   }, [groupsData]);
 
   return (
-    <ScheduleContext.Provider value={{ selectedGroupIds, scheduleEvents, isLoading, setSelectedGroupIds, refreshSchedule, getGroupName, groupsData }}>
+    <ScheduleContext.Provider
+      value={{
+        selectedGroupIds,
+        scheduleEvents,
+        isLoading,
+        isCacheHydrated,
+        hasCachedSchedule: scheduleCache !== null,
+        lastUpdatedAt,
+        fetchError,
+        setSelectedGroupIds,
+        refreshSchedule,
+        getGroupName,
+        groupsData,
+        isGroupsLoading,
+        groupsError,
+        refreshGroups,
+      }}
+    >
       {children}
     </ScheduleContext.Provider>
   );

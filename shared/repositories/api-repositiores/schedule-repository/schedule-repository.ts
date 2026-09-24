@@ -1,10 +1,24 @@
 import { IHttpConnector } from "../../../connectors/http-connector";
-import { IScheduleGroupsResponse, IScheduleEvent } from "@/shared/types/schedule";
+import {
+  IScheduleEvent,
+  IScheduleGroupsResponse,
+  IScheduleGroupVersion,
+  ScheduleFetchResult,
+} from "@/shared/types/schedule";
 import { AsyncStorageService } from "@/shared/storage/async-storage-service/async-storage-service";
 
 export interface IScheduleRepository {
-  getAvailableGroups(forceRefresh?: boolean): Promise<IScheduleGroupsResponse>;
-  fetchScheduleForGroup(groupIds: number[], versions?: number[]): Promise<IScheduleEvent[]>;
+  getCachedGroups(): Promise<IScheduleGroupsResponse | null>;
+  /** Always hits the network and updates the cache on success. */
+  getAvailableGroups(): Promise<IScheduleGroupsResponse>;
+  fetchScheduleForGroup(groupIds: number[], versions?: number[]): Promise<ScheduleFetchResult>;
+}
+
+export class InvalidScheduleResponseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidScheduleResponseError";
+  }
 }
 
 export class ScheduleRepository implements IScheduleRepository {
@@ -16,56 +30,116 @@ export class ScheduleRepository implements IScheduleRepository {
     private readonly cache: AsyncStorageService<IScheduleGroupsResponse>
   ) {}
 
-  public async getAvailableGroups(forceRefresh = false): Promise<IScheduleGroupsResponse> {
-    if (!forceRefresh) {
-      const cached = await this.cache.get();
-      if (cached) {
-        // Fetch in background to update cache without blocking
-        this.fetchAndCacheGroups().catch(console.error);
-        return cached;
-      }
-    }
-    return this.fetchAndCacheGroups();
+  public async getCachedGroups(): Promise<IScheduleGroupsResponse | null> {
+    return this.cache.get();
   }
 
-  private async fetchAndCacheGroups(): Promise<IScheduleGroupsResponse> {
-    const response = await this.http.get<IScheduleGroupsResponse>(this.GROUPS_URL);
-    if (response.status === 200) {
-      await this.cache.set(response.data);
-      return response.data;
+  public async getAvailableGroups(): Promise<IScheduleGroupsResponse> {
+    const response = await this.http.get<unknown>(this.GROUPS_URL);
+    if (response.status !== 200) {
+      throw new Error("Failed to fetch available schedule groups");
     }
-    throw new Error("Failed to fetch available schedule groups");
+
+    const groups = parseGroupsResponse(response.data);
+    await this.cache.set(groups);
+    return groups;
   }
 
-  public async fetchScheduleForGroup(groupIds: number[], versions?: number[]): Promise<IScheduleEvent[]> {
-    // According to apidog: group_ids, versions (could be single number or array, we'll send it as array if possible or single if it's multiple requests, we'll just send array for now and assume it works)
-    const queryParts: string[] = [];
-    if (groupIds && groupIds.length > 0) {
-      queryParts.push(`group_ids=${groupIds.join(",")}`);
-    }
-    if (versions && versions.length > 0) {
+  /**
+   * `versions` must be index-aligned with `groupIds`. Omit it to always get the
+   * full schedule; the backend answers 204 only when every version matches.
+   */
+  public async fetchScheduleForGroup(groupIds: number[], versions?: number[]): Promise<ScheduleFetchResult> {
+    const queryParts = [`group_ids=${groupIds.join(",")}`];
+    if (versions) {
       queryParts.push(`versions=${versions.join(",")}`);
     }
-    
-    const queryString = queryParts.join("&");
-    const url = queryString ? `${this.SCHEDULES_URL}?${queryString}` : this.SCHEDULES_URL;
 
-    const response = await this.http.get<any>(url);
-    
-    if (response.status === 200) {
-      // The backend wraps the response in { groups: [...], classes: [...] }
-      const rawData = response.data.classes || response.data.data || response.data;
-      const data = Array.isArray(rawData) ? rawData : [];
+    const response = await this.http.get<unknown>(`${this.SCHEDULES_URL}?${queryParts.join("&")}`);
 
-      // Inject fake IDs so React rendering (keys, dots) works correctly since API doesn't provide event IDs
-      const events = (data as IScheduleEvent[]).map((e, index) => ({
-        ...e,
-        id: e.id || (e.group_id ? Number(`${e.group_id}${index}`) : index + Date.now()),
-      }));
-
-      return events;
+    if (response.status === 204) {
+      return { kind: "unchanged" };
     }
-    
-    throw new Error("Failed to fetch schedule for groups");
+    if (response.status !== 200) {
+      throw new Error("Failed to fetch schedule for groups");
+    }
+
+    return parseScheduleResponse(response.data);
   }
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isValidDateString(value: unknown): value is string {
+  return typeof value === "string" && !isNaN(new Date(value).getTime());
+}
+
+function isValidScheduleEvent(value: unknown): value is IScheduleEvent {
+  return (
+    isObject(value) &&
+    isValidDateString(value.start_time) &&
+    isValidDateString(value.end_time) &&
+    typeof value.course === "string"
+  );
+}
+
+/**
+ * Throws instead of returning an empty list for malformed payloads, so a bad
+ * backend response never overwrites a previously cached schedule.
+ */
+export function parseScheduleEvents(data: unknown): IScheduleEvent[] {
+  // The backend wraps the response in { groups: [...], classes: [...] }
+  const rawEvents = Array.isArray(data)
+    ? data
+    : isObject(data)
+      ? (data.classes ?? data.data)
+      : undefined;
+
+  if (!Array.isArray(rawEvents)) {
+    throw new InvalidScheduleResponseError("Schedule response has no classes list.");
+  }
+
+  const events = rawEvents.filter(isValidScheduleEvent);
+  if (rawEvents.length > 0 && events.length === 0) {
+    throw new InvalidScheduleResponseError("Schedule response contains no valid classes.");
+  }
+
+  return events;
+}
+
+function parseGroupVersion(value: unknown): IScheduleGroupVersion | null {
+  if (!isObject(value) || !Number.isInteger(value.id)) return null;
+  const version = Number.isInteger(value.version) ? (value.version as number) : 0;
+  return { id: value.id as number, version };
+}
+
+export function parseScheduleResponse(data: unknown): ScheduleFetchResult {
+  if (!isObject(data) || !Array.isArray(data.groups)) {
+    // Without group versions the classes could not be cached consistently.
+    throw new InvalidScheduleResponseError("Schedule response has no groups list.");
+  }
+
+  const groups = data.groups
+    .map(parseGroupVersion)
+    .filter((group): group is IScheduleGroupVersion => group !== null);
+
+  return { kind: "updated", groups, events: parseScheduleEvents(data) };
+}
+
+export function parseGroupsResponse(data: unknown): IScheduleGroupsResponse {
+  if (!isObject(data)) {
+    throw new InvalidScheduleResponseError("Groups response is not an object.");
+  }
+
+  const { planzajec, usos } = data;
+  if (!Array.isArray(planzajec) && !Array.isArray(usos)) {
+    throw new InvalidScheduleResponseError("Groups response has no group lists.");
+  }
+
+  return {
+    planzajec: Array.isArray(planzajec) ? planzajec : [],
+    usos: Array.isArray(usos) ? usos : [],
+  };
 }

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useTheme } from "@/shared/context/ThemeContext";
 
 import { useAuth } from "../../contexts/auth-context";
+import { useEndSession } from "../../hooks/use-end-session";
 import { useOtpLogin } from "../../hooks/use-otp-login";
 import { EmailStep } from "../email-step/email-step";
 import { OtpStep } from "../otp-step/otp-step";
@@ -12,16 +13,28 @@ import { getStyles } from "./auth-gate.styles";
 
 interface AuthGateProps {
   children: React.ReactNode;
+  /**
+   * Render children while the session cannot be confirmed (initializing or
+   * offline) because locally stored data can be shown. Never bypasses the
+   * login screen once the session is known to be gone.
+   */
+  allowOfflineAccess?: boolean;
+  /** False while the caller is still checking whether offline data exists. */
+  isOfflineAccessReady?: boolean;
 }
 
-export function AuthGate({ children }: AuthGateProps) {
+export function AuthGate({
+  children,
+  allowOfflineAccess = false,
+  isOfflineAccessReady = true,
+}: AuthGateProps) {
   const { colors } = useTheme();
   const styles = getStyles(colors);
-  const { status, authSessionService, logout } = useAuth();
+  const { status, authSessionService } = useAuth();
   const otpLogin = useOtpLogin({ authSessionService });
+  const { loggingOut, endSession } = useEndSession();
   const leftLoginFormRef = useRef(false);
   const [retrying, setRetrying] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
 
   const handleRetryRestore = async () => {
     setRetrying(true);
@@ -29,20 +42,6 @@ export function AuthGate({ children }: AuthGateProps) {
       await authSessionService.restore();
     } finally {
       setRetrying(false);
-    }
-  };
-
-  const handleEndSession = async () => {
-    setLoggingOut(true);
-    try {
-      await logout();
-    } catch {
-      Alert.alert(
-        "Nie udało się zakończyć sesji",
-        "Spróbuj ponownie za chwilę.",
-      );
-    } finally {
-      setLoggingOut(false);
     }
   };
 
@@ -57,6 +56,15 @@ export function AuthGate({ children }: AuthGateProps) {
       leftLoginFormRef.current = false;
     }
   }, [status, otpLogin.clearFlow]);
+
+  const canUseOfflineAccess = allowOfflineAccess && isOfflineAccessReady;
+
+  if (
+    canUseOfflineAccess &&
+    (status === "initializing" || status === "unverified")
+  ) {
+    return <>{children}</>;
+  }
 
   if (status === "initializing") {
     return (
@@ -95,7 +103,7 @@ export function AuthGate({ children }: AuthGateProps) {
               styles.secondaryButton,
               loggingOut && styles.secondaryButtonDisabled,
             ]}
-            onPress={() => void handleEndSession()}
+            onPress={() => void endSession()}
             disabled={retrying || loggingOut}
           >
             {loggingOut ? (

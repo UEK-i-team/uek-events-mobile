@@ -275,5 +275,26 @@ export const getStyles = (colors: AppThemeColors) =>
       textAlign: "center",
       color: colors.textSecondary,
       marginTop: 20,
-    }
+    },
+    statusContent: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 32,
+    },
+    statusTitle: {
+      textAlign: "center",
+    },
+    statusText: {
+      textAlign: "center",
+      marginBottom: 24,
+    },
+    statusRetryButton: {
+      backgroundColor: colors.textPrimary,
+      paddingVertical: 14,
+      paddingHorizontal: 24,
+      borderRadius: 16,
+      alignItems: "center",
+      justifyContent: "center",
+    },
   });

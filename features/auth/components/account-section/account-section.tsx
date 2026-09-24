@@ -1,43 +1,36 @@
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
+import React from "react";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { useTheme } from "@/shared/context/ThemeContext";
 
 import { useAuth } from "../../contexts/auth-context";
+import { useEndSession } from "../../hooks/use-end-session";
 import { getStyles } from "./account-section.styles";
 
 export function AccountSection() {
   const { colors } = useTheme();
   const styles = getStyles(colors);
-  const { isAuthenticated, logout } = useAuth();
-  const [loggingOut, setLoggingOut] = useState(false);
+  const { status } = useAuth();
+  const { loggingOut, endSession } = useEndSession();
 
-  if (!isAuthenticated) {
+  if (status !== "authenticated" && status !== "unverified") {
     return null;
   }
-
-  const handleLogout = async () => {
-    setLoggingOut(true);
-    try {
-      await logout();
-    } catch {
-      Alert.alert(
-        "Wylogowanie nie powiodło się",
-        "Nie udało się zakończyć sesji na tym urządzeniu. Spróbuj ponownie.",
-      );
-    } finally {
-      setLoggingOut(false);
-    }
-  };
 
   return (
     <View>
       <Text style={styles.sectionTitle}>Konto</Text>
-      <Pressable style={styles.item} onPress={handleLogout} disabled={loggingOut}>
+      <Pressable
+        style={styles.item}
+        onPress={() => void endSession()}
+        disabled={loggingOut}
+      >
         <View>
           <Text style={styles.itemText}>Wyloguj</Text>
           <Text style={styles.description}>
-            Zakończ sesję na tym urządzeniu
+            {status === "unverified"
+              ? "Brak połączenia – sesja zostanie zakończona na tym urządzeniu"
+              : "Zakończ sesję na tym urządzeniu"}
           </Text>
         </View>
         {loggingOut ? (

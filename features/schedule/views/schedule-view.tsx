@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth, useEndSession } from "@/features/auth";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { getStyles } from "./schedule-view.styles";
 import { TimelineScroller } from "@/features/home/components/timeline-scroller/timeline-scroller";
@@ -41,8 +42,11 @@ export const ScheduleView = () => {
   // capitalize first letter
   const capitalizedFormattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
 
-  const { scheduleEvents, getGroupName } = useSchedule();
+  const { scheduleEvents, isLoading, lastUpdatedAt, fetchError, refreshSchedule } = useSchedule();
+  const { status, authSessionService } = useAuth();
+  const { loggingOut, endSession } = useEndSession();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(false);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [isScrollable, setIsScrollable] = useState(false);
   const [layoutHeight, setLayoutHeight] = useState(0);
@@ -106,6 +110,27 @@ export const ScheduleView = () => {
     setTouchStartY(null);
   };
 
+  const isShowingStaleSchedule =
+    status === "unverified" ||
+    isRestoringSession ||
+    (status === "authenticated" && fetchError);
+  const isRefreshing = isLoading || isRestoringSession;
+  const isRefreshDisabled =
+    isRefreshing || loggingOut || (status !== "authenticated" && status !== "unverified");
+
+  const handleRefresh = () => {
+    if (status === "unverified") {
+      setIsRestoringSession(true);
+      void authSessionService.restore().finally(() => setIsRestoringSession(false));
+    } else {
+      void refreshSchedule();
+    }
+  };
+
+  const staleScheduleMessage = lastUpdatedAt
+    ? `Nie udało się odświeżyć planu. Wyświetlasz zapisaną wersję z ${format(lastUpdatedAt, "d MMM, HH:mm", { locale: pl })}.`
+    : "Nie udało się odświeżyć planu. Wyświetlasz zapisaną wersję.";
+
   return (
     <SafeAreaView style={styles.container}>
       <TimelineScroller
@@ -117,10 +142,58 @@ export const ScheduleView = () => {
       
       <View style={styles.headerRow}>
         <Text style={styles.headerText}>{capitalizedFormattedDate}</Text>
-        <TouchableOpacity style={styles.iconButton} onPress={() => setIsModalVisible(true)}>
-          <Ionicons name="pencil" size={20} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={[styles.iconButton, isRefreshDisabled && !isRefreshing && styles.iconButtonDisabled]}
+            onPress={handleRefresh}
+            disabled={isRefreshDisabled}
+            accessibilityRole="button"
+            accessibilityLabel="Odśwież plan"
+          >
+            {isRefreshing ? (
+              <ActivityIndicator size="small" color={colors.primary} style={styles.iconButtonSpinner} />
+            ) : (
+              <Ionicons name="refresh" size={20} color={colors.primary} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton} onPress={() => setIsModalVisible(true)}>
+            <Ionicons name="pencil" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {isShowingStaleSchedule && (
+        <View style={styles.offlineBanner}>
+          <View style={styles.offlineBannerRow}>
+            <Ionicons name="cloud-offline-outline" size={18} color={colors.textSecondary} />
+            <Text style={styles.offlineBannerText}>{staleScheduleMessage}</Text>
+            <TouchableOpacity
+              style={styles.offlineBannerButton}
+              onPress={handleRefresh}
+              disabled={isRefreshing || loggingOut}
+            >
+              {isRefreshing ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Text style={styles.offlineBannerButtonText}>Odśwież</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+          {status === "unverified" && (
+            <TouchableOpacity
+              style={styles.offlineBannerSecondaryButton}
+              onPress={() => void endSession()}
+              disabled={isRefreshing || loggingOut}
+            >
+              {loggingOut ? (
+                <ActivityIndicator size="small" color={colors.textSecondary} />
+              ) : (
+                <Text style={styles.offlineBannerSecondaryButtonText}>Zaloguj się na nowo</Text>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       <ScrollView 
         contentContainerStyle={[styles.listContent, !isScrollable && { flexGrow: 1 }]}
