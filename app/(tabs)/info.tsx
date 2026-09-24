@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AccountSection } from "@/features/auth";
 import UekLogo from "@/assets/images/uek_logo.svg";
 import { ExternalLink } from "@/shared/components/external-link/external-link";
 import { IconSymbol } from "@/shared/components/icon-symbol/icon-symbol";
@@ -35,6 +36,8 @@ export default function InfoScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <AccountSection />
+
         <View style={styles.section}>
           <ThemedText type="subtitle" style={[styles.sectionTitle, { color: colors.textPrimary }]}>Ustawienia</ThemedText>
           <View style={styles.linkItem}>

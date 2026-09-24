@@ -1,5 +1,10 @@
 import React, { createContext, ReactNode, useContext, useMemo } from "react";
 
+import { AuthRepository } from "@/features/auth/api/auth-repository";
+import { AuthRepositoryMock } from "@/features/auth/api/auth-repository.mock";
+import { AuthSessionService } from "@/features/auth/services/auth-session.service";
+import { SecureAuthTokenStore } from "@/features/auth/storage/auth-token-store";
+import { authConnector } from "@/shared/connectors/auth-connector/auth-connector";
 import { apiConnector } from "@/shared/connectors/api-connector/api-connector";
 
 import { cacheService } from "@/shared/storage/cache-service/cache-service";
@@ -60,12 +65,23 @@ const eventsService = new EventsService(
 
 const notificationsService = new NotificationsService();
 
+// Auth
+const authTokenStore = new SecureAuthTokenStore();
+const authRepository = IS_API_MOCK_ENABLED
+  ? new AuthRepositoryMock()
+  : new AuthRepository(authConnector);
+const authSessionService = new AuthSessionService(
+  authRepository,
+  authTokenStore,
+);
+
 // React part
 interface AppDependencies {
   eventsService: EventsService;
   favoriteEventsRepository: FavoriteEventsRepository;
   notificationsService: NotificationsService;
   scheduleRepository: ScheduleRepository;
+  authSessionService: AuthSessionService;
 }
 
 const DependencyContext = createContext<AppDependencies | null>(null);
@@ -81,6 +97,7 @@ export const DependencyProvider = ({ children }: ProviderProps) => {
       favoriteEventsRepository,
       notificationsService,
       scheduleRepository,
+      authSessionService,
     }),
     [],
   );

@@ -22,7 +22,8 @@ import HomeIconFilled from "@/assets/icons/home-icon-filled.svg";
 import HomeIconOutline from "@/assets/icons/home-icon-outline.svg";
 import InfoIconFilled from "@/assets/icons/info-icon-filled.svg";
 import InfoIconOutline from "@/assets/icons/info-icon-outline.svg";
-import ScheduleIcon from "@/assets/icons/schedule.svg";
+import ScheduleIconFilled from "@/assets/icons/schedule-icon-filled.svg";
+import ScheduleIconOutline from "@/assets/icons/schedule-icon-outline.svg";
 
 const AnimatedPressable = Animated.createAnimatedComponent(PlatformPressable);
 
@@ -117,7 +118,7 @@ export default function TabLayout() {
           title: "Plan zajęć",
           tabBarIcon: ({ color, focused }) => (
             <SvgIcon
-              Icon={ScheduleIcon}
+              Icon={focused ? ScheduleIconFilled : ScheduleIconOutline}
               size={24}
               color={color}
             />
