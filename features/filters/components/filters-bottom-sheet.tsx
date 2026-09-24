@@ -1,4 +1,5 @@
 import { useFilters } from "@/features/filters/contexts";
+import { createFiltersSheetController } from "@/features/filters/utils/filters-sheet-controller";
 import { ThemedText } from "@/shared/components/themed-text/themed-text";
 import { theme } from "@/shared/constants/theme";
 import {
@@ -13,7 +14,7 @@ import {
   BottomSheetScrollView,
   TouchableOpacity,
 } from "@gorhom/bottom-sheet";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { BackHandler, StyleSheet, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "@/shared/context/ThemeContext";
@@ -29,9 +30,6 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
   const scrollRef = useRef<any>(null);
   const { colors } = useTheme();
 
-  const isClosingRef = useRef(false);
-  const sheetIndexRef = useRef<number>(-1);
-
   const {
     selectedCategories,
     selectedLocations,
@@ -42,7 +40,7 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
     clearFilters,
   } = useFilters();
 
-  const { events, dictionaries } = React.useContext(EventContext);
+  const { dictionaries } = React.useContext(EventContext);
 
   const availableCategories = useMemo(() => {
     if (!dictionaries?.event_types) return [];
@@ -62,59 +60,57 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
 
   const snapPoints = useMemo(() => ["70%", "95%"], []);
 
-  // ✅ OPEN / CLOSE
-  useEffect(() => {
-    if (isOpen) {
-      isClosingRef.current = false;
-      bottomSheetRef.current?.present();
-    } else {
-      if (sheetIndexRef.current !== -1 && !isClosingRef.current) {
-        isClosingRef.current = true;
-        bottomSheetRef.current?.dismiss();
-      }
-    }
-  }, [isOpen]);
-
-  // ✅ BACK BUTTON
-  useFocusEffect(
-    useCallback(() => {
-      if (!isOpen) return;
-
-      const onBackPress = () => {
-        if (sheetIndexRef.current === -1) return true;
-
-        if (isClosingRef.current) return true;
-
-        isClosingRef.current = true;
-        bottomSheetRef.current?.dismiss();
-
-        return true;
-      };
-
-      const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-      return () => sub.remove();
-    }, [isOpen])
-  );
-
-  // ✅ SYNC STATE
-  const handleChange = useCallback(
-    (index: number) => {
-      sheetIndexRef.current = index;
-
-      if (index === -1) {
-        isClosingRef.current = false;
+  const handleClose = useCallback(
+    (didDismiss: boolean) => {
+      onClose();
+      if (didDismiss) {
         trackEvent('filters_applied', {
           categories: selectedCategories.join(','),
           locations: selectedLocations.join(','),
           tags: selectedTags.join(',')
         });
-        onClose();
-      } else {
-        scrollRef.current?.scrollTo({ y: 0, animated: false });
       }
     },
     [onClose, selectedCategories, selectedLocations, selectedTags]
   );
+
+  // Keep the controller stable while selections and the parent callback change.
+  const handleCloseRef = useRef(handleClose);
+  useLayoutEffect(() => {
+    handleCloseRef.current = handleClose;
+  }, [handleClose]);
+
+  const [controller] = React.useState(() => createFiltersSheetController({
+    present: () => bottomSheetRef.current?.present(),
+    dismiss: () => bottomSheetRef.current?.dismiss(),
+    onClose: (didDismiss) => handleCloseRef.current(didDismiss),
+  }));
+
+  useFocusEffect(
+    useCallback(() => {
+      controller.setFocused(true);
+      const sub = BackHandler.addEventListener("hardwareBackPress", controller.close);
+      return () => {
+        sub.remove();
+        controller.setFocused(false);
+      };
+    }, [controller])
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      controller.open();
+    } else {
+      controller.close();
+    }
+  }, [controller, isOpen]);
+
+  const handleChange = useCallback((index: number) => {
+    controller.onChange(index);
+    if (index >= 0) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [controller]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -133,6 +129,8 @@ export function FiltersBottomSheet({ isOpen, onClose }: FiltersBottomSheetProps)
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       onChange={handleChange}
+      onAnimate={controller.onAnimate}
+      onDismiss={controller.onDismiss}
       enablePanDownToClose
       backdropComponent={renderBackdrop}
       backgroundStyle={[styles.bg, { backgroundColor: colors.surface }]}
@@ -213,7 +211,7 @@ function Section({ title, children }: any) {
   );
 }
 
-const Checkbox = React.memo(({ label, selected, onToggle, value }: any) => {
+const Checkbox = React.memo(function Checkbox({ label, selected, onToggle, value }: any) {
   const { colors } = useTheme();
 
   return (
@@ -226,7 +224,7 @@ const Checkbox = React.memo(({ label, selected, onToggle, value }: any) => {
   );
 });
 
-const FilterTag = React.memo(({ tag, selected, onToggle }: any) => {
+const FilterTag = React.memo(function FilterTag({ tag, selected, onToggle }: any) {
   const { colors } = useTheme();
 
   return (

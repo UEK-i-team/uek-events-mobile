@@ -1,10 +1,7 @@
-import { EventCategory, EventLocation, EventTag } from '@/shared/types/event-enums';
+import { EventTag } from '@/shared/types/event-enums';
 import React, { createContext, ReactNode, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 
 interface FiltersContextType {
-  isOpen: boolean;
-  openFilters: () => void;
-  closeFilters: () => void;
   // Filtry
   selectedCategories: string[];
   selectedLocations: string[];
@@ -14,13 +11,11 @@ interface FiltersContextType {
   toggleLocation: (location: string) => void;
   toggleTag: (tag: EventTag) => void;
   clearFilters: () => void;
-  applyFilters: () => void;
 }
 
 const FiltersContext = createContext<FiltersContextType | undefined>(undefined);
 
 export function FiltersProvider({ children }: { children: ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
@@ -38,18 +33,6 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
 
     return () => clearTimeout(timer);
   }, [selectedCategories, selectedLocations, selectedTags]);
-
-  const openFilters = useCallback(() => {
-    // Przy otwieraniu, przywróć aktualnie zastosowane filtry
-    setSelectedCategories([...appliedCategories]);
-    setSelectedLocations([...appliedLocations]);
-    setSelectedTags([...appliedTags]);
-    setIsOpen(true);
-  }, [appliedCategories, appliedLocations, appliedTags]);
-
-  const closeFilters = useCallback(() => {
-    setIsOpen(false);
-  }, []);
 
   const toggleCategory = useCallback((category: string) => {
     setSelectedCategories(prev => {
@@ -85,19 +68,7 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     setAppliedTags([]);
   }, []);
 
-  const applyFilters = useCallback(() => {
-    setAppliedCategories([...selectedCategories]);
-    setAppliedLocations([...selectedLocations]);
-    setAppliedTags([...selectedTags]);
-    closeFilters();
-  }, [selectedCategories, selectedLocations, selectedTags, closeFilters]);
-
-   
-
   const contextValue = useMemo(() => ({
-    isOpen,
-    openFilters,
-    closeFilters,
     selectedCategories,
     selectedLocations,
     selectedTags,
@@ -105,11 +76,7 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     toggleLocation,
     toggleTag,
     clearFilters,
-    applyFilters,
   }), [
-    isOpen,
-    openFilters,
-    closeFilters,
     selectedCategories,
     selectedLocations,
     selectedTags,
@@ -117,7 +84,6 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
     toggleLocation,
     toggleTag,
     clearFilters,
-    applyFilters,
   ]);
 
   const appliedContextValue = useMemo(() => ({
@@ -165,4 +131,3 @@ export function useAppliedFilters() {
   }
   return context;
 }
-

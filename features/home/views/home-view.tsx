@@ -5,20 +5,34 @@ import { EventContext } from "@/shared/context/EventContext/EventContext";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { IEvent } from "@/shared/types/event";
 import { useAppliedFilters, useFilters } from "@/features/filters/contexts";
+import { FiltersBottomSheet } from "@/features/filters/components/filters-bottom-sheet";
 import { eventTagTranslations } from "@/shared/types/event-enums";
-import { useCallback, useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EventCard } from "../components/event-card/event-card";
 import { styles } from "./home-view.styles";
 import { TimelineScroller } from "../components/timeline-scroller/timeline-scroller";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function HomeView() {
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const openFilters = useCallback(() => setIsFiltersOpen(true), []);
+  const closeFilters = useCallback(() => setIsFiltersOpen(false), []);
   const { events: allEvents, status, errorMessage, toggleFavoriteEvent } =
     useContext(EventContext);
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const { appliedCategories, appliedLocations, appliedTags } = useAppliedFilters();
   const { clearFilters } = useFilters();
+
+  // Sprawdzamy, czy filtry są aktywne (do wyświetlenia kropki)
+  const hasActiveFilters = useMemo(() => {
+    return (
+      appliedCategories.length > 0 ||
+      appliedLocations.length > 0 ||
+      appliedTags.length > 0
+    );
+  }, [appliedCategories, appliedLocations, appliedTags]);
 
   const events = useMemo(() => {
     if (!allEvents) return allEvents;
@@ -78,6 +92,9 @@ export default function HomeView() {
     },
     [containerHeight, toggleFavoriteEvent],
   );
+
+  // Dynamiczne kolory dla tła przycisku oraz obramowania kropki
+  const fabBgColor = isDarkMode ? "#5C5A5A" : "#EAEAEA";
 
   return (
     <SafeAreaView
@@ -147,7 +164,61 @@ export default function HomeView() {
             onViewableItemsChanged={onViewableItemsChanged}
           />
         ) : null}
+
+        {/* Pływający przycisk filtrów */}
+        <TouchableOpacity
+          style={{
+            position: "absolute",
+            bottom: 24,
+            right: 16,
+            width: 44,
+            height: 44,
+            borderRadius: 16,
+            backgroundColor: fabBgColor,
+            justifyContent: "center",
+            alignItems: "center",
+            elevation: 3,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: isDarkMode ? 0.3 : 0.1,
+            shadowRadius: 4,
+            zIndex: 10,
+          }}
+          activeOpacity={0.8}
+          onPress={openFilters}
+          disabled={isFiltersOpen}
+          accessibilityLabel="Otwórz filtry"
+        >
+          <Ionicons
+            name="options-outline"
+            size={20}
+            color={isDarkMode ? "#FFFFFF" : "#333333"}
+          />
+
+          {/* Kropka informująca o aktywnych filtrach z kolorem theme.primary */}
+          {hasActiveFilters && (
+            <View
+              style={{
+                position: "absolute",
+                top: 5,
+                right: 5,
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                backgroundColor: colors.primary,
+                borderWidth: 2,
+                borderColor: fabBgColor,
+              }}
+            />
+          )}
+        </TouchableOpacity>
       </View>
+
+      {/* Arkusz filtrów */}
+      <FiltersBottomSheet
+        isOpen={isFiltersOpen}
+        onClose={closeFilters}
+      />
     </SafeAreaView>
   );
 }

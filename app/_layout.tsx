@@ -8,11 +8,7 @@ import { useContext, useEffect, useRef } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 
-import { FiltersBottomSheet } from "@/features/filters/components/filters-bottom-sheet";
-import {
-  FiltersProvider,
-  useFilters,
-} from "@/features/filters/contexts/filters-context";
+import { FiltersProvider } from "@/features/filters/contexts/filters-context";
 import {
   NotificationProvider,
   NotificationToastContainer,
@@ -72,7 +68,6 @@ export const unstable_settings = {
 
 function AppContent() {
   useDailyEventsGate();
-  const { isOpen, closeFilters } = useFilters();
   const router = useRouter();
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
   const url = Linking.useURL();
@@ -125,7 +120,6 @@ function AppContent() {
           }}
         />
       </Stack>
-      <FiltersBottomSheet isOpen={isOpen} onClose={closeFilters} />
       <NotificationToastContainer />
       <SplashController />
     </>
