@@ -92,6 +92,9 @@ export const getStyles = (colors: AppThemeColors) =>
       alignItems: "center",
       gap: 8,
     },
+    listWrapper: {
+      flex: 1,
+    },
     listContent: {
       // Short days fill the screen so the empty state centers and swipes land.
       flexGrow: 1,

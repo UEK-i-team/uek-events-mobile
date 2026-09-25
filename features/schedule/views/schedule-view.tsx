@@ -1,5 +1,7 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { runOnJS, useSharedValue, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth, useEndSession } from "@/features/auth";
@@ -9,7 +11,7 @@ import { TimelineScroller } from "@/features/home/components/timeline-scroller/t
 import { ClassCard } from "../components/class-card/class-card";
 import { BreakDivider } from "../components/break-divider/break-divider";
 import { IEvent } from "@/shared/types/event";
-import { format, isToday, isTomorrow } from "date-fns";
+import { addDays, format, isToday, isTomorrow } from "date-fns";
 import { pl } from "date-fns/locale";
 import { TouchableOpacity } from "react-native";
 import { useSchedule } from "../contexts/schedule-context";
@@ -23,6 +25,14 @@ import { ScheduleEmptyState } from "../components/schedule-empty-state/schedule-
 import { FreeDayState } from "../components/free-day-state/free-day-state";
 import { IScheduleEvent } from "@/shared/types/schedule";
 import { useScheduleTabBehavior } from "../hooks/use-schedule-tab-behavior";
+import { getDaySwipePull, getScrollEdges, resolveDaySwipe, ScrollEdges } from "../utils/day-swipe";
+import { DaySwipeIndicator } from "../components/day-swipe-indicator/day-swipe-indicator";
+
+// Like "Poniedziałek, 24 gru"
+const formatDayTitle = (date: Date) => {
+  const formatted = format(date, "EEEE, d MMM", { locale: pl });
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+};
 
 export const ScheduleView = () => {
   const { colors } = useTheme();
@@ -33,10 +43,7 @@ export const ScheduleView = () => {
   const returnToToday = useCallback(() => setSelectedDate(new Date()), []);
   useScheduleTabBehavior({ selectedDate, onReturnToToday: returnToToday });
 
-  // Format date like "Poniedziałek, 24 gru"
-  const formattedDate = format(selectedDate, "EEEE, d MMM", { locale: pl });
-  // capitalize first letter
-  const capitalizedFormattedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+  const capitalizedFormattedDate = formatDayTitle(selectedDate);
   const isSelectedToday = isToday(selectedDate);
   const relativeDayLabel = isSelectedToday ? "Dziś" : isTomorrow(selectedDate) ? "Jutro" : null;
 
@@ -54,21 +61,51 @@ export const ScheduleView = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const classDetailsRef = useRef<ClassDetailsSheetRef>(null);
   const [isRestoringSession, setIsRestoringSession] = useState(false);
-  const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const scrollOffset = useSharedValue(0);
+  const layoutHeight = useSharedValue(0);
+  const contentHeight = useSharedValue(0);
+  const edgesAtDragStart = useSharedValue<ScrollEdges | null>(null);
+  const daySwipePull = useSharedValue(0);
+
   const selectedDayKey = format(selectedDate, "yyyy-MM-dd");
   useLayoutEffect(() => {
+    scrollOffset.value = 0;
     scrollRef.current?.scrollTo({ y: 0, animated: false });
-  }, [selectedDayKey]);
-  const [isScrollable, setIsScrollable] = useState(false);
-  const layoutHeightRef = useRef(0);
-  const contentHeightRef = useRef(0);
-  // Must not feed back into the content style: Android reports sizes with
-  // sub-pixel rounding, and a style that depends on this flag re-lays out the
-  // content forever (the app freezes on short days like "Dzień wolny").
-  const updateIsScrollable = () => {
-    setIsScrollable(contentHeightRef.current > layoutHeightRef.current + 1);
-  };
+  }, [selectedDayKey, scrollOffset]);
+
+  // Android does not overscroll past the content, so the drag itself is
+  // measured instead of the scroll offset.
+  const daySwipeGesture = useMemo(() => {
+    const changeDay = (direction: number) => setSelectedDate((date) => addDays(date, direction));
+
+    const pan = Gesture.Pan()
+      .activeOffsetY([-10, 10])
+      .failOffsetX([-20, 20])
+      .onBegin(() => {
+        edgesAtDragStart.value = getScrollEdges(scrollOffset.value, layoutHeight.value, contentHeight.value);
+      })
+      .onUpdate((event) => {
+        const edgesAtStart = edgesAtDragStart.value;
+        daySwipePull.value = edgesAtStart ? getDaySwipePull(event.translationY, edgesAtStart) : 0;
+      })
+      .onEnd((event) => {
+        const edgesAtStart = edgesAtDragStart.value;
+        if (!edgesAtStart) return;
+        const edgesAtEnd = getScrollEdges(scrollOffset.value, layoutHeight.value, contentHeight.value);
+        const direction = resolveDaySwipe(event.translationY, edgesAtStart, edgesAtEnd);
+        if (direction === 0) return;
+        // Hidden at once so it never shows the label of the day after the new one.
+        daySwipePull.value = 0;
+        runOnJS(changeDay)(direction);
+      })
+      .onFinalize(() => {
+        edgesAtDragStart.value = null;
+        if (daySwipePull.value !== 0) daySwipePull.value = withTiming(0, { duration: 180 });
+      });
+
+    return Gesture.Simultaneous(pan, Gesture.Native());
+  }, [contentHeight, daySwipePull, edgesAtDragStart, layoutHeight, scrollOffset]);
 
   // Filter and sort events for the selected date
   const dayEvents = scheduleEvents
@@ -95,53 +132,6 @@ export const ScheduleView = () => {
       }
     }
     return next;
-  };
-
-  const handleScrollEndDrag = (event: any) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const threshold = 50;
-    
-    // Calculate the maximum normal scroll position. If content is shorter than the screen, it's 0.
-    const maxScroll = Math.max(0, contentSize.height - layoutMeasurement.height);
-
-    if (contentOffset.y < -threshold) {
-      // Pulled down at the top -> previous day
-      const prevDay = new Date(selectedDate);
-      prevDay.setDate(prevDay.getDate() - 1);
-      setSelectedDate(prevDay);
-    } else if (contentOffset.y > maxScroll + threshold) {
-      // Pulled up at the bottom -> next day
-      const nextDay = new Date(selectedDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      setSelectedDate(nextDay);
-    }
-  };
-
-  const handleTouchStart = (e: any) => {
-    setTouchStartY(e.nativeEvent.pageY);
-  };
-
-  const handleTouchEnd = (e: any) => {
-    if (touchStartY === null) return;
-    const touchEndY = e.nativeEvent.pageY;
-    const distance = touchEndY - touchStartY;
-    const threshold = 50;
-
-    // Only apply manual touch swipe if content is not scrollable
-    if (!isScrollable) {
-      if (distance > threshold) {
-        // Pulled down -> previous day
-        const prevDay = new Date(selectedDate);
-        prevDay.setDate(prevDay.getDate() - 1);
-        setSelectedDate(prevDay);
-      } else if (distance < -threshold) {
-        // Pulled up -> next day
-        const nextDay = new Date(selectedDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        setSelectedDate(nextDay);
-      }
-    }
-    setTouchStartY(null);
   };
 
   const isShowingStaleSchedule =
@@ -271,54 +261,66 @@ export const ScheduleView = () => {
         </View>
       )}
 
-      <ScrollView 
-        ref={scrollRef}
-        contentContainerStyle={styles.listContent}
-        onScrollEndDrag={handleScrollEndDrag}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onLayout={(e) => {
-          layoutHeightRef.current = e.nativeEvent.layout.height;
-          updateIsScrollable();
-        }}
-        onContentSizeChange={(_, height) => {
-          contentHeightRef.current = height;
-          updateIsScrollable();
-        }}
-        scrollEventThrottle={16}
-        bounces={true}
-        alwaysBounceVertical={true}
-      >
-        {dayEvents.length === 0 ? (
-          <FreeDayState nextClass={findNextClass()} onJumpToClass={setSelectedDate} />
-        ) : (
-          dayEvents.map((event, index) => {
-            const nextEvent = dayEvents[index + 1];
-            const breakMinutes = nextEvent
-              ? Math.round(
-                  (new Date(nextEvent.start_time).getTime() - new Date(event.end_time).getTime()) / 60_000,
-                )
-              : 0;
-            const classColor = getScheduleClassColor(event.type);
+      <View style={styles.listWrapper}>
+        <GestureDetector gesture={daySwipeGesture}>
+          <ScrollView
+            ref={scrollRef}
+            contentContainerStyle={styles.listContent}
+            onScroll={(e) => {
+              scrollOffset.value = e.nativeEvent.contentOffset.y;
+            }}
+            onLayout={(e) => {
+              layoutHeight.value = e.nativeEvent.layout.height;
+            }}
+            onContentSizeChange={(_, height) => {
+              contentHeight.value = height;
+            }}
+            scrollEventThrottle={16}
+            bounces={true}
+            alwaysBounceVertical={true}
+          >
+            {dayEvents.length === 0 ? (
+              <FreeDayState nextClass={findNextClass()} onJumpToClass={setSelectedDate} />
+            ) : (
+              dayEvents.map((event, index) => {
+                const nextEvent = dayEvents[index + 1];
+                const breakMinutes = nextEvent
+                  ? Math.round(
+                      (new Date(nextEvent.start_time).getTime() - new Date(event.end_time).getTime()) / 60_000,
+                    )
+                  : 0;
+                const classColor = getScheduleClassColor(event.type);
             
-            return (
-              <React.Fragment key={event.id}>
-                <ClassCard
-                  timeRange={`${new Date(event.start_time).getHours()}:${new Date(event.start_time).getMinutes().toString().padStart(2, '0')}-${new Date(event.end_time).getHours()}:${new Date(event.end_time).getMinutes().toString().padStart(2, '0')}`}
-                  room={event.room?.name || "Sala nieznana"}
-                  title={event.course}
-                  type={translateEventType(event.type)}
-                  professor={event.teacher?.name || "Nieznany prowadzący"}
-                  borderColor={classColor}
-                  roomDotColor={classColor}
-                  onPress={() => classDetailsRef.current?.open(event)}
-                />
-                {breakMinutes > 0 && <BreakDivider durationMinutes={breakMinutes} />}
-              </React.Fragment>
-            );
-          })
-        )}
-      </ScrollView>
+                return (
+                  <React.Fragment key={event.id}>
+                    <ClassCard
+                      timeRange={`${new Date(event.start_time).getHours()}:${new Date(event.start_time).getMinutes().toString().padStart(2, '0')}-${new Date(event.end_time).getHours()}:${new Date(event.end_time).getMinutes().toString().padStart(2, '0')}`}
+                      room={event.room?.name || "Sala nieznana"}
+                      title={event.course}
+                      type={translateEventType(event.type)}
+                      professor={event.teacher?.name || "Nieznany prowadzący"}
+                      borderColor={classColor}
+                      roomDotColor={classColor}
+                      onPress={() => classDetailsRef.current?.open(event)}
+                    />
+                    {breakMinutes > 0 && <BreakDivider durationMinutes={breakMinutes} />}
+                  </React.Fragment>
+                );
+              })
+            )}
+          </ScrollView>
+        </GestureDetector>
+        <DaySwipeIndicator
+          pull={daySwipePull}
+          direction="previous"
+          targetLabel={formatDayTitle(addDays(selectedDate, -1))}
+        />
+        <DaySwipeIndicator
+          pull={daySwipePull}
+          direction="next"
+          targetLabel={formatDayTitle(addDays(selectedDate, 1))}
+        />
+      </View>
 
       {groupWizard}
 
