@@ -223,12 +223,18 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [selectedGroupIds, scheduleRepository, saveSchedule, refreshGroups]);
 
-  // Fetch the latest schedule once the session is confirmed and whenever groups change
+  // Fetch the latest schedule once the session is confirmed and whenever groups change.
+  // Only a change of the groups is the user's own action worth confirming; the
+  // first fetch after startup or login stays silent.
+  const fetchedGroupsKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (status === "authenticated" && isCacheHydrated) {
-      refreshSchedule();
-    }
-  }, [status, isCacheHydrated, refreshSchedule]);
+    if (status !== "authenticated" || !isCacheHydrated) return;
+
+    const groupsKey = [...selectedGroupIds].sort((a, b) => a - b).join(",");
+    const groupsChanged = fetchedGroupsKeyRef.current !== null && fetchedGroupsKeyRef.current !== groupsKey;
+    fetchedGroupsKeyRef.current = groupsKey;
+    refreshSchedule(groupsChanged ? { notifyOnSuccess: true } : undefined);
+  }, [status, isCacheHydrated, refreshSchedule, selectedGroupIds]);
 
   useEffect(() => {
     if (status === "authenticated") {

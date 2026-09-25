@@ -332,7 +332,7 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")} hitSlop={8}>
-              <ClearIcon width={20} height={20} fill={colors.dark_grey} />
+              <ClearIcon width={20} height={20} fill={colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
@@ -404,7 +404,7 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")} hitSlop={8}>
-              <ClearIcon width={20} height={20} fill={colors.dark_grey} />
+              <ClearIcon width={20} height={20} fill={colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
@@ -477,7 +477,7 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")} hitSlop={8}>
-              <ClearIcon width={20} height={20} fill={colors.dark_grey} />
+              <ClearIcon width={20} height={20} fill={colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>

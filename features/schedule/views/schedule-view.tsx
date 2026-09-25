@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator, useWindowDimensions } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -19,7 +19,7 @@ import { TimelineScroller } from "@/features/home/components/timeline-scroller/t
 import { ClassCard } from "../components/class-card/class-card";
 import { BreakDivider } from "../components/break-divider/break-divider";
 import { IEvent } from "@/shared/types/event";
-import { addDays, format, isToday, isTomorrow } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
 import { pl } from "date-fns/locale";
 import { TouchableOpacity } from "react-native";
 import { useSchedule } from "../contexts/schedule-context";
@@ -34,8 +34,11 @@ import { FreeDayState } from "../components/free-day-state/free-day-state";
 import { IScheduleEvent } from "@/shared/types/schedule";
 import { useScheduleTabBehavior } from "../hooks/use-schedule-tab-behavior";
 import { resolveDaySwipe } from "../utils/day-swipe";
+import { findAdjacentClassDay, getClassDayStarts } from "../utils/class-days";
 
 const DAY_SLIDE_DURATION = 180;
+// Dragging toward a side without any classes left only gives in a little.
+const NO_CLASS_DAY_RESISTANCE = 0.25;
 
 // Like "Poniedziałek, 24 gru"
 const formatDayTitle = (date: Date) => {
@@ -90,11 +93,35 @@ export const ScheduleView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDayKey]);
 
+  // Swiping jumps over free days, so the gesture needs the class days around
+  // the selected one on the UI thread and the latest ones on the JS thread.
+  const classDayStarts = useMemo(() => getClassDayStarts(scheduleEvents), [scheduleEvents]);
+  const classDayStartsRef = useRef(classDayStarts);
+  const selectedDateRef = useRef(selectedDate);
+  const hasPreviousClassDay = useSharedValue(false);
+  const hasNextClassDay = useSharedValue(false);
+  useEffect(() => {
+    classDayStartsRef.current = classDayStarts;
+    selectedDateRef.current = selectedDate;
+    hasPreviousClassDay.value = findAdjacentClassDay(classDayStarts, selectedDate, -1) !== null;
+    hasNextClassDay.value = findAdjacentClassDay(classDayStarts, selectedDate, 1) !== null;
+  }, [classDayStarts, selectedDate, hasPreviousClassDay, hasNextClassDay]);
+
   const scrollGesture = useMemo(() => Gesture.Native(), []);
   const daySwipeGesture = useMemo(() => {
-    const changeDay = (direction: number) => {
+    const snapBack = () => {
+      "worklet";
+      dayOffsetX.value = withTiming(0, { duration: DAY_SLIDE_DURATION });
+    };
+
+    const changeDay = (direction: -1 | 1) => {
+      const target = findAdjacentClassDay(classDayStartsRef.current, selectedDateRef.current, direction);
+      if (!target) {
+        snapBack();
+        return;
+      }
       incomingDirectionRef.current = direction;
-      setSelectedDate((date) => addDays(date, direction));
+      setSelectedDate(target);
     };
 
     return Gesture.Pan()
@@ -102,12 +129,15 @@ export const ScheduleView = () => {
       .failOffsetY([-10, 10])
       .simultaneousWithExternalGesture(scrollGesture)
       .onUpdate((event) => {
-        dayOffsetX.value = event.translationX;
+        const canMove = event.translationX < 0 ? hasNextClassDay.value : hasPreviousClassDay.value;
+        dayOffsetX.value = canMove ? event.translationX : event.translationX * NO_CLASS_DAY_RESISTANCE;
       })
       .onEnd((event, success) => {
         const direction = success ? resolveDaySwipe(event.translationX, event.velocityX) : 0;
-        if (direction === 0) {
-          dayOffsetX.value = withTiming(0, { duration: DAY_SLIDE_DURATION });
+        const canMove =
+          (direction === 1 && hasNextClassDay.value) || (direction === -1 && hasPreviousClassDay.value);
+        if (direction === 0 || !canMove) {
+          snapBack();
           return;
         }
         // The current day leaves on the side the finger went; the new one comes from the other.
@@ -115,7 +145,7 @@ export const ScheduleView = () => {
           if (finished) runOnJS(changeDay)(direction);
         });
       });
-  }, [dayOffsetX, screenWidth, scrollGesture]);
+  }, [dayOffsetX, hasNextClassDay, hasPreviousClassDay, screenWidth, scrollGesture]);
 
   const daySlideStyle = useAnimatedStyle(() => ({
     opacity: interpolate(Math.abs(dayOffsetX.value), [0, screenWidth], [1, 0.3], Extrapolation.CLAMP),
