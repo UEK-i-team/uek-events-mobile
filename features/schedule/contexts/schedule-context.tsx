@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo, useRef } from "react";
 import { AppState } from "react-native";
 import { useAuth } from "@/features/auth";
+import { NotificationContext } from "@/features/notifications/contexts/notification-context";
 import { AsyncStorageService } from "@/shared/storage/async-storage-service/async-storage-service";
 import { useDependencies } from "@/shared/di/DependencyProvider";
 import { IScheduleEvent, IScheduleGroupsResponse } from "@/shared/types/schedule";
@@ -13,6 +14,11 @@ import {
   ScheduleCache,
 } from "../utils/schedule-cache";
 
+interface RefreshScheduleOptions {
+  /** Show a "synced" toast once the backend responds successfully. */
+  notifyOnSuccess?: boolean;
+}
+
 interface ScheduleContextProps {
   selectedGroupIds: number[];
   scheduleEvents: IScheduleEvent[];
@@ -22,7 +28,7 @@ interface ScheduleContextProps {
   lastUpdatedAt: Date | null;
   fetchError: boolean;
   setSelectedGroupIds: (ids: number[]) => void;
-  refreshSchedule: () => Promise<void>;
+  refreshSchedule: (options?: RefreshScheduleOptions) => Promise<void>;
   getGroupName: (groupId: number) => string;
   groupsData: IScheduleGroupsResponse | null;
   isGroupsLoading: boolean;
@@ -32,7 +38,8 @@ interface ScheduleContextProps {
 
 const ScheduleContext = createContext<ScheduleContextProps | undefined>(undefined);
 
-const RESUME_REFRESH_THROTTLE_MS = 30_000;
+const RESUME_REFRESH_THROTTLE_MS = 60_000;
+const SYNCED_TOAST_DURATION_MS = 1000;
 
 const selectedGroupsStorage = new AsyncStorageService<number[]>("selected-schedule-groups");
 const scheduleCacheStorage = new AsyncStorageService<unknown>("schedule-events-cache");
@@ -61,6 +68,10 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
   const isCacheHydratedRef = useRef(isCacheHydrated);
   isCacheHydratedRef.current = isCacheHydrated;
   const lastFetchSucceededAtRef = useRef(0);
+  const notifySyncedRef = useRef(false);
+  const notificationContext = useContext(NotificationContext);
+  const showNotificationRef = useRef(notificationContext?.showNotification);
+  showNotificationRef.current = notificationContext?.showNotification;
 
   const scheduleEvents = useMemo(
     () => flattenScheduleEvents(scheduleCache, selectedGroupIds),
@@ -119,6 +130,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     if (status !== "unauthenticated") return;
 
     fetchIdRef.current++;
+    notifySyncedRef.current = false;
     setIsLoading(false);
     setFetchError(false);
     applyCache(null);
@@ -156,7 +168,14 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     return request;
   }, [scheduleRepository]);
 
-  const refreshSchedule = useCallback(async () => {
+  /**
+   * `notifyOnSuccess` stays pending until a fetch succeeds or fails, so it also
+   * covers the fetch started automatically once an unverified session is restored.
+   */
+  const refreshSchedule = useCallback(async (options?: RefreshScheduleOptions) => {
+    if (options?.notifyOnSuccess) {
+      notifySyncedRef.current = true;
+    }
     if (statusRef.current !== "authenticated") return;
 
     if (!groupsDataRef.current) {
@@ -168,6 +187,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
 
     if (requestedIds.length === 0) {
       setIsLoading(false);
+      notifySyncedRef.current = false;
       await saveSchedule({ groups: {}, fetchedAt: new Date().toISOString() }).catch(console.error);
       return;
     }
@@ -184,11 +204,16 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
           fetchedAt: new Date().toISOString(),
         });
         await saveSchedule(nextCache);
+        if (notifySyncedRef.current) {
+          notifySyncedRef.current = false;
+          showNotificationRef.current?.("success", "Zsynchronizowano plan zajęć", SYNCED_TOAST_DURATION_MS);
+        }
       }
     } catch (error) {
       // Keep the cached schedule: only an explicit session end removes it.
       console.warn("Failed to fetch schedule events:", describeError(error));
       if (currentFetchId === fetchIdRef.current) {
+        notifySyncedRef.current = false;
         setFetchError(true);
       }
     } finally {
@@ -198,12 +223,18 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [selectedGroupIds, scheduleRepository, saveSchedule, refreshGroups]);
 
-  // Fetch the latest schedule once the session is confirmed and whenever groups change
+  // Fetch the latest schedule once the session is confirmed and whenever groups change.
+  // Only a change of the groups is the user's own action worth confirming; the
+  // first fetch after startup or login stays silent.
+  const fetchedGroupsKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (status === "authenticated" && isCacheHydrated) {
-      refreshSchedule();
-    }
-  }, [status, isCacheHydrated, refreshSchedule]);
+    if (status !== "authenticated" || !isCacheHydrated) return;
+
+    const groupsKey = [...selectedGroupIds].sort((a, b) => a - b).join(",");
+    const groupsChanged = fetchedGroupsKeyRef.current !== null && fetchedGroupsKeyRef.current !== groupsKey;
+    fetchedGroupsKeyRef.current = groupsKey;
+    refreshSchedule(groupsChanged ? { notifyOnSuccess: true } : undefined);
+  }, [status, isCacheHydrated, refreshSchedule, selectedGroupIds]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -216,10 +247,18 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
   const refreshScheduleRef = useRef(refreshSchedule);
   refreshScheduleRef.current = refreshSchedule;
 
+  // Only a return from "background" means the user was in another app; iOS
+  // also goes active -> inactive -> active for Control Center or system prompts.
+  const appStateRef = useRef(AppState.currentState);
+
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextState) => {
+      const previousState = appStateRef.current;
+      appStateRef.current = nextState;
+
       if (
         nextState !== "active" ||
+        previousState !== "background" ||
         statusRef.current !== "authenticated" ||
         !isCacheHydratedRef.current ||
         Date.now() - lastFetchSucceededAtRef.current < RESUME_REFRESH_THROTTLE_MS
@@ -227,7 +266,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      void refreshScheduleRef.current();
+      void refreshScheduleRef.current({ notifyOnSuccess: true });
       void refreshGroups();
     });
 

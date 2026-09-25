@@ -13,7 +13,7 @@ export interface HomeTabStateParams {
 }
 
 /**
- * Czy w tabbarze pokazać przycisk powrotu (zamiast „Strona główna").
+ * Czy w tabbarze pokazać przycisk powrotu (zamiast „Eventuje").
  *
  * Zasada: „dom" to najbliższy NADCHODZĄCY event (dziś lub w przyszłości) — to
  * pozycja, na którą ekran startuje i na którą wraca przycisk. Przycisk powrotu

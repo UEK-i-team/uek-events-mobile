@@ -3,8 +3,8 @@ import { useNavigation } from "expo-router";
 import { useIsFocused } from "@react-navigation/native";
 
 import ArrowLeftIcon from "@/assets/icons/arrow-left-200.svg";
-import HomeIconFilled from "@/assets/icons/home-icon-filled.svg";
-import HomeIconOutline from "@/assets/icons/home-icon-outline.svg";
+import EventIconFilled from "@/assets/icons/event-icon-filled.svg";
+import EventIconOutline from "@/assets/icons/event-icon-outline.svg";
 import { SvgIcon } from "@/shared/components/svg-icon/svg-icon";
 import { IEvent } from "@/shared/types/event";
 import { shouldShowReturnToToday } from "./home-tab-state";
@@ -78,15 +78,15 @@ export function useHomeTabBehavior({
   // Ikona i label zakładki zależne od tego, czy pokazujemy „Wróć do dziś".
   useEffect(() => {
     navigation.setOptions({
-      tabBarLabel: showReturnToToday ? "Powrót" : "Strona główna",
+      tabBarLabel: showReturnToToday ? "Powrót" : "Eventuje",
       tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
         <SvgIcon
           Icon={
             showReturnToToday
               ? ArrowLeftIcon
               : focused
-                ? HomeIconFilled
-                : HomeIconOutline
+                ? EventIconFilled
+                : EventIconOutline
           }
           size={24}
           color={color}

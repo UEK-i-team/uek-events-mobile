@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Modal, View, Text, TouchableOpacity, TextInput, FlatList, Platform, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ClearIcon from "@/assets/icons/clear-300.svg";
 import { useAuth } from "@/features/auth";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { getStyles } from "./group-wizard.styles";
@@ -79,6 +80,8 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
       isInitializedRef.current = true;
       setStep(1);
       setSearchQuery("");
+      setDebouncedQuery("");
+      setExpandedCategories({});
       
       const isJezyk = (cat: string = "", name: string = "") => {
         const lcat = cat.toLowerCase();
@@ -142,12 +145,12 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
     if (!groupsData?.planzajec) return [];
     return groupsData.planzajec
       .filter((g: any) => localKierunekIds.includes(g.id))
-      .map((g: any) => ({ ...g, type: 'group' }));
+      .map((g: any) => ({ ...g, type: 'group', listKey: `selected-${g.id}` }));
   }, [groupsData, localKierunekIds]);
 
   const kierunekList = useMemo(() => {
     if (!groupsData?.planzajec) return [];
-    let list = groupsData.planzajec.filter((g: any) => !isJezykFunc(g.schedule_category, g.name) && !localKierunekIds.includes(g.id));
+    let list = groupsData.planzajec.filter((g: any) => !isJezykFunc(g.schedule_category, g.name));
     
     const categories = new Map<string, any[]>();
     list.forEach(g => {
@@ -175,18 +178,18 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
       }
     });
     return result;
-  }, [groupsData, debouncedQuery, expandedCategories, localKierunekIds]);
+  }, [groupsData, debouncedQuery, expandedCategories]);
 
   const jezykiSelected = useMemo(() => {
     if (!groupsData?.planzajec) return [];
     return groupsData.planzajec
       .filter((g: any) => localJezykiIds.includes(g.id))
-      .map((g: any) => ({ ...g, type: 'group' }));
+      .map((g: any) => ({ ...g, type: 'group', listKey: `selected-${g.id}` }));
   }, [groupsData, localJezykiIds]);
 
   const jezykiList = useMemo(() => {
     if (!groupsData?.planzajec) return [];
-    let list = groupsData.planzajec.filter((g: any) => isJezykFunc(g.schedule_category, g.name) && !localJezykiIds.includes(g.id));
+    let list = groupsData.planzajec.filter((g: any) => isJezykFunc(g.schedule_category, g.name));
     
     const categories = new Map<string, any[]>();
     list.forEach(g => {
@@ -214,7 +217,7 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
       }
     });
     return result;
-  }, [groupsData, debouncedQuery, expandedCategories, localJezykiIds]);
+  }, [groupsData, debouncedQuery, expandedCategories]);
 
   const wfSelected = useMemo(() => {
     if (!groupsData?.usos) return [];
@@ -226,7 +229,8 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             id: sg.id,
             name: g.name,
             subtitle: g.group_code ? `${g.group_code} • Grupa ${sg.group_number}` : `Grupa ${sg.group_number}`,
-            type: 'group'
+            type: 'group',
+            listKey: `selected-${sg.id}`,
           });
         }
       });
@@ -242,15 +246,13 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
       const cat = cleanCategoryName(g.name);
       
       g.sub_groups.forEach((sg: any) => {
-        if (!localWfIds.includes(sg.id)) {
-          if (!categories.has(cat)) categories.set(cat, []);
-          categories.get(cat)!.push({
-            id: sg.id,
-            name: g.name,
-            subtitle: g.group_code ? `${g.group_code} • Grupa ${sg.group_number}` : `Grupa ${sg.group_number}`,
-            originalCategory: cat
-          });
-        }
+        if (!categories.has(cat)) categories.set(cat, []);
+        categories.get(cat)!.push({
+          id: sg.id,
+          name: g.name,
+          subtitle: g.group_code ? `${g.group_code} • Grupa ${sg.group_number}` : `Grupa ${sg.group_number}`,
+          originalCategory: cat
+        });
       });
     });
 
@@ -273,7 +275,7 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
       }
     });
     return result;
-  }, [groupsData, debouncedQuery, expandedCategories, localWfIds]);
+  }, [groupsData, debouncedQuery, expandedCategories]);
 
   const toggleKierunek = (id: number) => {
     setLocalKierunekIds(prev => 
@@ -329,8 +331,8 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")}>
-              <Text style={styles.clearIconText}>✕</Text>
+            <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")} hitSlop={8}>
+              <ClearIcon width={20} height={20} fill={colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
@@ -342,7 +344,10 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             ...(kierunekList.length > 0 && !debouncedQuery ? [{ type: 'header', title: 'Wszystkie grupy', id: 'wszystkie-header' }] : []),
             ...kierunekList
           ]}
-          keyExtractor={(item: any) => item.id.toString()}
+          keyExtractor={(item: any) => item.listKey ?? item.id.toString()}
+          // Toggling a group adds/removes rows in the „Wybrane” section above;
+          // keep the row under the finger in place instead of shifting the list.
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           renderItem={({ item }: any) => {
             if (item.type === 'header') {
               return <Text style={styles.listSectionTitle}>{item.title}</Text>;
@@ -398,8 +403,8 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")}>
-              <Text style={styles.clearIconText}>✕</Text>
+            <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")} hitSlop={8}>
+              <ClearIcon width={20} height={20} fill={colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
@@ -411,7 +416,10 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             ...(jezykiList.length > 0 && !debouncedQuery ? [{ type: 'header', title: 'Wszystkie grupy', id: 'wszystkie-header' }] : []),
             ...jezykiList
           ]}
-          keyExtractor={(item: any) => item.id.toString()}
+          keyExtractor={(item: any) => item.listKey ?? item.id.toString()}
+          // Toggling a group adds/removes rows in the „Wybrane” section above;
+          // keep the row under the finger in place instead of shifting the list.
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           renderItem={({ item }: any) => {
             if (item.type === 'header') {
               return <Text style={styles.listSectionTitle}>{item.title}</Text>;
@@ -468,8 +476,8 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")}>
-              <Text style={styles.clearIconText}>✕</Text>
+            <TouchableOpacity style={styles.clearIcon} onPress={() => setSearchQuery("")} hitSlop={8}>
+              <ClearIcon width={20} height={20} fill={colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
@@ -481,7 +489,10 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
             ...(wfList.length > 0 && !debouncedQuery ? [{ type: 'header', title: 'Wszystkie grupy', id: 'wszystkie-header' }] : []),
             ...wfList
           ]}
-          keyExtractor={(item: any) => item.id.toString()}
+          keyExtractor={(item: any) => item.listKey ?? item.id.toString()}
+          // Toggling a group adds/removes rows in the „Wybrane” section above;
+          // keep the row under the finger in place instead of shifting the list.
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           renderItem={({ item }: any) => {
             if (item.type === 'header') {
               return <Text style={styles.listSectionTitle}>{item.title}</Text>;
@@ -550,15 +561,16 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      allowSwipeDismissal={false}
+      onRequestClose={() => {}}
+    >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          {step > 1 && (
-            <TouchableOpacity onPress={() => setStep((prev) => (prev - 1) as 1 | 2 | 3)} style={styles.headerBack}>
-              <Text style={styles.headerBackText}>{"<"}</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={[styles.headerTitle, step === 1 && { marginLeft: 0 }]}>Plan zajęć</Text>
+          <Text style={styles.headerTitle}>Konfigurator grup</Text>
         </View>
 
         {!groupsData ? renderGroupsUnavailable() : (
@@ -600,9 +612,9 @@ export const GroupWizard: React.FC<GroupWizardProps> = ({ visible, onClose }) =>
           {step < 3 ? (
             <>
               <TouchableOpacity style={styles.buttonSecondary} onPress={handleSaveAndClose}>
-                <Text style={styles.buttonSecondaryText}>Zakończ</Text>
+                <Text style={styles.buttonSecondaryText}>{"Zakończ \ni zapisz"}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonPrimary} onPress={handleNext}>
+              <TouchableOpacity style={[styles.buttonPrimary, styles.buttonNext]} onPress={handleNext}>
                 <Text style={styles.buttonPrimaryText}>Dalej <Text style={styles.arrowIcon}>→</Text></Text>
               </TouchableOpacity>
             </>

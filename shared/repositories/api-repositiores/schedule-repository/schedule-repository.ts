@@ -55,6 +55,7 @@ export class ScheduleRepository implements IScheduleRepository {
       queryParts.push(`versions=${versions.join(",")}`);
     }
 
+
     const response = await this.http.get<unknown>(`${this.SCHEDULES_URL}?${queryParts.join("&")}`);
 
     if (response.status === 204) {

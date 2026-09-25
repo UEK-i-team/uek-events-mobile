@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "@/shared/context/ThemeContext";
 import { getStyles } from "./class-card.styles";
 
@@ -11,6 +11,7 @@ interface ClassCardProps {
   professor: string;
   borderColor: string;
   roomDotColor: string;
+  onPress?: () => void;
 }
 
 export const ClassCard: React.FC<ClassCardProps> = ({
@@ -21,18 +22,28 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   professor,
   borderColor,
   roomDotColor,
+  onPress,
 }) => {
   const { colors } = useTheme();
   const styles = getStyles(colors);
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      disabled={!onPress}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityHint="Pokazuje szczegóły zajęć"
+    >
       <View style={[styles.leftStrip, { backgroundColor: borderColor }]} />
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <Text style={styles.timeText}>{timeRange}</Text>
           <View style={styles.roomContainer}>
-            <Text style={styles.roomText}>{room}</Text>
+            <Text style={styles.roomText} numberOfLines={1} ellipsizeMode="tail">
+              {room}
+            </Text>
             <View style={[styles.roomDot, { backgroundColor: roomDotColor }]} />
           </View>
         </View>
@@ -42,6 +53,6 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           <Text style={styles.professorText}>{professor}</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };

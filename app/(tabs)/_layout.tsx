@@ -8,8 +8,8 @@ import { useTheme } from "@/shared/context/ThemeContext";
 // import icons
 import HeartIconFilled from "@/assets/icons/heart-icon-filled.svg";
 import HeartIconOutline from "@/assets/icons/heart-icon-outline.svg";
-import HomeIconFilled from "@/assets/icons/home-icon-filled.svg";
-import HomeIconOutline from "@/assets/icons/home-icon-outline.svg";
+import EventIconFilled from "@/assets/icons/event-icon-filled.svg";
+import EventIconOutline from "@/assets/icons/event-icon-outline.svg";
 import InfoIconFilled from "@/assets/icons/info-icon-filled.svg";
 import InfoIconOutline from "@/assets/icons/info-icon-outline.svg";
 import ScheduleIconFilled from "@/assets/icons/schedule-icon-filled.svg";
@@ -35,12 +35,25 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="schedule"
         options={{
-          title: "Strona główna",
+          title: "Plan zajęć",
           tabBarIcon: ({ color, focused }) => (
             <SvgIcon
-              Icon={focused ? HomeIconFilled : HomeIconOutline}
+              Icon={focused ? ScheduleIconFilled : ScheduleIconOutline}
+              size={24}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Eventuje",
+          tabBarIcon: ({ color, focused }) => (
+            <SvgIcon
+              Icon={focused ? EventIconFilled : EventIconOutline}
               size={24}
               color={color}
             />
@@ -54,19 +67,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <SvgIcon
               Icon={focused ? HeartIconFilled : HeartIconOutline}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="schedule"
-        options={{
-          title: "Plan zajęć",
-          tabBarIcon: ({ color, focused }) => (
-            <SvgIcon
-              Icon={focused ? ScheduleIconFilled : ScheduleIconOutline}
               size={24}
               color={color}
             />

@@ -12,21 +12,13 @@ export const getStyles = (colors: AppThemeColors) =>
       alignItems: "center",
       paddingHorizontal: 20,
       paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
     },
     headerTitle: {
       fontSize: 20,
       fontWeight: "bold",
       color: colors.textPrimary,
-      marginLeft: 12,
-    },
-    headerBack: {
-      padding: 4,
-    },
-    headerBackText: {
-      fontSize: 20,
-      color: colors.textPrimary,
+      marginTop: 10,
+      marginBottom: -8,
     },
     stepperContainer: {
       flexDirection: "row",
@@ -120,13 +112,6 @@ export const getStyles = (colors: AppThemeColors) =>
     },
     clearIcon: {
       padding: 4,
-      borderRadius: 12,
-      backgroundColor: colors.border,
-    },
-    clearIconText: {
-      fontSize: 10,
-      fontWeight: "bold",
-      color: colors.textSecondary,
     },
     listSectionTitle: {
       fontSize: 14,
@@ -248,6 +233,7 @@ export const getStyles = (colors: AppThemeColors) =>
       fontSize: 16,
       fontWeight: "bold",
       color: colors.textPrimary,
+      textAlign: "center",
     },
     buttonPrimary: {
       flex: 2,
@@ -260,6 +246,10 @@ export const getStyles = (colors: AppThemeColors) =>
     },
     buttonPrimaryFull: {
       flex: 1,
+    },
+    buttonNext: {
+      alignSelf: "center",
+      paddingVertical: 16,
     },
     buttonPrimaryText: {
       fontSize: 16,

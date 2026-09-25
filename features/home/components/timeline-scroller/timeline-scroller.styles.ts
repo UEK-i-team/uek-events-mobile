@@ -50,6 +50,35 @@ container: {
     alignItems: 'center',
     paddingVertical: 8,
   },
+  dayContainerPast: {
+    opacity: 0.4,
+  },
+  weekdayText: {
+    fontSize: 10,
+    lineHeight: 12,
+    fontWeight: '500',
+    letterSpacing: 0.3,
+    marginBottom: 4,
+    includeFontPadding: false,
+  },
+  weekdayTextLight: {
+    color: '#9A9A9A',
+  },
+  weekdayTextDark: {
+    color: '#8C8C8C',
+  },
+  weekdayTextActiveLight: {
+    color: '#111111',
+    fontWeight: '600',
+  },
+  weekdayTextActiveDark: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  weekdayTextToday: {
+    color: '#FF7324',
+    fontWeight: '700',
+  },
   dateBox: {
     width: 53,
     height: 53,
@@ -68,6 +97,10 @@ container: {
   },
   dateBoxInactiveDark: {
     backgroundColor: '#A0A0A0', // lub A0A0A0
+  },
+  dateBoxToday: {
+    borderWidth: 2,
+    borderColor: '#FF7324',
   },
   dateBoxEmpty: {
     width: 36,
@@ -98,6 +131,18 @@ container: {
   dayTextEmptyDark: {
     fontSize: 15,
     color: '#555555', // Greyed out text for dark mode
+  },
+  dayTextEmptyToday: {
+    color: '#FF7324',
+    fontWeight: '700',
+  },
+  todayMarker: {
+    position: 'absolute',
+    bottom: 16,
+    width: 14,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#FF7324',
   },
   dotsContainer: {
     flexDirection: 'row',

@@ -235,7 +235,7 @@ export class EventsRepositoryMock implements IEventsRepository {
     // === DEMO BŁĘDU „Wróć do dziś" ===
     // Przestawiamy daty na WZGLĘDNE do dzisiaj, żeby na żywo odtworzyć scenariusz
     // koleżanki: są dostępne przyszłe eventy, a mimo to na dniu najbliższego
-    // przyszłego eventu (kotwica) tabbar pokazuje „Strona główna" zamiast „Wróć".
+    // przyszłego eventu (kotwica) tabbar pokazuje „Eventuje" zamiast „Wróć".
     // Aby przywrócić oryginalne, sztywne daty: git checkout na tym pliku.
     const DAY_MS = 24 * 60 * 60 * 1000;
     const schedule: { id: number; offsetDays: number; hour: number }[] = [
@@ -244,7 +244,7 @@ export class EventsRepositoryMock implements IEventsRepository {
       { id: 4, offsetDays: -12, hour: 18 },
       { id: 5, offsetDays: -12, hour: 18 },
       { id: 6, offsetDays: -12, hour: 18 },
-      { id: 9, offsetDays: 2, hour: 17 }, // <-- NAJBLIŻSZY PRZYSZŁY EVENT = kotwica „Strona główna"
+      { id: 9, offsetDays: 2, hour: 17 }, // <-- NAJBLIŻSZY PRZYSZŁY EVENT = kotwica „Eventuje"
       { id: 10, offsetDays: 5, hour: 12 },
       { id: 11, offsetDays: 9, hour: 10 },
       { id: 12, offsetDays: 16, hour: 16 },

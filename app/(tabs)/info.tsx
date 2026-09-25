@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, View, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AccountSection } from "@/features/auth";
+import { StartTabSetting } from "@/features/start-tab";
 import UekLogo from "@/assets/images/uek_logo.svg";
 import { ExternalLink } from "@/shared/components/external-link/external-link";
 import { IconSymbol } from "@/shared/components/icon-symbol/icon-symbol";
@@ -55,6 +56,7 @@ export default function InfoScreen() {
               thumbColor="#f4f3f4"
             />
           </View>
+          <StartTabSetting />
         </View>
 
         <View style={styles.section}>

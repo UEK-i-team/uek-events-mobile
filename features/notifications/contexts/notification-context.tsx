@@ -19,7 +19,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   }, []);
 
-  const showNotification = useCallback((type: NotificationType, message: string) => {
+  const showNotification = useCallback((type: NotificationType, message: string, durationMs = 5000) => {
     // Clear previous timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -34,11 +34,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
     setCurrentNotification(notification);
 
-    // Auto-hide after 5 seconds for non-loading notifications
     if (type !== 'loading') {
       timeoutRef.current = setTimeout(() => {
         hideNotification();
-      }, 5000);
+      }, durationMs);
     }
   }, [hideNotification]);
 

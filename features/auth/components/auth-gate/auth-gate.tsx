@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 import { useTheme } from "@/shared/context/ThemeContext";
 
 import { useAuth } from "../../contexts/auth-context";
 import { useEndSession } from "../../hooks/use-end-session";
+import { useKeepFocusedInputVisible } from "../../hooks/use-keep-focused-input-visible";
 import { useOtpLogin } from "../../hooks/use-otp-login";
 import { EmailStep } from "../email-step/email-step";
 import { OtpStep } from "../otp-step/otp-step";
@@ -35,6 +44,8 @@ export function AuthGate({
   const { loggingOut, endSession } = useEndSession();
   const leftLoginFormRef = useRef(false);
   const [retrying, setRetrying] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const { onScroll } = useKeepFocusedInputVisible(scrollRef);
 
   const handleRetryRestore = async () => {
     setRetrying(true);
@@ -82,13 +93,20 @@ export function AuthGate({
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.retryContent}>
+          <View style={styles.retryIconBadge}>
+            <Ionicons name="cloud-offline-outline" size={36} color={colors.primary} />
+          </View>
           <Text style={styles.retryTitle}>Nie udało się połączyć</Text>
           <Text style={styles.retryMessage}>
             Sprawdź połączenie z internetem i spróbuj ponownie. Twoja sesja
             logowania została zachowana.
           </Text>
           <Pressable
-            style={[styles.retryButton, retrying && styles.retryButtonDisabled]}
+            style={({ pressed }) => [
+              styles.retryButton,
+              pressed && styles.buttonPressed,
+              retrying && styles.retryButtonDisabled,
+            ]}
             onPress={() => void handleRetryRestore()}
             disabled={retrying || loggingOut}
           >
@@ -119,27 +137,40 @@ export function AuthGate({
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      {otpLogin.step === "email" ? (
-        <EmailStep
-          email={otpLogin.email}
-          loading={otpLogin.loading}
-          error={otpLogin.error}
-          infoMessage={otpLogin.infoMessage}
-          onEmailChange={otpLogin.setEmail}
-          onSubmit={otpLogin.submitEmail}
-        />
-      ) : (
-        <OtpStep
-          email={otpLogin.email}
-          loading={otpLogin.loading}
-          error={otpLogin.error}
-          infoMessage={otpLogin.infoMessage}
-          resendCooldown={otpLogin.resendCooldown}
-          onSubmit={otpLogin.submitCode}
-          onResend={otpLogin.resendCode}
-          onBack={otpLogin.goBackToEmail}
-        />
-      )}
+      {/* Android is edge-to-edge (Expo SDK 54), so adjustResize no longer shrinks
+          the window and the padding has to be applied here as well. */}
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+        >
+          {otpLogin.step === "email" ? (
+            <EmailStep
+              email={otpLogin.email}
+              loading={otpLogin.loading}
+              error={otpLogin.error}
+              infoMessage={otpLogin.infoMessage}
+              onEmailChange={otpLogin.setEmail}
+              onSubmit={otpLogin.submitEmail}
+            />
+          ) : (
+            <OtpStep
+              email={otpLogin.email}
+              loading={otpLogin.loading}
+              error={otpLogin.error}
+              infoMessage={otpLogin.infoMessage}
+              resendCooldown={otpLogin.resendCooldown}
+              onSubmit={otpLogin.submitCode}
+              onResend={otpLogin.resendCode}
+              onBack={otpLogin.goBackToEmail}
+            />
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

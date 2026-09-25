@@ -110,6 +110,7 @@ export default function HomeView() {
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
           visibleEventId={visibleEventId}
+          showWeekdays
         />
       )}
       <View
