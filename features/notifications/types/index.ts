@@ -7,7 +7,7 @@ export interface Notification {
 }
 
 export interface NotificationContextType {
-  showNotification: (type: NotificationType, message: string) => void;
+  showNotification: (type: NotificationType, message: string, durationMs?: number) => void;
   hideNotification: () => void;
   currentNotification: Notification | null;
 }

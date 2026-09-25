@@ -45,6 +45,14 @@ describe("buildVersionsParam", () => {
   it("returns undefined without a cache", () => {
     expect(buildVersionsParam(null, [1])).toBeUndefined();
   });
+
+  it("returns undefined when a versioned group has no cached classes", () => {
+    const cache: ScheduleCache = {
+      groups: { ...cachedTwoGroups.groups, 4612: { version: 1, events: [] } },
+      fetchedAt: null,
+    };
+    expect(buildVersionsParam(cache, [1, 4612])).toBeUndefined();
+  });
 });
 
 describe("mergeScheduleResult", () => {

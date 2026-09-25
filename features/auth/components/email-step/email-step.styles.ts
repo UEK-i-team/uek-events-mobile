@@ -6,8 +6,13 @@ export const getStyles = (colors: AppThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      paddingHorizontal: 20,
-      paddingTop: 24,
+    },
+    hero: {
+      width: "100%",
+      height: undefined,
+      aspectRatio: 1.5,
+      borderRadius: 24,
+      marginBottom: 24,
     },
     title: {
       fontSize: 28,
@@ -15,46 +20,85 @@ export const getStyles = (colors: AppThemeColors) =>
       color: colors.textPrimary,
       marginBottom: 8,
     },
-    subtitleLead: {
-      fontSize: 17,
-      lineHeight: 24,
-      color: '#111',
-      marginBottom: 12,
-    },
-    subtitle: {
-      fontSize: 15,
-      lineHeight: 22,
+    lead: {
+      fontSize: 16,
+      lineHeight: 23,
       color: colors.textSecondary,
+      marginBottom: 20,
+    },
+    features: {
+      gap: 10,
       marginBottom: 24,
     },
-    subtitleWithoutMargin: {
-      fontSize: 15,
-      lineHeight: 22,
-      color: colors.textSecondary,
+    featureRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+      padding: 14,
+      borderRadius: 16,
+      backgroundColor: colors.mainBackgroundLighter,
     },
-    subtitleBold: {
+    featureIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: `${colors.primary}1F`,
+    },
+    featureText: {
+      flex: 1,
+    },
+    featureTitle: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: colors.textPrimary,
+      marginBottom: 2,
+    },
+    featureDescription: {
+      fontSize: 13,
+      lineHeight: 18,
+      color: colors.textMuted,
+    },
+    featureDescriptionStrong: {
       fontWeight: "700",
       color: colors.textPrimary,
     },
-    input: {
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
+    inputWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
       paddingHorizontal: 16,
-      paddingVertical: 14,
-      fontSize: 16,
-      letterSpacing: 0,
-      textAlign: "left",
-      color: colors.textPrimary,
+      borderWidth: 1.5,
+      borderColor: colors.mainBackgroundDarker,
+      borderRadius: 16,
       backgroundColor: colors.surface,
       marginBottom: 12,
     },
-    button: {
-      backgroundColor: colors.primary,
-      borderRadius: 12,
+    inputWrapperFocused: {
+      borderColor: colors.primary,
+    },
+    inputWrapperError: {
+      borderColor: colors.red_regular,
+    },
+    input: {
+      flex: 1,
       paddingVertical: 16,
+      fontSize: 16,
+      color: colors.textPrimary,
+    },
+    button: {
+      flexDirection: "row",
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 16,
+      paddingVertical: 17,
       alignItems: "center",
-      marginTop: 8,
+      justifyContent: "center",
+      marginTop: 4,
+    },
+    buttonPressed: {
+      opacity: 0.85,
     },
     buttonDisabled: {
       opacity: 0.6,
@@ -62,16 +106,18 @@ export const getStyles = (colors: AppThemeColors) =>
     buttonText: {
       color: "#FFFFFF",
       fontSize: 16,
-      fontWeight: "600",
+      fontWeight: "700",
     },
     errorText: {
       color: colors.red_regular,
       fontSize: 14,
       marginBottom: 8,
+      marginLeft: 4,
     },
     infoText: {
       color: colors.textSecondary,
       fontSize: 14,
       marginBottom: 8,
+      marginLeft: 4,
     },
   });

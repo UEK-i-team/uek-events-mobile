@@ -45,6 +45,21 @@ export class AuthSessionService {
     return this.user;
   }
 
+  /**
+   * Local check whether a session is stored on the device, without contacting
+   * the server, so it answers quickly even while `status` is "initializing".
+   */
+  public async hasStoredSession(): Promise<boolean> {
+    try {
+      const refreshToken = await this.withStorageLock(() =>
+        this.tokenStore.getRefreshToken(),
+      );
+      return refreshToken !== null;
+    } catch {
+      return false;
+    }
+  }
+
   public subscribe(listener: SessionListener): () => void {
     this.listeners.add(listener);
     listener(this.status, this.user);

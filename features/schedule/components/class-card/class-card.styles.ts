@@ -28,21 +28,30 @@ export const getStyles = (colors: AppThemeColors) =>
       marginBottom: 8,
     },
     timeText: {
+      flexShrink: 0,
       fontSize: 14,
       color: colors.textSecondary,
       fontWeight: "400",
     },
+    // Takes the space left by the time range, so a long room name is cut
+    // with an ellipsis on any screen width instead of pushing the time away.
     roomContainer: {
+      flex: 1,
+      minWidth: 0,
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "flex-end",
       gap: 8,
+      marginLeft: 12,
     },
     roomText: {
+      flexShrink: 1,
       fontSize: 14,
       color: colors.textPrimary,
       fontWeight: "400",
     },
     roomDot: {
+      flexShrink: 0,
       width: 12,
       height: 12,
       borderRadius: 6,

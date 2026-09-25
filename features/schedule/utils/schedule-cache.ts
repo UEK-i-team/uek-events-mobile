@@ -52,8 +52,10 @@ export function migrateScheduleCache(stored: unknown): ScheduleCache | null {
 }
 
 /**
- * Versions are sent only when every group is cached with a known version, so a
- * 204 response can never leave a group without classes.
+ * Versions are sent only when every group is cached with a known version and at
+ * least one class, so a 204 response can never leave a group without classes.
+ * The backend never publishes a version for an empty group, so a cached group
+ * with a version but no classes is stale and needs a full fetch.
  */
 export function buildVersionsParam(
   cache: ScheduleCache | null,
@@ -63,9 +65,9 @@ export function buildVersionsParam(
 
   const versions: number[] = [];
   for (const groupId of groupIds) {
-    const version = cache.groups[groupId]?.version;
-    if (version === null || version === undefined) return undefined;
-    versions.push(version);
+    const cached = cache.groups[groupId];
+    if (!cached || cached.version === null || cached.events.length === 0) return undefined;
+    versions.push(cached.version);
   }
   return versions;
 }

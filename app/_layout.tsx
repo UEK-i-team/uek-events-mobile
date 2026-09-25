@@ -19,6 +19,7 @@ import {
   useDailyEventsGate,
 } from "@/features/daily-events";
 import { AuthProvider } from "@/features/auth";
+import { useInitialTabRedirect } from "@/features/start-tab";
 import { EventContext, EventContextProvider } from "@/shared/context/EventContext/EventContext";
 import { DependencyProvider } from "@/shared/di/DependencyProvider";
 import { ThemeProvider as AppThemeProvider, useTheme } from "@/shared/context/ThemeContext";
@@ -67,7 +68,8 @@ export const unstable_settings = {
 };
 
 function AppContent() {
-  useDailyEventsGate();
+  const isStartTabResolved = useInitialTabRedirect();
+  useDailyEventsGate({ enabled: isStartTabResolved });
   const router = useRouter();
   const lastNotificationResponse = Notifications.useLastNotificationResponse();
   const url = Linking.useURL();

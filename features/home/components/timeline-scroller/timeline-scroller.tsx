@@ -20,6 +20,9 @@ import { useTheme } from "@/shared/context/ThemeContext";
 
 const getCurrentDate = () => new Date();
 
+// Indexed by Date.getDay(), which starts on Sunday.
+const WEEKDAY_SHORT_PL = ["Nd", "Pn", "Wt", "Śr", "Cz", "Pt", "Sb"];
+
 export interface DateItem {
   date: Date;
   events: IEvent[]; // Added to determine the number of dots
@@ -30,6 +33,7 @@ interface TimelineScrollerProps {
   selectedDate: Date | null | undefined;
   onDateSelect: (date: Date) => void;
   visibleEventId: number | null; // Added to highlight the active dot
+  showWeekdays?: boolean;
 }
 
 interface DayProps {
@@ -39,6 +43,9 @@ interface DayProps {
   itemWidth: number;
   visibleEventId: number | null;
   isDark: boolean;
+  showWeekday: boolean;
+  isToday: boolean;
+  isPast: boolean;
 }
 
 const getDotConfig = (events: IEvent[], visibleId: number | null) => {
@@ -81,27 +88,56 @@ const Day = memo(function Day({
   itemWidth,
   visibleEventId,
   isDark,
+  showWeekday,
+  isToday,
+  isPast,
 }: DayProps) {
   const dayNumber = item.date.getDate();
   const hasEvents = item.events.length > 0;
+  const containerStyle = [
+    styles.dayContainer,
+    { width: itemWidth },
+    isPast && !isDaySelected && styles.dayContainerPast,
+  ];
 
   const handlePress = useCallback(() => {
     setSelectedDate(item.date);
   }, [setSelectedDate, item.date]);
 
+  const weekdayLabel = showWeekday ? (
+    <ThemedText
+      style={[
+        styles.weekdayText,
+        isToday
+          ? styles.weekdayTextToday
+          : isDaySelected
+            ? isDark
+              ? styles.weekdayTextActiveDark
+              : styles.weekdayTextActiveLight
+            : isDark
+              ? styles.weekdayTextDark
+              : styles.weekdayTextLight,
+      ]}
+    >
+      {isToday ? "Dziś" : WEEKDAY_SHORT_PL[item.date.getDay()]}
+    </ThemedText>
+  ) : null;
+
   // If inactive and no events, show small grey text
   if (!hasEvents && !isDaySelected) {
     return (
-      <Pressable
-        style={[styles.dayContainer, { width: itemWidth }]}
-        onPress={handlePress}
-      >
+      <Pressable style={containerStyle} onPress={handlePress}>
+        {weekdayLabel}
         <View style={styles.dateBoxEmpty}>
           <ThemedText
-            style={isDark ? styles.dayTextEmptyDark : styles.dayTextEmptyLight}
+            style={[
+              isDark ? styles.dayTextEmptyDark : styles.dayTextEmptyLight,
+              isToday && styles.dayTextEmptyToday,
+            ]}
           >
             {dayNumber}
           </ThemedText>
+          {isToday && <View style={styles.todayMarker} />}
         </View>
       </Pressable>
     );
@@ -110,10 +146,8 @@ const Day = memo(function Day({
   const dotConfig = hasEvents ? getDotConfig(item.events, visibleEventId) : [];
 
   return (
-    <Pressable
-      style={[styles.dayContainer, { width: itemWidth }]}
-      onPress={handlePress}
-    >
+    <Pressable style={containerStyle} onPress={handlePress}>
+      {weekdayLabel}
       <View
         style={[
           styles.dateBox,
@@ -122,6 +156,7 @@ const Day = memo(function Day({
             : isDark
               ? styles.dateBoxInactiveDark
               : styles.dateBoxInactiveLight,
+          isToday && !isDaySelected && styles.dateBoxToday,
         ]}
       >
         <ThemedText
@@ -162,6 +197,7 @@ export function TimelineScroller({
   selectedDate,
   onDateSelect,
   visibleEventId,
+  showWeekdays = false,
 }: TimelineScrollerProps) {
   const { fontScale, width: windowWidth } = useWindowDimensions();
   const { isDarkMode } = useTheme();
@@ -330,6 +366,7 @@ export function TimelineScroller({
   }, [visibleMonthDate, uniqueMonths]);
 
   const scrollX = useRef(new Animated.Value(0)).current;
+  const todayTime = resetTime(getCurrentDate()).getTime();
 
   if (!datesDays || !datesDays.length) return null;
 
@@ -412,6 +449,7 @@ export function TimelineScroller({
           const isDaySelected = selectedDate
             ? isSameDay(item.date, selectedDate)
             : false;
+          const dayTime = item.date.getTime();
 
           return (
             <Day
@@ -421,6 +459,9 @@ export function TimelineScroller({
               itemWidth={ITEM_WIDTH_PX}
               visibleEventId={visibleEventId}
               isDark={isDarkMode}
+              showWeekday={showWeekdays}
+              isToday={dayTime === todayTime}
+              isPast={dayTime < todayTime}
             />
           );
         }}
