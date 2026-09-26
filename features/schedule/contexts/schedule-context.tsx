@@ -13,6 +13,7 @@ import {
   migrateScheduleCache,
   ScheduleCache,
 } from "../utils/schedule-cache";
+import { pruneUnknownGroupIds } from "../utils/prune-group-ids";
 
 interface RefreshScheduleOptions {
   /** Show a "synced" toast once the backend responds successfully. */
@@ -57,6 +58,8 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
   const [groupsData, setGroupsData] = useState<IScheduleGroupsResponse | null>(null);
   const [isGroupsLoading, setIsGroupsLoading] = useState(false);
   const [groupsError, setGroupsError] = useState(false);
+  // Only a network response may prune the selection; cached groups can be stale.
+  const [freshGroupsData, setFreshGroupsData] = useState<IScheduleGroupsResponse | null>(null);
 
   const statusRef = useRef(status);
   statusRef.current = status;
@@ -153,6 +156,7 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
       .getAvailableGroups()
       .then((groups) => {
         setGroupsData(groups);
+        setFreshGroupsData(groups);
         setGroupsError(false);
       })
       .catch((error) => {
@@ -167,6 +171,12 @@ export const ScheduleProvider = ({ children }: { children: ReactNode }) => {
     groupsRequestRef.current = request;
     return request;
   }, [scheduleRepository]);
+
+  // Waits for hydration: groups may arrive before the stored selection is read.
+  useEffect(() => {
+    if (!freshGroupsData || !isCacheHydrated) return;
+    setSelectedGroupIds((current) => pruneUnknownGroupIds(current, freshGroupsData));
+  }, [freshGroupsData, isCacheHydrated]);
 
   /**
    * `notifyOnSuccess` stays pending until a fetch succeeds or fails, so it also
